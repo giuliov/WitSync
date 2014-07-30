@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Mapping">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="SourceQuery" type="xs:string" />
+        <xs:element name="DestinationQuery" type="xs:string" />
+        <xs:element name="AreaMap">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Area">
+                <xs:complexType>
+                  <xs:attribute name="SourcePath" type="xs:string" use="required" />
+                  <xs:attribute name="DestinationPath" type="xs:string" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="IterationMap">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Iteration">
+                <xs:complexType>
+                  <xs:attribute name="SourcePath" type="xs:string" use="required" />
+                  <xs:attribute name="DestinationPath" type="xs:string" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element maxOccurs="unbounded" name="WorkItemMap">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="IDField" minOccurs="1" maxOccurs="1">
+                <xs:complexType>
+                  <xs:attribute name="Source" type="xs:string" use="required" />
+                  <xs:attribute name="Destination" type="xs:string" use="required" />
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="States" minOccurs="0">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element maxOccurs="unbounded" name="State">
+                      <xs:complexType>
+                        <xs:attribute name="Source" type="xs:string" use="required" />
+                        <xs:attribute name="Destination" type="xs:string" use="required" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="InitialStateOnDestination" type="xs:string" use="required"/>
+                </xs:complexType>
+              </xs:element>
+              <xs:element maxOccurs="unbounded" name="Field">
+                <xs:complexType>
+                  <xs:attribute name="Source" type="xs:string" use="required" />
+                  <xs:attribute name="Destination" type="xs:string" use="required" />
+                  <xs:attribute name="Translate" type="xs:string" use="optional" />
+                  <xs:attribute name="Set" type="xs:string" use="optional" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="SourceType" type="xs:string" use="required" />
+            <xs:attribute name="DestinationType" type="xs:string" use="required" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
