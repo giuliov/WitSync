@@ -115,6 +115,81 @@ On the target, the tool must be able to run `Shared Queries\MyDestinationQuery` 
 
 This way, tool’s work is optimized by not scanning all workitems in the target project.
 
+### 1.5.3	Area and Iteration mapping
+
+You have some ways of mapping Area/Iteration paths: one is specific, an Area/Iteration path is mapped exactly to a literal path on target.
+```
+<Area SourcePath="Src\Area 1" DestinationPath="Dest\Area 2"/>
+```
+
+Another option is to use the source wildcard rule: all source paths are mapped to a specific target path.
+```
+<Iteration SourcePath="*" DestinationPath="Dest\Sprint 3"/>
+```
+
+If the destination is empty, it is mapped to the root node, so
+```
+<Iteration SourcePath="*" DestinationPath=""/>
+```
+is equivalent to
+```
+<Iteration SourcePath="*" DestinationPath="Dest"/>
+```
+
+The last option uses the destination wildcard rule: source paths are mapped to equivalent target paths, that is identical except for the root node.
+```
+<Area SourcePath="*" DestinationPath="*"/>
+```
+
+As you see, the rules have the same syntax and meaning for both Areas and Iterations.
+
+### 1.5.4	Work Item Type mapping
+
+A mapping file must contain at least a work item mapping.
+
+A work item mapping must specify a field in the target work item type that holds the source ID.
+
+State mapping is optional; when missing the target work item type must have at least the same state of the source.
+The InitalStateOnDestination is used by the CreateThenUpdate option.
+
+### 1.5.4	Field mapping
+
+Field mapping rules can have 5 forms.
+
+Explicit mapping: both source and destination specify a field.
+```
+<Field Source="Description" Destination="Description"/>
+```
+
+Unmapped fields: source has a name while destination is empty. This means that the field is not mapped; useful for computed fields like "Area ID" which gets value from "Area Path".
+```
+<Field Source="Area ID" Destination=""/>
+```
+
+Fixed value: destination field takes literal value.
+```
+<Field Source="Blocked" Destination="Blocked" Set="Yes" />
+```
+
+Wildcard rule: fields that exists on destination are copied. Should appear only once.
+```
+<Field Source="*" Destination="*"/>
+```
+
+Translation functions: Source values are converted via some built-in function.
+```
+<Field Source="State" Destination="State" Translate="MapState" />
+<Field Source="Area Path" Destination="Area Path" Translate="MapAreaPath"/>
+<Field Source="Iteration Path" Destination="Iteration Path" Translate="MapIterationPath"/>
+```
+The only functions available are:
+Function         | Description
+------------------------------------------------------------------------------------------
+MapState         | Use State mapping
+MapAreaPath      | Use Area mapping to convert source Area Path values to target
+MapIterationPath | Use Iteration mapping to convert source Iteration Path values to target
+
+
 ## 1.6	Building the tool
 
 Requires Visual Studio 2013 and Team Explorer 2013.
