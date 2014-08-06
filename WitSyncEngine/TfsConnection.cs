@@ -17,6 +17,8 @@ namespace WitSync
 
         public void Connect()
         {
+            // TODO add support for credentials
+            // e.g. http://stackoverflow.com/questions/22594064/tf30063-you-are-not-authorized-to-access-https-test-visualstudio-com-defaultc
             this.Collection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(this.CollectionUrl);
             this.Collection.EnsureAuthenticated();
         }
