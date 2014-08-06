@@ -117,7 +117,7 @@ namespace WitSync
             newWorkItems.ForEach(w =>
             {
                 realStates.Add(w, w.State);
-                w.State = mapping.FindWorkItemTypeMapping(w.Type.Name).StateList.InitalStateOnDestination;
+                w.State = mapping.FindWorkItemTypeMapping(w.Type.Name).StateList.InitialStateOnDestination;
             });
             validWorkItems.AddRange(SaveWorkItems(mapping, index, destWIStore, newWorkItems, testOnly));
 
