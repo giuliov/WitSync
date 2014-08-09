@@ -157,7 +157,8 @@ namespace WitSync
                             // fixed value
                             switch (toField.FieldDefinition.FieldType)
                             {
-                                // TODO more robust and flexible conversion; source field is not needed
+                                // TODO source field is not needed
+                                // Parse always succeeds, as value is already validated by Checker
                                 case FieldType.Boolean:
                                     toField.Value = bool.Parse(rule.Set);
                                     break;
