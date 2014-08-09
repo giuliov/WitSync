@@ -157,6 +157,7 @@ namespace WitSync
                             // fixed value
                             switch (toField.FieldDefinition.FieldType)
                             {
+                                // TODO more robust and flexible conversion; source field is not needed
                                 case FieldType.Boolean:
                                     toField.Value = bool.Parse(rule.Set);
                                     break;
