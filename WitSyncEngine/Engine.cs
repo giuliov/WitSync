@@ -61,10 +61,20 @@ namespace WitSync
             var sourceRunner = new QueryRunner(sourceWIStore, sourceConn.ProjectName);
             eventSink.ExecutingSourceQuery(mapping.SourceQuery, sourceConn);
             var sourceResult = sourceRunner.RunQuery(mapping.SourceQuery);
+            if (sourceResult == null)
+            {
+                eventSink.SourceQueryNotFound(mapping.SourceQuery);
+                return 3;
+            }
 
             var destRunner = new QueryRunner(destWIStore, destConn.ProjectName);
             eventSink.ExecutingDestinationQuery(mapping.DestinationQuery, destConn);
             var destResult = destRunner.RunQuery(mapping.DestinationQuery);
+            if (sourceResult == null)
+            {
+                eventSink.DestinationQueryNotFound(mapping.DestinationQuery);
+                return 4;
+            }
 
             var checker = new ProjectMappingChecker(sourceWIStore, sourceConn.ProjectName, destWIStore, destConn.ProjectName, eventSink);
             checker.Check(sourceResult, mapping, destResult);

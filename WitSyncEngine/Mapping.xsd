@@ -3,12 +3,12 @@
   <xs:element name="Mapping">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="SourceQuery" type="xs:string" />
-        <xs:element name="DestinationQuery" type="xs:string" />
-        <xs:element name="AreaMap">
+        <xs:element name="SourceQuery" type="xs:string" minOccurs="1" maxOccurs="1" />
+        <xs:element name="DestinationQuery" type="xs:string" minOccurs="1" maxOccurs="1" />
+        <xs:element name="AreaMap" minOccurs="0" maxOccurs="1">
           <xs:complexType>
             <xs:sequence>
-              <xs:element name="Area">
+              <xs:element name="Area" minOccurs="1" maxOccurs="unbounded">
                 <xs:complexType>
                   <xs:attribute name="SourcePath" type="xs:string" use="required" />
                   <xs:attribute name="DestinationPath" type="xs:string" use="required" />
@@ -17,10 +17,10 @@
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element name="IterationMap">
+        <xs:element name="IterationMap" minOccurs="0" maxOccurs="1">
           <xs:complexType>
             <xs:sequence>
-              <xs:element name="Iteration">
+              <xs:element name="Iteration" minOccurs="1" maxOccurs="unbounded">
                 <xs:complexType>
                   <xs:attribute name="SourcePath" type="xs:string" use="required" />
                   <xs:attribute name="DestinationPath" type="xs:string" use="required" />
@@ -29,7 +29,7 @@
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element maxOccurs="unbounded" name="WorkItemMap">
+        <xs:element minOccurs="1" maxOccurs="unbounded" name="WorkItemMap">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="IDField" minOccurs="1" maxOccurs="1">
@@ -51,9 +51,10 @@
                   <xs:attribute name="InitialStateOnDestination" type="xs:string" use="required"/>
                 </xs:complexType>
               </xs:element>
-              <xs:element maxOccurs="unbounded" name="Field">
+              <xs:element minOccurs="1" maxOccurs="unbounded" name="Field">
                 <xs:complexType>
-                  <xs:attribute name="Source" type="xs:string" use="required" />
+                  <!-- valid combos: S+D S+D+T D+S -->
+                  <xs:attribute name="Source" type="xs:string" use="optional" />
                   <xs:attribute name="Destination" type="xs:string" use="required" />
                   <xs:attribute name="Translate" type="xs:string" use="optional" />
                   <xs:attribute name="Set" type="xs:string" use="optional" />
