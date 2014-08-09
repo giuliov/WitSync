@@ -221,5 +221,15 @@ namespace WitSync
         {
             this.Verbose("Third pass, saving updated work items");
         }
+
+        public void SourceQueryNotFound(string queryName)
+        {
+            this.Error("Source query {0} not found.", queryName);
+        }
+
+        public void DestinationQueryNotFound(string queryName)
+        {
+            this.Error("Destination query {0} not found.", queryName);
+        }
     }
 }

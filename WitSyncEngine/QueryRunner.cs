@@ -33,7 +33,9 @@ namespace WitSync
         {
             var rootQueryFolder = WorkItemStore.Projects[TeamProjectName].QueryHierarchy as QueryFolder;
             var queryDef = FindQuery(queryPath, rootQueryFolder);
-            Debug.Assert(queryDef != null);
+            // query not found
+            if (queryDef == null)
+                return null;
 
             // get the query
             var query = new Query(WorkItemStore, queryDef.QueryText, GetParamsDictionary());
@@ -74,6 +76,8 @@ namespace WitSync
                 queryFolder = queryFolder[parts[i]] as QueryFolder;
             }
             string queryName = parts[parts.Length - 1];
+            if (!queryFolder.Contains(queryName))
+                return null;
             var queryDef = queryFolder[queryName] as QueryDefinition;
             return queryDef;
         }
