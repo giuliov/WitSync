@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,7 +11,7 @@ namespace WitSync
     [CommandLineManager(
         ApplicationName = "WitSync",
         Copyright = "Copyright (c) Giulio Vian",
-        Version="0.1.2.0")]
+        Version="0.1.3.0")]
     public class WitSyncCommandLineOptions
     {
         public enum Verbs
@@ -30,12 +31,21 @@ namespace WitSync
 
         [CommandLineOption(Name = "c", MinOccurs = 1, Description = "Source Collection Url, e.g. http://localhost:8080/tfs/DefaultCollection")]
         public string SourceCollectionUrl { get; set; }
-        [CommandLineOption(Name = "p", MinOccurs =1, Description = "Source Project Name")]
+        [CommandLineOption(Name = "p", MinOccurs = 1, Description = "Source Project Name")]
         public string SourceProjectName { get; set; }
+        [CommandLineOption(Name = "su", Description = "Username connecting to Source")]
+        public string SourceUser { get; set; }
+        [CommandLineOption(Name = "sp", Description = "Password for Source user")]
+        public string SourcePassword { get; set; }
+
         [CommandLineOption(Name = "d", MinOccurs = 1, Description = "Destination Collection Url, e.g. http://localhost:8080/tfs/DefaultCollection")]
         public string DestinationCollectionUrl { get; set; }
         [CommandLineOption(Name = "q", MinOccurs =1, Description = "Destination Project Name")]
         public string DestinationProjectName { get; set; }
+        [CommandLineOption(Name = "du", Description = "Username connecting to Destination")]
+        public string DestinationUser { get; set; }
+        [CommandLineOption(Name = "dp", Description = "Password for Destination user")]
+        public string DestinationPassword { get; set; }
 
         [CommandLineOption(Name = "m", MinOccurs = 1, Description = "Mapping file, e.g. MyMappingFile.xml")]
         public string MappingFile { get; set; }

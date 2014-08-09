@@ -16,30 +16,27 @@ namespace WitSync
 
         public void ConnectingSource(TfsConnection sourceConn)
         {
-            this.Verbose("Connecting to source {0} as {1}.", sourceConn.CollectionUrl, GetUsername(sourceConn));
+            this.Verbose("Connecting to source {0}.", sourceConn.CollectionUrl);
         }
 
         public void SourceConnected(TfsConnection sourceConn)
         {
-            this.Info("Connected to source {0}\\{1}.", sourceConn.CollectionUrl, sourceConn.ProjectName);
+            this.Info("Connected to source {0}\\{1} as {2}.", sourceConn.CollectionUrl, sourceConn.ProjectName, GetUsername(sourceConn));
         }
 
         public void ConnectingDestination(TfsConnection destConn)
         {
-            this.Verbose("Connecting to destination {0} as {1}.", destConn.CollectionUrl, GetUsername(destConn));
+            this.Verbose("Connecting to destination {0}.", destConn.CollectionUrl);
         }
 
         public void DestinationConnected(TfsConnection destConn)
         {
-            this.Info("Connected to source {0}\\{1}.", destConn.CollectionUrl, destConn.ProjectName);
+            this.Info("Connected to source {0}\\{1} as {2}.", destConn.CollectionUrl, destConn.ProjectName, GetUsername(destConn));
         }
 
         protected string GetUsername(TfsConnection conn)
         {
-            return string.IsNullOrWhiteSpace(conn.Username)
-                // ? System.Threading.Thread.CurrentPrincipal.Identity.Name
-                ? string.Format("{0}\\{1}", Environment.UserDomainName, Environment.UserName)
-                : conn.Username;
+            return conn.GetUsername();
         }
 
         public void SaveError(Exception exception, WorkItem workItem)

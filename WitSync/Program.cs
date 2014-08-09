@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WitSync;
 using Plossum.CommandLine;
+using System.Net;
 
 namespace WitSync
 {
@@ -60,16 +61,9 @@ namespace WitSync
         {
             var eventHandler = new EngineEventHandler(options.Verbose);
 
-            var source = new TfsConnection()
-            {
-                CollectionUrl = new Uri(options.SourceCollectionUrl),
-                ProjectName = options.SourceProjectName
-            };
-            var dest = new TfsConnection()
-            {
-                CollectionUrl = new Uri(options.DestinationCollectionUrl),
-                ProjectName = options.DestinationProjectName
-            };
+            TfsConnection source;
+            TfsConnection dest;
+            Connect(options, out source, out dest);
 
             var engine = new AreasAndIterationsSyncEngine(source, dest, eventHandler);
             return engine.Sync(options.TestOnly);
@@ -98,19 +92,28 @@ namespace WitSync
 
             var index = new WitMappingIndex();
 
-            var source = new TfsConnection()
-            {
-                CollectionUrl = new Uri(options.SourceCollectionUrl),
-                ProjectName = options.SourceProjectName
-            };
-            var dest = new TfsConnection()
-            {
-                CollectionUrl = new Uri(options.DestinationCollectionUrl),
-                ProjectName = options.DestinationProjectName
-            };
+            TfsConnection source;
+            TfsConnection dest;
+            Connect(options, out source, out dest);
 
             var engine = new WitSyncEngine(source, dest, eventHandler);
             return engine.Sync(mapping, index, options.TestOnly, options.AdvancedOptions);
+        }
+
+        private static void Connect(WitSyncCommandLineOptions options, out TfsConnection source, out TfsConnection dest)
+        {
+            source = new TfsConnection()
+            {
+                CollectionUrl = new Uri(options.SourceCollectionUrl),
+                ProjectName = options.SourceProjectName,
+                Credential = new NetworkCredential(options.SourceUser, options.SourcePassword)
+            };
+            dest = new TfsConnection()
+            {
+                CollectionUrl = new Uri(options.DestinationCollectionUrl),
+                ProjectName = options.DestinationProjectName,
+                Credential = new NetworkCredential(options.DestinationUser, options.DestinationPassword)
+            };
         }
     }
 }
