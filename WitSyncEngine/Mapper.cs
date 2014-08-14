@@ -143,9 +143,9 @@ namespace WitSync
                 // good source with destination?
                 if (fromField.IsValid
                     && !string.IsNullOrWhiteSpace(rule.Destination)
-                    && target.Fields.Contains(fromField.Name))
+                    && target.Fields.Contains(rule.Destination))
                 {
-                    var toField = target.Fields[fromField.Name];
+                    var toField = target.Fields[rule.Destination];
                     if (CanAssign(fromField, toField))
                     {
                         if (rule.IsWildcard)
