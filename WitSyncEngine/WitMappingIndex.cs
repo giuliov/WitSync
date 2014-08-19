@@ -3,23 +3,96 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace WitSync
 {
-    public class IdMap
-    {
-        public int OriginatingId;
-        public int TargetId;
-    }
 
     public class WitMappingIndex
     {
-        private Dictionary<int, int> ForwardIndex = new Dictionary<int, int>();
-        private Dictionary<int, int> BackwardIndex = new Dictionary<int, int>();
-        private Dictionary<int, WorkItem> TargetIndex = new Dictionary<int, WorkItem>();
+        private Dictionary<int, int> ForwardIndex;
+        private Dictionary<int, int> BackwardIndex;
+        private Dictionary<int, WorkItem> TargetIndex;
+
+        public WitMappingIndex()
+        {
+            Clear();
+        }
+
+        public static WitMappingIndex Load(string pathToDataFile, WorkItemStore store)
+        {
+            using (var reader = new XmlTextReader(pathToDataFile))
+            {
+                var mapping = new WitMappingIndex();
+
+                LoadIndex(reader, "ForwardIndex", mapping.ForwardIndex);
+                LoadIndex(reader, "BackwardIndex", mapping.BackwardIndex);
+
+                mapping.Rebuild(store);
+
+                return mapping;
+            }//using
+        }
+
+        private void Rebuild(WorkItemStore targetStore)
+        {
+            foreach (int targetId in this.BackwardIndex.Keys)
+            {
+                var targetWorkItem = targetStore.GetWorkItem(targetId);
+                this.TargetIndex.Add(targetId, targetWorkItem);                
+            }
+        }
+
+        public void Save(string pathToDataFile)
+        {
+            using (var writer = new XmlTextWriter(pathToDataFile, Encoding.UTF8))
+            {
+                writer.Formatting = Formatting.Indented; // indent the Xml so it's human readable
+
+                writer.WriteStartDocument();
+                writer.WriteStartElement("MappingIndex");
+
+                SaveIndex(writer, "ForwardIndex", ForwardIndex);
+                SaveIndex(writer, "BackwardIndex", BackwardIndex);
+
+                writer.WriteEndElement();
+                writer.WriteEndDocument();
+
+                writer.Flush();
+            }//using
+        }
+
+        private static void LoadIndex(XmlTextReader reader, string indexName, Dictionary<int, int> index)
+        {
+            reader.ReadToFollowing(indexName);
+
+            bool found = reader.ReadToFollowing("Map");
+            while (found)
+            {
+                reader.ReadAttributeValue();
+                int from = int.Parse(reader.GetAttribute("from"));
+                int to = int.Parse(reader.GetAttribute("to"));
+                index.Add(from, to);
+                found = reader.ReadToNextSibling("Map");
+            }
+        }
+
+        private void SaveIndex(XmlTextWriter writer, string indexName, Dictionary<int, int> index)
+        {
+            writer.WriteStartElement(indexName);
+            foreach (KeyValuePair<int, int> item in index)
+            {
+                writer.WriteStartElement("Map");
+                writer.WriteAttributeString("from", item.Key.ToString());
+                writer.WriteAttributeString("to", item.Value.ToString());
+                writer.WriteEndElement();
+            }//for
+            writer.WriteEndElement();
+        }
 
         internal void Clear()
         {
