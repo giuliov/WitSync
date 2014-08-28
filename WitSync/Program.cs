@@ -13,7 +13,16 @@ namespace WitSync
     {
         static int Main(string[] args)
         {
-            int lastColumn = Console.BufferWidth - 2;
+            int lastColumn;
+
+            try
+            {
+                lastColumn = Console.BufferWidth - 2;
+            }
+            catch
+            {
+                lastColumn = 78;
+            }//try
 
             var options = new WitSyncCommandLineOptions();
 
@@ -33,7 +42,7 @@ namespace WitSync
                 return -1;
             }
 
-            // passed
+            // command line parsing succeeded
 
             try
             {
