@@ -36,6 +36,11 @@ namespace WitSync
 
         internal void Check(QueryResult sourceResult, ProjectMapping mapping, QueryResult destResult)
         {
+            if (mapping.HasIndex && System.IO.File.Exists(mapping.IndexFile))
+            {
+                //TODO check indexFile is valid
+            }//if
+
             var sourceWorkItems = sourceResult.WorkItems.Values.ToList();
             var destWorkItems = destResult.WorkItems.Values.ToList();
 
@@ -55,22 +60,36 @@ namespace WitSync
             var allSourceTypes = this.sourceWIStore.Projects[this.sourceProjectName].WorkItemTypes;
             var allDestTypes = this.destWIStore.Projects[this.destProjectName].WorkItemTypes;
 
-            // check that all target types have an originating ID field
-            workItemMappings
-                .Where(m => !allDestTypes[m.DestinationType].FieldDefinitions.Contains(m.IDField.Destination))
+            if (mapping.HasIndex)
+            {
+                // IDField is wrong
+                workItemMappings.Where(
+                    m => m.IDField != null
+                )
                 .ToList()
-                .ForEach(t => Log("Destination WorkItem type '{0}' has no '{1}' Field to host source ID."
-                    , t.DestinationType, t.IDField.Destination));
-            // check that source ID field match
-            workItemMappings
-                .Where(m => !allSourceTypes[m.SourceType].FieldDefinitions.Contains(m.IDField.Source))
-                .ToList()
-                .ForEach(t => Log("Source WorkItem type '{0}' has no source '{1}' ID Field."
-                    , t.SourceType, t.IDField.Source));
+                .ForEach(t => Log("IDField cannot be used with IndexFile: found on WorkItem type '{0}' .", t.SourceType));
+            }
+            else
+            {
+                // check that all target types have an originating ID field
+                workItemMappings
+                    .Where(m => !allDestTypes[m.DestinationType].FieldDefinitions.Contains(m.IDField.Destination))
+                    .ToList()
+                    .ForEach(t => Log("Destination WorkItem type '{0}' has no '{1}' Field to host source ID."
+                        , t.DestinationType, t.IDField.Destination));
+                // check that source ID field match
+                workItemMappings
+                    .Where(m => !allSourceTypes[m.SourceType].FieldDefinitions.Contains(m.IDField.Source))
+                    .ToList()
+                    .ForEach(t => Log("Source WorkItem type '{0}' has no source '{1}' ID Field."
+                        , t.SourceType, t.IDField.Source));
+            }
 
             // check Rules are valid
             foreach (var wiMapping in workItemMappings)
             {
+                //TODO if MapState function then States is mandatory!
+
                 foreach (var fieldRule in wiMapping.Fields)
                 {
                     // check combo, valid combos are: S+D S+D+T D+S

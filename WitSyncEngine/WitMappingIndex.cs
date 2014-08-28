@@ -23,6 +23,13 @@ namespace WitSync
             Clear();
         }
 
+        public static WitMappingIndex CreateEmpty(string pathToDataFile)
+        {
+            var mapping = new WitMappingIndex();
+            mapping.Save(pathToDataFile);
+            return mapping;
+        }
+
         public static WitMappingIndex Load(string pathToDataFile, WorkItemStore store)
         {
             using (var reader = new XmlTextReader(pathToDataFile))
@@ -54,6 +61,7 @@ namespace WitSync
                 writer.Formatting = Formatting.Indented; // indent the Xml so it's human readable
 
                 writer.WriteStartDocument();
+                writer.WriteComment("WitSync index file: maps source WorkItem IDs to target WorkItem IDs.");
                 writer.WriteStartElement("MappingIndex");
 
                 SaveIndex(writer, "ForwardIndex", ForwardIndex);
@@ -86,10 +94,14 @@ namespace WitSync
             writer.WriteStartElement(indexName);
             foreach (KeyValuePair<int, int> item in index)
             {
-                writer.WriteStartElement("Map");
-                writer.WriteAttributeString("from", item.Key.ToString());
-                writer.WriteAttributeString("to", item.Value.ToString());
-                writer.WriteEndElement();
+                // sanity check: values *must* be positive
+                if (item.Key > 0 && item.Value > 0)
+                {
+                    writer.WriteStartElement("Map");
+                    writer.WriteAttributeString("from", item.Key.ToString());
+                    writer.WriteAttributeString("to", item.Value.ToString());
+                    writer.WriteEndElement();
+                }//if
             }//for
             writer.WriteEndElement();
         }
@@ -136,6 +148,29 @@ namespace WitSync
         internal bool IsSourceIdPresent(int sourceId)
         {
             return ForwardIndex.ContainsKey(sourceId);
+        }
+
+        internal void Update(IEnumerable<WorkItem> updatedWorkItems)
+        {
+            // build temporary lookup
+            var reverse = new Dictionary<WorkItem,int>();
+            foreach (var item in this.TargetIndex)
+            {
+                reverse.Add(item.Value, item.Key);
+            }//for
+
+            foreach (var updatedWorkItem in updatedWorkItems)
+            {
+                int newTargetId = updatedWorkItem.Id;
+                int oldTargetId = reverse[updatedWorkItem];
+                int originatingId = this.BackwardIndex[oldTargetId];
+
+                this.ForwardIndex[originatingId] = newTargetId;
+                this.BackwardIndex.Remove(oldTargetId);
+                this.TargetIndex.Remove(oldTargetId);
+                this.BackwardIndex.Add(newTargetId, originatingId);
+                this.TargetIndex.Add(newTargetId, updatedWorkItem);
+            }
         }
     }
 }
