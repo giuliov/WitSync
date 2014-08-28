@@ -42,6 +42,20 @@ namespace WitSync
         public string Set;
 
         public bool IsWildcard { get { return Source == "*"; } }
+
+        public override string ToString()
+        {
+            var buf = new StringBuilder();
+            buf.AppendFormat("Source: {0}", Source);
+            if (!string.IsNullOrEmpty(Destination))
+                buf.AppendFormat(", Destination: {0}", Destination);
+            if (!string.IsNullOrEmpty(Translate))
+                buf.AppendFormat(", Translate: {0}", Translate);
+            if (!string.IsNullOrEmpty(Set))
+                buf.AppendFormat(", Set: {0}", Set);
+
+            return buf.ToString();
+        }
     }
 
     [XmlType("Area")]
@@ -81,7 +95,10 @@ namespace WitSync
         {
             get
             {
-                yield return IDField;
+                if (IDField != null)
+                {
+                    yield return IDField;
+                }
                 for (int i = 0; i < Fields.Length; i++)
                     yield return Fields[i];
             }
@@ -111,12 +128,16 @@ namespace WitSync
         public string SourceQuery;
         [XmlElement]
         public string DestinationQuery;
+        [XmlElement]
+        public string IndexFile;
         [XmlArray]
         public AreaMap[] AreaMap;
         [XmlArray]
         public IterationMap[] IterationMap;
         [XmlElement("WorkItemMap")]
         public WorkItemMap[] WorkItemMappings;
+
+        public bool HasIndex { get { return !string.IsNullOrWhiteSpace(this.IndexFile); } }
 
         public FieldMap FindIdFieldForTargetWorkItemType(string destWorkItemType)
         {

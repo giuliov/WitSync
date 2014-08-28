@@ -5,6 +5,7 @@
       <xs:sequence>
         <xs:element name="SourceQuery" type="xs:string" minOccurs="1" maxOccurs="1" />
         <xs:element name="DestinationQuery" type="xs:string" minOccurs="1" maxOccurs="1" />
+        <xs:element name="IndexFile" type="xs:string" minOccurs="0" maxOccurs="1" />
         <xs:element name="AreaMap" minOccurs="0" maxOccurs="1">
           <xs:complexType>
             <xs:sequence>
@@ -32,16 +33,16 @@
         <xs:element minOccurs="1" maxOccurs="unbounded" name="WorkItemMap">
           <xs:complexType>
             <xs:sequence>
-              <xs:element name="IDField" minOccurs="1" maxOccurs="1">
+              <xs:element name="IDField" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
                   <xs:attribute name="Source" type="xs:string" use="required" />
                   <xs:attribute name="Destination" type="xs:string" use="required" />
                 </xs:complexType>
               </xs:element>
-              <xs:element name="States" minOccurs="0">
+              <xs:element name="States" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element maxOccurs="unbounded" name="State">
+                    <xs:element minOccurs="2" maxOccurs="unbounded" name="State">
                       <xs:complexType>
                         <xs:attribute name="Source" type="xs:string" use="required" />
                         <xs:attribute name="Destination" type="xs:string" use="required" />

@@ -87,12 +87,13 @@ namespace WitSync
                 return null;
             }
             var targetType = destWIStore.Projects[this.destProjectName].WorkItemTypes[map.DestinationType];
-            // this should never trigger as I added a sanity check on WI Types, according to Mappings
-            Debug.Assert(targetType.FieldDefinitions.Contains(map.IDField.Destination));//no destination originating ID
 
             WorkItem target = new WorkItem(targetType);
 
-            target.Fields[map.IDField.Destination].Value = source.Id;
+            if (!mapping.HasIndex)
+            {
+                target.Fields[map.IDField.Destination].Value = source.Id;
+            }
 
             SetWorkItemFields(source, map, target);
 
@@ -107,7 +108,10 @@ namespace WitSync
 
             var map = mapping.FindWorkItemTypeMapping(source.Type.Name);
             Debug.Assert(map.DestinationType == target.Type.Name);
-            Debug.Assert(target.Fields[map.IDField.Destination].Value.ToString() == source.Id.ToString());
+            if (!mapping.HasIndex)
+            {
+                Debug.Assert(target.Fields[map.IDField.Destination].Value.ToString() == source.Id.ToString());
+            }
 
             SetWorkItemFields(source, map, target);
 

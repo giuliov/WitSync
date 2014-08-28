@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Mapping>
+  <!-- Microsoft Visual Studio Scrum -->
+  <SourceQuery>Shared Queries\MySourceQuery</SourceQuery>
+  <!-- Microsoft Visual Studio Scrum -->
+  <DestinationQuery>Shared Queries\MyDestinationQuery</DestinationQuery>
+  <IndexFile>index.xml</IndexFile>
+  <AreaMap>
+    <!-- map to root -->
+    <Area SourcePath="*" DestinationPath=""/>
+  </AreaMap>
+  <IterationMap>
+    <!-- map to root -->
+    <Iteration SourcePath="*" DestinationPath=""/>
+  </IterationMap>
+  <WorkItemMap SourceType="Feature" DestinationType="Feature">
+    <!-- not mapped -->
+    <Field Source="Area ID" Destination=""/>
+    <Field Source="Iteration ID" Destination=""/>
+    <Field Source="Reason" Destination=""/>
+    <Field Source="State Change Date" Destination=""/>
+    <Field Source="Created Date" Destination=""/>
+    <Field Source="Changed Date" Destination=""/>
+    <!-- built-in functions -->
+    <Field Source="Area Path" Destination="Area Path" Translate="MapAreaPath"/>
+    <Field Source="Iteration Path" Destination="Iteration Path" Translate="MapIterationPath"/>
+    <!-- must be explicit -->
+    <Field Source="Title" Destination="Title"/>
+    <Field Source="*" Destination="*"/>
+  </WorkItemMap>
+  <WorkItemMap SourceType="Product Backlog Item" DestinationType="Product Backlog Item">
+    <!-- not mapped -->
+    <Field Source="Area ID" Destination=""/>
+    <Field Source="Iteration ID" Destination=""/>
+    <Field Source="Reason" Destination=""/>
+    <Field Source="State Change Date" Destination=""/>
+    <Field Source="Created Date" Destination=""/>
+    <Field Source="Changed Date" Destination=""/>
+    <!-- built-in functions -->
+    <Field Source="Area Path" Destination="Area Path" Translate="MapAreaPath"/>
+    <Field Source="Iteration Path" Destination="Iteration Path" Translate="MapIterationPath"/>
+    <!-- must be explicit -->
+    <Field Source="Title" Destination="Title"/>
+    <Field Source="*" Destination="*"/>
+  </WorkItemMap>
+  <WorkItemMap SourceType="Task" DestinationType="Task">
+    <!-- not mapped -->
+    <Field Source="Area ID" Destination=""/>
+    <Field Source="Iteration ID" Destination=""/>
+    <Field Source="Reason" Destination=""/>
+    <Field Source="State Change Date" Destination=""/>
+    <Field Source="Created Date" Destination=""/>
+    <Field Source="Changed Date" Destination=""/>
+    <!-- built-in functions -->
+    <Field Source="Area Path" Destination="Area Path" Translate="MapAreaPath"/>
+    <Field Source="Iteration Path" Destination="Iteration Path" Translate="MapIterationPath"/>
+    <!-- must be explicit -->
+    <Field Source="Title" Destination="Title"/>
+    <Field Source="*" Destination="*"/>
+  </WorkItemMap>
+</Mapping>
