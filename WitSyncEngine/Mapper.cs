@@ -144,12 +144,15 @@ namespace WitSync
                     eventSink.NoRuleFor(source, fromField.Name);
                     continue;
                 }
+                string targetFieldName
+                    = rule.IsWildcard
+                    ? fromField.Name : rule.Destination;
                 // good source with destination?
                 if (fromField.IsValid
                     && !string.IsNullOrWhiteSpace(rule.Destination)
-                    && target.Fields.Contains(rule.Destination))
+                    && target.Fields.Contains(targetFieldName))
                 {
-                    var toField = target.Fields[rule.Destination];
+                    var toField = target.Fields[targetFieldName];
                     if (CanAssign(fromField, toField))
                     {
                         if (rule.IsWildcard)
