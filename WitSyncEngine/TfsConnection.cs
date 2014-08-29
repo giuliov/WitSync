@@ -21,13 +21,37 @@ namespace WitSync
         {
             if (this.Credential != null && !string.IsNullOrWhiteSpace(this.Credential.UserName))
             {
-                this.Collection = new TfsTeamProjectCollection(this.CollectionUrl, this.Credential);
+                if (IsVSO(this.CollectionUrl))
+                {
+                    // source http://blogs.msdn.com/b/buckh/archive/2013/01/07/how-to-connect-to-tf-service-without-a-prompt-for-liveid-credentials.aspx
+                    BasicAuthCredential basicCred = new BasicAuthCredential(this.Credential);
+                    TfsClientCredentials tfsCred = new TfsClientCredentials(basicCred);
+                    tfsCred.AllowInteractive = false;
+                    this.Collection = new TfsTeamProjectCollection(this.CollectionUrl, tfsCred);
+                }
+                else
+                {
+                    this.Collection = new TfsTeamProjectCollection(this.CollectionUrl, this.Credential);
+                }//if
             }
             else
             {
-                this.Collection = new TfsTeamProjectCollection(this.CollectionUrl);
+                if (IsVSO(this.CollectionUrl))
+                {
+                    throw new SecurityException("VSO requires user and password");
+                }
+                else
+                {
+                    this.Collection = new TfsTeamProjectCollection(this.CollectionUrl);
+                }
             }
             this.Collection.EnsureAuthenticated();
+        }
+
+        private bool IsVSO(Uri uri)
+        {
+            // HACK hope they do not change this again
+            return uri.Host.EndsWith(".visualstudio.com", StringComparison.InvariantCultureIgnoreCase);
         }
 
         public TfsTeamProjectCollection Collection { get; protected set; }
