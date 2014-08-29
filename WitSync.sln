@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WitSyncEngine", "WitSyncEngine\WitSyncEngine.csproj", "{8F408D81-B633-4129-876B-001A16AE5D83}"
 EndProject
@@ -12,6 +12,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9A96570A-3F5D-4257-A6F8-23218CAE28EC}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{839A4A1F-2FBC-4C82-B3B2-660966A056F5}"
+	ProjectSection(SolutionItems) = preProject
+		docs\CommandLineOptions.md = docs\CommandLineOptions.md
+		docs\Mapping.md = docs\Mapping.md
 	EndProjectSection
 EndProject
 Global
@@ -43,5 +49,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{839A4A1F-2FBC-4C82-B3B2-660966A056F5} = {9A96570A-3F5D-4257-A6F8-23218CAE28EC}
 	EndGlobalSection
 EndGlobal

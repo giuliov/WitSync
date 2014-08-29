@@ -33,7 +33,7 @@ namespace WitSync
             eventSink = eventHandler;
         }
 
-        public int Sync(ProjectMapping mapping, WitMappingIndex index, bool testOnly, EngineOptions options)
+        public int Sync(ProjectMapping mapping, bool testOnly, EngineOptions options)
         {
             saveErrors = 0;
             testOnly |= options.HasFlag(EngineOptions.TestOnly);
@@ -61,18 +61,31 @@ namespace WitSync
             var sourceRunner = new QueryRunner(sourceWIStore, sourceConn.ProjectName);
             eventSink.ExecutingSourceQuery(mapping.SourceQuery, sourceConn);
             var sourceResult = sourceRunner.RunQuery(mapping.SourceQuery);
+            if (sourceResult == null)
+            {
+                eventSink.SourceQueryNotFound(mapping.SourceQuery);
+                return 3;
+            }
 
             var destRunner = new QueryRunner(destWIStore, destConn.ProjectName);
             eventSink.ExecutingDestinationQuery(mapping.DestinationQuery, destConn);
             var destResult = destRunner.RunQuery(mapping.DestinationQuery);
+            if (sourceResult == null)
+            {
+                eventSink.DestinationQueryNotFound(mapping.DestinationQuery);
+                return 4;
+            }
 
+            // use query data for more thorough checks
             var checker = new ProjectMappingChecker(sourceWIStore, sourceConn.ProjectName, destWIStore, destConn.ProjectName, eventSink);
             checker.Check(sourceResult, mapping, destResult);
             if (!checker.Passed)
                 // abort
                 return 2;
 
-            BuildIndex(index, destResult.WorkItems.Values, mapping);
+
+            // this needs also connection to target, better after query execution, so we have warm caches
+            var index = BuildIndex(destWIStore, destResult.WorkItems.Values, mapping);
 
             var mapper = new Mapper(sourceWIStore, sourceConn.ProjectName, destWIStore, destConn.ProjectName, mapping, index, eventSink);
             // configure options
@@ -190,25 +203,51 @@ namespace WitSync
             return failedWorkItems;
         }
 
-        private void BuildIndex(WitMappingIndex index, IEnumerable<WorkItem> existingTargetWorkItems, ProjectMapping mapping)
+        private WitMappingIndex BuildIndex(WorkItemStore destWIStore, IEnumerable<WorkItem> existingTargetWorkItems, ProjectMapping mapping)
         {
-            index.Clear();
-            foreach (var targetWI in existingTargetWorkItems)
+            var index = new WitMappingIndex();
+            if (!string.IsNullOrWhiteSpace(mapping.IndexFile))
             {
-                var originatingFieldMap = mapping.FindIdFieldForTargetWorkItemType(targetWI.Type.Name);
-                int originatingId = (int)targetWI.Fields[originatingFieldMap.Destination].Value;
-                index.Add(originatingId, targetWI);
-            }//for
+                if (!System.IO.File.Exists(mapping.IndexFile))
+                {
+                    //HACK on first run the file cannot exists, so create an empty one
+                    index = WitMappingIndex.CreateEmpty(mapping.IndexFile);
+                }
+                else
+                {
+                    index = WitMappingIndex.Load(mapping.IndexFile, destWIStore);
+                }//if
+            }
+            else
+            {
+                index.Clear();
+                foreach (var targetWI in existingTargetWorkItems)
+                {
+                    var originatingFieldMap = mapping.FindIdFieldForTargetWorkItemType(targetWI.Type.Name);
+                    int originatingId = (int)targetWI.Fields[originatingFieldMap.Destination].Value;
+                    index.Add(originatingId, targetWI);
+                }//for
+            }//if
+
+            return index;
         }
 
         private void UpdateIndex(WitMappingIndex index, IEnumerable<WorkItem> updatedWorkItems, ProjectMapping mapping)
         {
-            foreach (var dst in updatedWorkItems)
+            if (mapping.HasIndex)
             {
-                var originatingFieldMap = mapping.FindIdFieldForTargetWorkItemType(dst.Type.Name);
-                int originatingId = (int)dst.Fields[originatingFieldMap.Destination].Value;
-                index.Update(originatingId, dst);
-            }//for
+                index.Update(updatedWorkItems);
+                index.Save(mapping.IndexFile);
+            }
+            else
+            {
+                foreach (var dst in updatedWorkItems)
+                {
+                    var originatingFieldMap = mapping.FindIdFieldForTargetWorkItemType(dst.Type.Name);
+                    int originatingId = (int)dst.Fields[originatingFieldMap.Destination].Value;
+                    index.Update(originatingId, dst);
+                }//for
+            }
         }
     }
 }

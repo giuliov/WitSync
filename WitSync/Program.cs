@@ -13,7 +13,16 @@ namespace WitSync
     {
         static int Main(string[] args)
         {
-            int lastColumn = Console.BufferWidth - 2;
+            int lastColumn;
+
+            try
+            {
+                lastColumn = Console.BufferWidth - 2;
+            }
+            catch
+            {
+                lastColumn = 78;
+            }//try
 
             var options = new WitSyncCommandLineOptions();
 
@@ -33,7 +42,7 @@ namespace WitSync
                 return -1;
             }
 
-            // passed
+            // command line parsing succeeded
 
             try
             {
@@ -63,7 +72,7 @@ namespace WitSync
 
             TfsConnection source;
             TfsConnection dest;
-            Connect(options, out source, out dest);
+            MakeConnection(options, out source, out dest);
 
             var engine = new AreasAndIterationsSyncEngine(source, dest, eventHandler);
             return engine.Sync(options.TestOnly);
@@ -90,17 +99,15 @@ namespace WitSync
                 return 100 + mapping.ErrorsCount;
             }//if
 
-            var index = new WitMappingIndex();
-
             TfsConnection source;
             TfsConnection dest;
-            Connect(options, out source, out dest);
+            MakeConnection(options, out source, out dest);
 
             var engine = new WitSyncEngine(source, dest, eventHandler);
-            return engine.Sync(mapping, index, options.TestOnly, options.AdvancedOptions);
+            return engine.Sync(mapping, options.TestOnly, options.AdvancedOptions);
         }
 
-        private static void Connect(WitSyncCommandLineOptions options, out TfsConnection source, out TfsConnection dest)
+        private static void MakeConnection(WitSyncCommandLineOptions options, out TfsConnection source, out TfsConnection dest)
         {
             source = new TfsConnection()
             {

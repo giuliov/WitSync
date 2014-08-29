@@ -44,5 +44,7 @@ namespace WitSync
         void SaveFirstPassSavingNewWorkItems(List<WorkItem> newWorkItems);
         void SaveSecondPassUpdatingNewWorkItemsState(List<WorkItem> newWorkItems);
         void SaveThirdPassSavingUpdatedWorkItems(List<WorkItem> updatedWorkItems);
+        void SourceQueryNotFound(string queryName);
+        void DestinationQueryNotFound(string queryName);
     }
 }
