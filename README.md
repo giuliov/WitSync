@@ -114,4 +114,11 @@ Requires Visual Studio 2013 and Team Explorer 2013.
 
 ## Tested scenarios
 
-Successfully synced data from TFS 2010 to 2013 and 2013 to 2013.
+The combinations in the following table have been successfully tested.
+
+  Source     | Destination
+-------------|-------------
+TFS 2010 SP1 | TFS 2013.2
+TFS 2013.2   | TFS 2013.2
+TFS 2013.2   | VSO
+

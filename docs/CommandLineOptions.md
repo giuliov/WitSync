@@ -23,6 +23,8 @@ _Option_                               | _Description_
 
 `TestOnly` option tries action but does not save any change to target.
 
+Connecting to a VSO (Visual Studio Online) project requires the alternate credentials.
+
 
 ## Actions
 
