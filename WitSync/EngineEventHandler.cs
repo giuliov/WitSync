@@ -171,6 +171,13 @@ namespace WitSync
                 , match.SourceId, match.TargetId, match.LinkTypeId);
         }
 
+        public void LinkExists(WorkItemLinkInfo queryLink, WorkItemLink relationship)
+        {
+            this.Info("WorkitemLink source {0}->{1} (type {2}) already maps to {3}->{4} (type {5})."
+                , queryLink.SourceId, queryLink.TargetId, queryLink.LinkTypeId
+                , relationship.SourceId, relationship.TargetId, relationship.LinkTypeEnd.LinkType.ReferenceName);
+        }
+
         public void TargetMissingForLink(WorkItemLinkInfo queryLink, int parentId, int childId)
         {
             this.Info("Cannot add source WorkitemLink {0}->{1} (type {2}) as one of the target is not mapped."

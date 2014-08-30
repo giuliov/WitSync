@@ -71,15 +71,23 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Mapping_Scrum_2_Scrum_Index.xml">
+    <Content Include="Sample Mappings\Mapping_CMMI_2_Scrum_Index.xml">
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Mapping_Scrum_2_Scrum.xml">
+    <Content Include="Sample Mappings\Mapping_CMMI_2_Scrum_Index_flat.xml">
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Mapping_CMMI_2_Scrum.xml">
+    <Content Include="Sample Mappings\Mapping_Scrum_2_Scrum_Index.xml">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Sample Mappings\Mapping_Scrum_2_Scrum.xml">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Sample Mappings\Mapping_CMMI_2_Scrum.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>

@@ -33,6 +33,7 @@ namespace WitSync
         void ExistingWorkItemUpdated(WorkItem source, WorkItem target);
         void AnalyzingSourceLink(WorkItemLinkInfo queryLink);
         void LinkExists(WorkItemLinkInfo queryLink, WorkItemLinkInfo match);
+        void LinkExists(WorkItemLinkInfo queryLink, WorkItemLink relationship);
         void TargetMissingForLink(WorkItemLinkInfo queryLink, int parentId, int childId);
         void SyncFinished(int totalErrors);
         void InvalidRule(FieldMap rule);

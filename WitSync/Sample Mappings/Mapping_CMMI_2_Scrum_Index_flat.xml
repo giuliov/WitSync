@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Mapping>
+  <!-- MSF for CMMI Process Improvement -->
+  <SourceQuery>Shared Queries\AllWorkItems</SourceQuery>
+  <!-- Microsoft Visual Studio Scrum -->
+  <DestinationQuery>Shared Queries\MyDestinationQuery</DestinationQuery>
+  <IndexFile>index.xml</IndexFile>
+  <AreaMap>
+    <!-- map to root -->
+    <Area SourcePath="*" DestinationPath=""/>
+  </AreaMap>
+  <IterationMap>
+    <!-- map to root -->
+    <Iteration SourcePath="*" DestinationPath=""/>
+  </IterationMap>
+  <WorkItemMap SourceType="Feature" DestinationType="Feature">
+    <States>
+      <State Source="Proposed" Destination="New"/>
+      <State Source="Active" Destination="In Progress"/>
+      <State Source="Resolved" Destination="Done"/>
+      <State Source="Closed" Destination="Removed"/>
+    </States>
+    <!-- not mapped -->
+    <Field Source="Area ID" Destination=""/>
+    <Field Source="Iteration ID" Destination=""/>
+    <Field Source="Reason" Destination=""/>
+    <Field Source="State Change Date" Destination=""/>
+    <Field Source="Created Date" Destination=""/>
+    <Field Source="Changed Date" Destination=""/>
+    <!-- built-in functions -->
+    <Field Source="State" Destination="State" Translate="MapState" />
+    <Field Source="Area Path" Destination="Area Path" Translate="MapAreaPath"/>
+    <Field Source="Iteration Path" Destination="Iteration Path" Translate="MapIterationPath"/>
+    <!-- explicit mapping -->
+    <Field Source="Title" Destination="Title"/>
+    <Field Source="Description" Destination="Description"/>
+    <Field Source="Assigned To" Destination="Assigned To"/>
+  </WorkItemMap>
+  <WorkItemMap SourceType="Requirement" DestinationType="Product Backlog Item">
+    <States>
+      <State Source="Proposed" Destination="New"/>
+      <State Source="Active" Destination="Approved"/>
+    <!-- not working -->
+      <State Source="Active" Destination="Committed"/>
+      <State Source="Resolved" Destination="Done"/>
+      <State Source="Closed" Destination="Removed"/>
+    </States>
+    <!-- not mapped -->
+    <Field Source="Area ID" Destination=""/>
+    <Field Source="Iteration ID" Destination=""/>
+    <Field Source="Reason" Destination=""/>
+    <Field Source="State Change Date" Destination=""/>
+    <Field Source="Created Date" Destination=""/>
+    <Field Source="Changed Date" Destination=""/>
+    <!-- built-in functions -->
+    <Field Source="State" Destination="State" Translate="MapState" />
+    <Field Source="Area Path" Destination="Area Path" Translate="MapAreaPath"/>
+    <Field Source="Iteration Path" Destination="Iteration Path" Translate="MapIterationPath"/>
+    <!-- explicit mapping -->
+    <Field Source="Title" Destination="Title"/>
+    <Field Source="Description" Destination="Description"/>
+    <Field Source="Assigned To" Destination="Assigned To"/>
+  </WorkItemMap>
+  <WorkItemMap SourceType="Task" DestinationType="Task">
+    <States>
+      <State Source="Proposed" Destination="To Do"/>
+      <State Source="Active" Destination="In Progress"/>
+      <State Source="Resolved" Destination="Done"/>
+      <State Source="Closed" Destination="Removed"/>
+    </States>
+    <!-- not mapped -->
+    <Field Source="Area ID" Destination=""/>
+    <Field Source="Iteration ID" Destination=""/>
+    <Field Source="Reason" Destination=""/>
+    <Field Source="State Change Date" Destination=""/>
+    <Field Source="Created Date" Destination=""/>
+    <Field Source="Changed Date" Destination=""/>
+    <!-- built-in functions -->
+    <Field Source="State" Destination="State" Translate="MapState" />
+    <Field Source="Area Path" Destination="Area Path" Translate="MapAreaPath"/>
+    <Field Source="Iteration Path" Destination="Iteration Path" Translate="MapIterationPath"/>
+    <Field Source="*" Destination="*"/>
+  </WorkItemMap>
+  <WorkItemMap SourceType="Test Case" DestinationType="Test Case">
+    <!-- not mapped -->
+    <Field Source="Area ID" Destination=""/>
+    <Field Source="Iteration ID" Destination=""/>
+    <Field Source="Reason" Destination=""/>
+    <Field Source="State Change Date" Destination=""/>
+    <Field Source="Created Date" Destination=""/>
+    <Field Source="Changed Date" Destination=""/>
+    <!-- built-in functions -->
+    <Field Source="Area Path" Destination="Area Path" Translate="MapAreaPath"/>
+    <Field Source="Iteration Path" Destination="Iteration Path" Translate="MapIterationPath"/>
+    <Field Source="*" Destination="*"/>
+  </WorkItemMap>
+  <WorkItemMap SourceType="Shared Steps" DestinationType="Shared Steps">
+    <!-- not mapped -->
+    <Field Source="Area ID" Destination=""/>
+    <Field Source="Iteration ID" Destination=""/>
+    <Field Source="Reason" Destination=""/>
+    <Field Source="State Change Date" Destination=""/>
+    <Field Source="Created Date" Destination=""/>
+    <Field Source="Changed Date" Destination=""/>
+    <!-- built-in functions -->
+    <Field Source="Area Path" Destination="Area Path" Translate="MapAreaPath"/>
+    <Field Source="Iteration Path" Destination="Iteration Path" Translate="MapIterationPath"/>
+    <Field Source="*" Destination="*"/>
+  </WorkItemMap>
+</Mapping>

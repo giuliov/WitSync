@@ -261,7 +261,7 @@ namespace WitSync
                     int childId = index.GetIdFromSourceId(queryLink.TargetId);
                     if (parentId > 0 && childId > 0)
                     {
-                        // assume that if missing from query, then must be added
+                        // assume that if missing from query, then should be added
                         var match = destResult.Links.FirstOrDefault(l => l.LinkTypeId == linkTypeIdToMatch && l.SourceId == parentId && l.TargetId == childId);
                         if (match == default(WorkItemLinkInfo))
                         {
@@ -270,11 +270,19 @@ namespace WitSync
                             Debug.Assert(parent != null);
                             var lte = parentChildlinkType.ForwardEnd;
                             var relationship = new WorkItemLink(lte, parentId, childId);
-                            parent.WorkItemLinks.Add(relationship);
-                            //track
-                            changedLinks.Add(relationship);
+                            // FIX a flat query do not materialize links, but they are present on the workitem object
+                            if (!parent.WorkItemLinks.Contains(relationship))
+                            {
+                                parent.WorkItemLinks.Add(relationship);
+                                //track
+                                changedLinks.Add(relationship);
 
-                            this.eventSink.MakingNewLink(relationship);
+                                this.eventSink.MakingNewLink(relationship);
+                            }
+                            else
+                            {
+                                this.eventSink.LinkExists(queryLink, relationship);
+                            }
                         }
                         else
                         {
