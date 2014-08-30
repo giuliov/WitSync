@@ -99,6 +99,12 @@ namespace WitSync
                 return 100 + mapping.ErrorsCount;
             }//if
 
+            if (!string.IsNullOrEmpty(options.IndexFile))
+            {
+                // if specified both in the mapping and on the command line, latter wins
+                mapping.IndexFile = options.IndexFile;
+            }
+
             TfsConnection source;
             TfsConnection dest;
             MakeConnection(options, out source, out dest);

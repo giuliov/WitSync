@@ -206,7 +206,7 @@ namespace WitSync
         private WitMappingIndex BuildIndex(WorkItemStore destWIStore, IEnumerable<WorkItem> existingTargetWorkItems, ProjectMapping mapping)
         {
             var index = new WitMappingIndex();
-            if (!string.IsNullOrWhiteSpace(mapping.IndexFile))
+            if (mapping.HasIndex)
             {
                 if (!System.IO.File.Exists(mapping.IndexFile))
                 {

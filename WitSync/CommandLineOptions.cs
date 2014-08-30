@@ -11,7 +11,7 @@ namespace WitSync
     [CommandLineManager(
         ApplicationName = "WitSync",
         Copyright = "Copyright (c) Giulio Vian",
-        Version = "0.2.2.0",
+        Version = "0.2.3.0",
         EnabledOptionStyles = OptionStyles.Windows | OptionStyles.ShortUnix | OptionStyles.LongUnix)]
     public class WitSyncCommandLineOptions
     {
@@ -65,6 +65,10 @@ namespace WitSync
             , MinOccurs = 1
             , Description = "Mapping file, e.g. MyMappingFile.xml")]
         public string MappingFile { get; set; }
+        [CommandLineOption(Name = "i", Aliases = "index indexFile"
+            , MinOccurs = 1
+            , Description = "Index file, e.g. MyIndex.xml")]
+        public string IndexFile { get; set; }
 
         [CommandLineOption(Name = "v", Aliases = "verbose"
             , BoolFunction = BoolFunction.TrueIfPresent
