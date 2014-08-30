@@ -14,6 +14,8 @@ namespace WitSync
     {
         public IDictionary<int,WorkItem> WorkItems;
         public IList<WorkItemLinkInfo> Links;
+        // this is interesting when reasoning on links
+        public QueryType QueryType;
     }
 
     // derived from http://www.colinsalmcorner.com/post/using-the-tfs-api-to-display-results-of-a-hierarchical-work-item-query
@@ -65,7 +67,7 @@ namespace WitSync
                         dict.Add(k.TargetId, WorkItemStore.GetWorkItem(k.TargetId));
                 }
             }
-            return new QueryResult() { WorkItems = dict, Links = list };
+            return new QueryResult() { WorkItems = dict, Links = list, QueryType = queryDef.QueryType };
         }
 
         private static QueryDefinition FindQuery(string queryPath, QueryFolder queryFolder)
