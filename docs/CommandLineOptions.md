@@ -5,21 +5,22 @@ Syntax is
 WitSync.exe -a <action> -c <source_collection_url> -p <source_project_name> -d <destination_collection_url> -q <destination_project_name> -m <path_to_mapping_file> [-v] [-t] [_advanced_options_]
 ```
 
-_Option_                               | _Description_
----------------------------------------|--------------------------------
-   -a, -action                         |   Action, one of: SyncWorkItems,SyncAreasAndIterations.
-   -c, -sourceCollection               |   Source Collection Url, e.g. http://localhost:8080/tfs/DefaultCollection
-   -d, -destinationCollection, -targetCollection |   Destination Collection Url, e.g. http://localhost:8080/tfs/DefaultCollection
-   -dp, -destinationPassword, -targetPassword |   Password for Destination user
-   -du, -destinationUser, -targetUser  |   Username connecting to Destination
-   -m, -map, -mapping, -mappingFile    |   Mapping file, e.g. MyMappingFile.xml
-   -p, -sourceProject                  |   Source Project Name
-   -q, -destinationProject, -targetProject |   Destination Project Name
-   -sp, -sourcePassword                |   Password for Source user
-   -su, -sourceUser                    |   Username connecting to Source
-   -t, -test, -trial                   |   Test and does not save changes to target
-   -v, -verbose                        |   Prints detailed output
-   -Help                               |   Displays help text
+_Option_                                        | _Description_
+------------------------------------------------|--------------------------------
+  -a, -action                                   | Action, one of: SyncWorkItems,SyncAreasAndIterations.
+  -c, -sourceCollection                         | Source Collection Url, e.g. http://localhost:8080/tfs/DefaultCollection
+  -d, -destinationCollection, -targetCollection | Destination Collection Url, e.g. http://localhost:8080/tfs/DefaultCollection
+  -dp, -destinationPassword, -targetPassword    | Password for Destination user
+  -du, -destinationUser, -targetUser            | Username connecting to Destination
+  -m, -map, -mapping, -mappingFile              | Mapping file, e.g. MyMappingFile.xml
+  -i, -index, -indexFile                        | Index file, e.g. MyIndex.xml
+  -p, -sourceProject                            | Source Project Name
+  -q, -destinationProject, -targetProject       | Destination Project Name
+  -sp, -sourcePassword                          | Password for Source user
+  -su, -sourceUser                              | Username connecting to Source
+  -t, -test, -trial                             | Test and does not save changes to target
+  -v, -verbose                                  | Prints detailed output
+  -Help                                         | Displays help text
 
 `TestOnly` option tries action but does not save any change to target.
 

@@ -59,6 +59,7 @@ When you specify an _Index_ file
 <IndexFile>relative_or_absolute_path_to_file</IndexFile>
 ```
 you get the maximum freedom in mapping work item schemas. WitSync looks up the Index file to know if a work item has a correspondent on the destination project; if not found, a new work item is created. On a match, the existing work item on the target project is updated.
+You can specify the file on the command line, and this takes precedence and the element in the mapping file is optional.
 
 Make sure to properly backup this file, otherwise the tool will re-create new workitems instead of updating the existing  workitems.
 
