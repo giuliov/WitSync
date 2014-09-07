@@ -58,7 +58,7 @@ namespace WitSync
             }
             catch (Exception ex)
             {
-                EventHandlerBase.GlobalError("Internal error: {0}", ex.Message);
+                EventHandlerBase.GlobalError("Internal error: {0}\r\n{1}", ex.Message, ex.StackTrace);
                 return -99;
             }//try
 
