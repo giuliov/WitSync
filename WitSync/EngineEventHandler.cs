@@ -238,5 +238,30 @@ namespace WitSync
         {
             this.Error("Destination query {0} not found.", queryName);
         }
+
+        public void AnalyzingSourceLink(WorkItemLink sourceLink)
+        {
+            this.Info("Analyzing source WorkitemLink {0}->{1} (type {2})."
+                , sourceLink.SourceId, sourceLink.TargetId, sourceLink.LinkTypeEnd.Name);
+        }
+
+        public void LinkExists(WorkItemLink sourceLink, WorkItemLink relationship)
+        {
+            this.Info("WorkitemLink source {0}->{1} (type {2}) already maps to {3}->{4} (type {5})."
+                , sourceLink.SourceId, sourceLink.TargetId, sourceLink.LinkTypeEnd.Name
+                , relationship.SourceId, relationship.TargetId, relationship.LinkTypeEnd.LinkType.ReferenceName);
+        }
+
+        public void TargetMissingForLink(WorkItemLink sourceLink, int parentId, int childId)
+        {
+            this.Info("Cannot add source WorkitemLink {0}->{1} (type {2}) as one of the target is not mapped."
+                , sourceLink.SourceId, sourceLink.TargetId, sourceLink.LinkTypeEnd.Name);
+        }
+
+        public void SkippingLink(WorkItemLink sourceLink)
+        {
+            this.Info("WorkitemLink {0}->{1} (type {2}) does not match any rule."
+                , sourceLink.SourceId, sourceLink.TargetId, sourceLink.LinkTypeEnd.Name);
+        }
     }
 }

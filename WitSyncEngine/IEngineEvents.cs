@@ -47,5 +47,13 @@ namespace WitSync
         void SaveThirdPassSavingUpdatedWorkItems(List<WorkItem> updatedWorkItems);
         void SourceQueryNotFound(string queryName);
         void DestinationQueryNotFound(string queryName);
+
+        void AnalyzingSourceLink(WorkItemLink sourceLink);
+
+        void LinkExists(WorkItemLink sourceLink, WorkItemLink relationship);
+
+        void TargetMissingForLink(WorkItemLink sourceLink, int parentId, int childId);
+
+        void SkippingLink(WorkItemLink sourceLink);
     }
 }
