@@ -43,6 +43,8 @@ namespace WitSync
             }
 
             // command line parsing succeeded
+            if (options.TestOnly)
+                Console.WriteLine("** TEST MODE: no data will be written on destination **");
 
             try
             {
