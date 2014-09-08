@@ -87,16 +87,18 @@ namespace WitSync
             // this needs also connection to target, better after query execution, so we have warm caches
             var index = BuildIndex(destWIStore, destResult.WorkItems.Values, mapping);
 
-            var mapper = new Mapper(sourceWIStore, sourceConn.ProjectName, destWIStore, destConn.ProjectName, mapping, index, eventSink);
+            var context = new SyncContext(sourceWIStore, sourceConn.ProjectName, destWIStore, destConn.ProjectName, mapping, index, eventSink);
+
+            var workItemMapper = new WorkItemMapper(context);
             // configure options
-            mapper.UseEditableProperty = options.HasFlag(EngineOptions.UseEditableProperty);
-            mapper.OpenTargetWorkItem = options.HasFlag(EngineOptions.OpenTargetWorkItem);
-            mapper.PartialOpenTargetWorkItem = options.HasFlag(EngineOptions.PartialOpenTargetWorkItem);
+            workItemMapper.UseEditableProperty = options.HasFlag(EngineOptions.UseEditableProperty);
+            workItemMapper.OpenTargetWorkItem = options.HasFlag(EngineOptions.OpenTargetWorkItem);
+            workItemMapper.PartialOpenTargetWorkItem = options.HasFlag(EngineOptions.PartialOpenTargetWorkItem);
 
             eventSink.SyncStarted();
             List<WorkItem> newWorkItems;
             List<WorkItem> updatedWorkItems;
-            mapper.MapWorkItems(sourceResult, destResult, out newWorkItems, out updatedWorkItems);
+            workItemMapper.MapWorkItems(sourceResult, destResult, out newWorkItems, out updatedWorkItems);
 
             // from http://social.msdn.microsoft.com/Forums/vstudio/en-US/0cbc378b-09ad-4899-865d-b418aecb8375/work-item-links-error-message-unexplained
             // "It happens when you add a link when you are creating a new work item. If you add the link after the new work item is saved then it works OK."
@@ -104,16 +106,19 @@ namespace WitSync
             var validWorkItems = new List<WorkItem>();
             if (options.HasFlag(EngineOptions.CreateThenUpdate))
             {
+                // uncommon path
                 eventSink.UsingThreePassSavingAlgorithm();
                 SaveWorkItems3Passes(mapping, index, testOnly, destWIStore, newWorkItems, updatedWorkItems, validWorkItems);
             }
             else
             {
+                // normal path
                 var changedWorkItems = newWorkItems.Concat(updatedWorkItems).ToList();
                 validWorkItems.AddRange(SaveWorkItems(mapping, index, destWIStore, changedWorkItems, testOnly));
             }//if
 
-            var changedLinks = mapper.MapLinks(sourceResult, destResult, validWorkItems);
+            var linkMapper = new LinkMapper(context);
+            var changedLinks = linkMapper.MapLinks(sourceResult.WorkItems.Values, validWorkItems);
 
             eventSink.SavingLinks(changedLinks, validWorkItems);
             SaveLinks(mapping, index, destWIStore, validWorkItems, testOnly);

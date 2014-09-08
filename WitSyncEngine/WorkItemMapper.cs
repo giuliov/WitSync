@@ -8,29 +8,17 @@ using System.Threading.Tasks;
 
 namespace WitSync
 {
-    class Mapper
+    class WorkItemMapper : SyncContext
     {
-        protected IEngineEvents eventSink;
-        private WorkItemStore sourceWIStore;
-        private WorkItemStore destWIStore;
-        private ProjectMapping mapping;
-        private WitMappingIndex index;
-        private string sourceProjectName;
-        private string destProjectName;
         private MapperFunctions functions;
 
-        internal Mapper(WorkItemStore sourceWIStore, string sourceProjectName, WorkItemStore destWIStore, string destProjectName, ProjectMapping mapping, WitMappingIndex index, IEngineEvents eventSink)
+        internal WorkItemMapper(SyncContext context)
+            : base(context)
         {
-            this.sourceWIStore = sourceWIStore;
-            this.sourceProjectName = sourceProjectName;
-            this.destWIStore = destWIStore;
-            this.destProjectName = destProjectName;
-            this.mapping = mapping;
-            this.index = index;
-            this.eventSink = eventSink;
-            functions = new MapperFunctions(eventSink, sourceProjectName, destProjectName);
+            functions = new MapperFunctions(this.EventSink, this.SourceProjectName, this.DestinationProjectName);
+
             // make sure we have needed indexes
-            this.mapping.RebuildMappingIndexes();
+            this.Mapping.RebuildMappingIndexes();
 
             // explicit default
             this.UseEditableProperty = false;
@@ -60,12 +48,12 @@ namespace WitSync
                     if (newWI != null)
                     {
                         newWorkItems.Add(newWI);
-                        index.Add(sourceWorkItem.Id, newWI);
+                        this.Index.Add(sourceWorkItem.Id, newWI);
                     }
                 }
                 else
                 {
-                    var oldWI = index.GetWorkItemFromSourceId(sourceWorkItem.Id);
+                    var oldWI = this.Index.GetWorkItemFromSourceId(sourceWorkItem.Id);
                     updatedWorkItems.Add(UpdateWorkItem(sourceWorkItem, oldWI));
                 }//if
             }//for
@@ -73,24 +61,24 @@ namespace WitSync
 
         private bool IsNewWorkItemId(int sourceId)
         {
-            return !index.IsSourceIdPresent(sourceId);
+            return !this.Index.IsSourceIdPresent(sourceId);
         }
 
         protected virtual WorkItem NewWorkItem(WorkItem source)
         {
-            this.eventSink.MakingNewWorkItem(source);
+            this.EventSink.MakingNewWorkItem(source);
 
-            var map = mapping.FindWorkItemTypeMapping(source.Type.Name);
+            var map = this.Mapping.FindWorkItemTypeMapping(source.Type.Name);
             if (map == null)
             {
-                eventSink.NoWorkItemTypeMapping(source);
+                this.EventSink.NoWorkItemTypeMapping(source);
                 return null;
             }
-            var targetType = destWIStore.Projects[this.destProjectName].WorkItemTypes[map.DestinationType];
+            var targetType = this.DestinationStore.Projects[this.DestinationProjectName].WorkItemTypes[map.DestinationType];
 
             WorkItem target = new WorkItem(targetType);
 
-            if (!mapping.HasIndex)
+            if (!this.Mapping.HasIndex)
             {
                 target.Fields[map.IDField.Destination].Value = source.Id;
             }
@@ -104,11 +92,11 @@ namespace WitSync
 
         protected virtual WorkItem UpdateWorkItem(WorkItem source, WorkItem target)
         {
-            this.eventSink.UpdatingExistingWorkItem(source,target);
+            this.EventSink.UpdatingExistingWorkItem(source,target);
 
-            var map = mapping.FindWorkItemTypeMapping(source.Type.Name);
+            var map = this.Mapping.FindWorkItemTypeMapping(source.Type.Name);
             Debug.Assert(map.DestinationType == target.Type.Name);
-            if (!mapping.HasIndex)
+            if (!this.Mapping.HasIndex)
             {
                 Debug.Assert(target.Fields[map.IDField.Destination].Value.ToString() == source.Id.ToString());
             }
@@ -117,7 +105,7 @@ namespace WitSync
 
             Validate(target);
 
-            this.eventSink.ExistingWorkItemUpdated(source, target);
+            this.EventSink.ExistingWorkItemUpdated(source, target);
             return target;
         }
 
@@ -141,7 +129,7 @@ namespace WitSync
                 if (rule == null)
                 {
                     // if no rule -> skip field
-                    eventSink.NoRuleFor(source, fromField.Name);
+                    this.EventSink.NoRuleFor(source, fromField.Name);
                     continue;
                 }
                 string targetFieldName
@@ -193,18 +181,18 @@ namespace WitSync
                             var translatorMethod = functions.GetType().GetMethod(rule.Translate, flags);
                             if (translatorMethod == null)
                             {
-                                eventSink.TranslatorFunctionNotFoundUsingDefault(rule);
+                                this.EventSink.TranslatorFunctionNotFoundUsingDefault(rule);
                                 // default: no translation
                                 toField.Value = fromField.Value;
                             }
                             else
                             {
-                                toField.Value = translatorMethod.Invoke(functions, new object[] { rule, map, mapping, fromField.Value });
+                                toField.Value = translatorMethod.Invoke(functions, new object[] { rule, map, this.Mapping, fromField.Value });
                             }
                         }
                         else
                         {
-                            eventSink.InvalidRule(rule);
+                            this.EventSink.InvalidRule(rule);
                             // crossing fingers
                             toField.Value = fromField.Value;
                         }//if
@@ -236,67 +224,9 @@ namespace WitSync
             var result = workItem.Validate();
             foreach (Field item in result)
             {
-                eventSink.ValidationError(item);
+                this.EventSink.ValidationError(item);
             }
             return result.Count == 0;
-        }
-
-        internal List<WorkItemLink> MapLinks(QueryResult sourceResult, QueryResult destResult, IEnumerable<WorkItem> validWorkItems)
-        {
-            var changedLinks = new List<WorkItemLink>();
-
-            // get the link type for hierarchical relationships
-            var parentChildlinkType = sourceWIStore.WorkItemLinkTypes[CoreLinkTypeReferenceNames.Hierarchy];
-            var linkTypeIdToMatch = parentChildlinkType.ForwardEnd.Id;
-            // check that all source links are included
-            foreach (var queryLink in sourceResult.Links)
-            {
-                // only Parent-Child 
-                if (queryLink.LinkTypeId == linkTypeIdToMatch && queryLink.SourceId != linkTypeIdToMatch)
-                {
-                    this.eventSink.AnalyzingSourceLink(queryLink);
-
-                    // Parent-Child: we must be sure that link.SourceId and link.TargetId have a link in destination project
-                    int parentId = index.GetIdFromSourceId(queryLink.SourceId);
-                    int childId = index.GetIdFromSourceId(queryLink.TargetId);
-                    if (parentId > 0 && childId > 0)
-                    {
-                        // assume that if missing from query, then should be added
-                        var match = destResult.Links.FirstOrDefault(l => l.LinkTypeId == linkTypeIdToMatch && l.SourceId == parentId && l.TargetId == childId);
-                        if (match == default(WorkItemLinkInfo))
-                        {
-                            // not found
-                            var parent = validWorkItems.Where(w => w.Id == parentId).FirstOrDefault();
-                            Debug.Assert(parent != null);
-                            var lte = parentChildlinkType.ForwardEnd;
-                            var relationship = new WorkItemLink(lte, parentId, childId);
-                            // FIX a flat query do not materialize links, but they are present on the workitem object
-                            if (!parent.WorkItemLinks.Contains(relationship))
-                            {
-                                parent.WorkItemLinks.Add(relationship);
-                                //track
-                                changedLinks.Add(relationship);
-
-                                this.eventSink.MakingNewLink(relationship);
-                            }
-                            else
-                            {
-                                this.eventSink.LinkExists(queryLink, relationship);
-                            }
-                        }
-                        else
-                        {
-                            this.eventSink.LinkExists(queryLink, match);
-                        }
-                    }
-                    else
-                    {
-                        this.eventSink.TargetMissingForLink(queryLink, parentId, childId);
-                    }
-                }
-            }//for
-
-            return changedLinks;
         }
     }
 }

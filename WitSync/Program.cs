@@ -43,6 +43,8 @@ namespace WitSync
             }
 
             // command line parsing succeeded
+            if (options.TestOnly)
+                Console.WriteLine("** TEST MODE: no data will be written on destination **");
 
             try
             {
@@ -58,7 +60,7 @@ namespace WitSync
             }
             catch (Exception ex)
             {
-                EventHandlerBase.GlobalError("Internal error: {0}", ex.Message);
+                EventHandlerBase.GlobalError("Internal error: {0}\r\n{1}", ex.Message, ex.StackTrace);
                 return -99;
             }//try
 

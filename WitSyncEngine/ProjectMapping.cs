@@ -121,6 +121,17 @@ namespace WitSync
         }
     }
 
+    [XmlType("LinkType")]
+    public class LinkTypeMap
+    {
+        [XmlAttribute]
+        public string SourceType;
+        [XmlAttribute]
+        public string DestinationType;
+
+        public bool IsWildcard { get { return SourceType == "*"; } }
+    }
+
     [XmlRoot("Mapping")]
     public class ProjectMapping
     {
@@ -136,6 +147,8 @@ namespace WitSync
         public IterationMap[] IterationMap;
         [XmlElement("WorkItemMap")]
         public WorkItemMap[] WorkItemMappings;
+        [XmlArray]
+        public LinkTypeMap[] LinkTypeMap;
 
         public bool HasIndex { get { return !string.IsNullOrWhiteSpace(this.IndexFile); } }
 
@@ -148,6 +161,17 @@ namespace WitSync
         public WorkItemMap FindWorkItemTypeMapping(string sourceWorkItemType)
         {
             return WorkItemMappings.Where(m => m.SourceType == sourceWorkItemType).FirstOrDefault();
+        }
+
+        public LinkTypeMap FindLinkRule(string sourceLinkTypeName)
+        {
+            var x = LinkTypeMap.Where(lt => lt.SourceType == sourceLinkTypeName).FirstOrDefault();
+            if (x == null)
+            {
+                // wildcard ?
+                x = LinkTypeMap.Where(lt => lt.IsWildcard).FirstOrDefault();
+            }
+            return x;
         }
 
         public AreaMap FindExactMappedAreaPath(string path)

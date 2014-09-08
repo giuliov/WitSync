@@ -50,8 +50,17 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="UnitTest1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\SourceData.xlsx" />
+    <None Include="Scripts\restartCollection.ps1" />
+    <None Include="Scripts\common.ps1" />
+    <None Include="Scripts\applySnapshot.ps1" />
+    <None Include="Scripts\snapshotCollection.ps1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Database\" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

@@ -11,7 +11,7 @@ namespace WitSync
     [CommandLineManager(
         ApplicationName = "WitSync",
         Copyright = "Copyright (c) Giulio Vian",
-        Version = "0.2.3.0",
+        Version = "0.3.0.0",
         EnabledOptionStyles = OptionStyles.Windows | OptionStyles.ShortUnix | OptionStyles.LongUnix)]
     public class WitSyncCommandLineOptions
     {
@@ -84,15 +84,15 @@ namespace WitSync
         public bool Help = false;
 
         // Advanced options
-        [CommandLineOption(BoolFunction = BoolFunction.FalseIfPresent
-            , Description = "Enable Rule validation")]
-        public bool CheckWorkItemStoreRules { get; set; }
+        [CommandLineOption(BoolFunction = BoolFunction.TrueIfPresent
+            , Description = "Disable Rule validation")]
+        public bool BypassWorkItemValidation { get; set; }
 
-        [CommandLineOption(BoolFunction = BoolFunction.FalseIfPresent
+        [CommandLineOption(BoolFunction = BoolFunction.TrueIfPresent
             , Description = "Algorithm used to determine when a field is updatable.")]
         public bool UseHeuristicForFieldUpdatability { get; set; }
 
-        [CommandLineOption(BoolFunction = BoolFunction.FalseIfPresent
+        [CommandLineOption(BoolFunction = BoolFunction.TrueIfPresent
             , Description = "Use [WorkItem.Open] Method to make the WorkItem updatable.")]
         public bool DoNotOpenTargetWorkItem { get; set; }
 
@@ -110,7 +110,7 @@ namespace WitSync
             {
                 WitSyncEngine.EngineOptions result = 0;
 
-                if (!CheckWorkItemStoreRules)
+                if (BypassWorkItemValidation)
                     result |= WitSyncEngine.EngineOptions.BypassWorkItemStoreRules;
                 if (!UseHeuristicForFieldUpdatability)
                     result |= WitSyncEngine.EngineOptions.UseEditableProperty;

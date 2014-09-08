@@ -44,5 +44,5 @@ _Option_                               | _Description_
    -DoNotOpenTargetWorkItem            |   Do not call [WorkItem.Open](http://msdn.microsoft.com/en-us/library/microsoft.teamfoundation.workitemtracking.client.workitem.open.aspx) Method to make the WorkItem updatable. This 
    -PartialOpenTargetWorkItem          |   Use [WorkItem.PartialOpen] Method to make the WorkItem updatable.
    -UseHeuristicForFieldUpdatability   |   Algorithm used to determine when a field is updatable. By default the tool checks the [Field.IsEditable](http://msdn.microsoft.com/en-us/library/microsoft.teamfoundation.workitemtracking.client.field.iseditable.aspx) Property.
-   -CheckWorkItemStoreRules            |   Enable Rule validation
+   -BypassWorkItemValidation           |   Disable Rule validation
    -CreateThenUpdate                   |   WorkItems missing from the target are first added in the initial state specified by `InitalStateOnDestination`, then updated to reflect the state of the source.
