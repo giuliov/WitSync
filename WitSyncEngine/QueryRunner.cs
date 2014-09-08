@@ -31,16 +31,31 @@ namespace WitSync
             TeamProjectName = teamProjectName;
         }
 
-        public QueryResult RunQuery(string queryPath)
+        public QueryResult RunQuery(string queryPathOrText)
         {
-            var rootQueryFolder = WorkItemStore.Projects[TeamProjectName].QueryHierarchy as QueryFolder;
-            var queryDef = FindQuery(queryPath, rootQueryFolder);
-            // query not found
-            if (queryDef == null)
-                return null;
+            string queryText = string.Empty;
+            var queryType = QueryType.Invalid;
+
+            if (queryPathOrText.StartsWith("SELECT ", StringComparison.InvariantCultureIgnoreCase))
+            {
+                // explicit query
+                queryText = queryPathOrText;
+                queryType = QueryType.List;
+            }
+            else
+            {
+                // name of existing query definition
+                var rootQueryFolder = WorkItemStore.Projects[TeamProjectName].QueryHierarchy as QueryFolder;
+                var queryDef = FindQuery(queryPathOrText, rootQueryFolder);
+                // query not found
+                if (queryDef == null)
+                    return null;
+                queryText = queryDef.QueryText;
+                queryType = queryDef.QueryType;
+            }
 
             // get the query
-            var query = new Query(WorkItemStore, queryDef.QueryText, GetParamsDictionary());
+            var query = new Query(WorkItemStore, queryText, GetParamsDictionary());
 
             // get the link types
             var linkTypes = new List<WorkItemLinkType>(WorkItemStore.WorkItemLinkTypes);
@@ -48,7 +63,7 @@ namespace WitSync
             // run the query
             var dict = new Dictionary<int, WorkItem>();
             var list = new List<WorkItemLinkInfo>();
-            if (queryDef.QueryType == QueryType.List)
+            if (queryType == QueryType.List)
             {
                 foreach (WorkItem wi in query.RunQuery())
                 {
@@ -67,7 +82,7 @@ namespace WitSync
                         dict.Add(k.TargetId, WorkItemStore.GetWorkItem(k.TargetId));
                 }
             }
-            return new QueryResult() { WorkItems = dict, Links = list, QueryType = queryDef.QueryType };
+            return new QueryResult() { WorkItems = dict, Links = list, QueryType = queryType };
         }
 
         private static QueryDefinition FindQuery(string queryPath, QueryFolder queryFolder)
