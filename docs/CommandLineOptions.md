@@ -2,7 +2,7 @@
 
 Syntax is
 ```Batchfile
-WitSync.exe -a <action> -c <source_collection_url> -p <source_project_name> -d <destination_collection_url> -q <destination_project_name> -m <path_to_mapping_file> [-v] [-t] [_advanced_options_]
+WitSync.exe -a <action> -c <source_collection_url> -p <source_project_name> -d <destination_collection_url> -q <destination_project_name> [-m <path_to_mapping_file>] [-v] [-t] [_advanced_options_]
 ```
 
 _Option_                                        | _Description_

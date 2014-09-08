@@ -91,15 +91,25 @@ namespace WitSync
         {
             var eventHandler = new EngineEventHandler(options.Verbose);
 
-            var mapping = ProjectMapping.LoadFrom(options.MappingFile);
-            if (mapping.ErrorsCount > 0)
+            ProjectMapping mapping;
+            if (System.IO.File.Exists(options.MappingFile))
             {
-                foreach (var err in mapping.ErrorMessage)
+                mapping = ProjectMapping.LoadFrom(options.MappingFile);
+                if (mapping.ErrorsCount > 0)
                 {
-                    eventHandler.MappingGenericValidationError(err, null);
-                }
-                return 100 + mapping.ErrorsCount;
-            }//if
+                    foreach (var err in mapping.ErrorMessage)
+                    {
+                        eventHandler.MappingGenericValidationError(err, null);
+                    }
+                    return 100 + mapping.ErrorsCount;
+                }//if
+            }
+            else
+            {
+                eventHandler.MappingFileNotFoundAssumeDefaults(options.MappingFile);
+                // assume
+                mapping = new ProjectMapping();
+            }
 
             if (!string.IsNullOrEmpty(options.IndexFile))
             {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.TeamFoundation.WorkItemTracking.Client;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -281,6 +282,41 @@ namespace WitSync
                 }
             };
             mapping.SaveTo(path);
+        }
+
+        internal void SetDefaults(TfsConnection sourceConn, WorkItemStore sourceWIStore, TfsConnection destConn, WorkItemStore destWIStore)
+        {
+            // add defaults
+            this.SourceQuery = this.SourceQuery ?? string.Format("SELECT id FROM workitems WHERE [Team Project]='{0}'", sourceConn.ProjectName);
+            this.DestinationQuery = this.DestinationQuery ?? string.Format("SELECT id FROM workitems WHERE [Team Project]='{0}'", destConn.ProjectName);
+            this.AreaMap = this.AreaMap ?? new AreaMap[] { new AreaMap() { SourcePath = "*", DestinationPath = "*" } };
+            this.IterationMap = this.IterationMap ?? new IterationMap[] { new IterationMap() { SourcePath = "*", DestinationPath = "*" } };
+            if (this.WorkItemMappings == null)
+            {
+                var mappings = new List<WorkItemMap>();
+                foreach (WorkItemType wit in sourceWIStore.Projects[sourceConn.ProjectName].WorkItemTypes)
+                {
+                    mappings.Add(new WorkItemMap()
+                    {
+                        SourceType = wit.Name,
+                        DestinationType = wit.Name,
+                        Fields = new FieldMap[] {
+                            // HACK these names are OK for Scrum, but ...
+                            new FieldMap() { Source = "Area ID", Destination = "" },
+                            new FieldMap() { Source = "Area Path", Destination = "Area Path", Translate = "MapAreaPath"},
+                            new FieldMap() { Source = "Iteration ID", Destination = "" },
+                            new FieldMap() { Source = "Iteration Path", Destination = "Iteration Path", Translate = "MapIterationPath" },
+                            new FieldMap() { Source = "Reason", Destination = "" },
+                            new FieldMap() { Source = "State Change Date", Destination = "" },
+                            new FieldMap() { Source = "Created Date", Destination = "" },
+                            new FieldMap() { Source = "Changed Date", Destination = "" },
+                            new FieldMap() { Source = "*", Destination = "*" }
+                        }
+                    });
+                }//for
+                this.WorkItemMappings = mappings.ToArray();
+            }
+            this.LinkTypeMap = this.LinkTypeMap ?? new LinkTypeMap[] { new LinkTypeMap() { SourceType = "*", DestinationType = "*" } };
         }
     }
 }

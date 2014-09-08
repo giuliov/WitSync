@@ -11,7 +11,7 @@ namespace WitSync
     [CommandLineManager(
         ApplicationName = "WitSync",
         Copyright = "Copyright (c) Giulio Vian",
-        Version = "0.3.0.0",
+        Version = "0.3.1.0",
         EnabledOptionStyles = OptionStyles.Windows | OptionStyles.ShortUnix | OptionStyles.LongUnix)]
     public class WitSyncCommandLineOptions
     {
@@ -62,7 +62,6 @@ namespace WitSync
         public string DestinationPassword { get; set; }
 
         [CommandLineOption(Name = "m", Aliases = "map mapping mappingFile"
-            , MinOccurs = 1
             , Description = "Mapping file, e.g. MyMappingFile.xml")]
         public string MappingFile { get; set; }
         [CommandLineOption(Name = "i", Aliases = "index indexFile"

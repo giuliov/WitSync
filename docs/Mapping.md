@@ -66,9 +66,9 @@ Make sure to properly backup this file, otherwise the tool will re-create new wo
 
 ## Source query
 
-The tool should present itself as an account able to get the result from `Shared Queries\MySourceQuery` on the source.
+The tool should present itself as an account able to get the result from the source query. The source query can be expressed in [WIQL](http://msdn.microsoft.com/en-us/library/bb130306.aspx) or be the name of an existing query (Shared queries are preferred).
 
-If you want to replicate all workitems, use a generic query like this
+If you want to replicate all workitems, you can use a generic query like this
 
 ```XML
 <WorkItemQuery Version="1">
@@ -85,6 +85,7 @@ If you want to replicate all workitems, use a generic query like this
 ```
 
 this query extracts all work items from SourceProject.
+This is also the default if you do not specify the source query: all kind of Work Items are read from the source and compared to destination.
 
 **Note**: query filters only which Work Items are synced, but does not obey the query in filtering the columns. Is the mapping files that determines which fields are copied and how.
 
@@ -111,6 +112,7 @@ If you need to replicate all workitems, use a generic query like this
 ```
 
 this query selects all work items from DestProject.
+If you do not specify a destination query, by default all kind of Work Items are read from the destination and compared to source.
 
 
 ## Area and Iteration mapping
@@ -135,6 +137,7 @@ is equivalent to
 ```XML
 <Iteration SourcePath="*" DestinationPath="Dest"/>
 ```
+This is the default if you do not specify an Area / Iteration mapping.
 
 The last option uses the destination wildcard rule: source paths are mapped to equivalent target paths, that is identical except for the root node.
 ```XML
@@ -146,7 +149,7 @@ As you see, the rules have the same syntax and meaning for both Areas and Iterat
 
 ## Work Item Type mapping
 
-A mapping file must contain at least a work item mapping.
+A mapping file usually contains some work item mappings.
 
 The syntax is
 ```XML
@@ -162,6 +165,8 @@ The syntax is
 ```
 
 Note that the work item type can be different, e.g. mapping Bugs to Issues.
+
+If you do not specify any Work Item mapping, Work Items maps to the same type on the destination, assuming the same set of States and Fields.
 
 ### ID
 WitSync uses the work item ID field (`System.Id`) to uniquely identify them. There are two ways to relate work items on the destination  project:
@@ -211,6 +216,7 @@ Fields that exists on destination are copied. Should appear only once.
 ```XML
 <Field Source="*" Destination="*"/>
 ```
+This is the default Rule if no Field rule is present.
 
 ### Translation functions
 Source values are converted via some built-in function.
@@ -230,7 +236,7 @@ The only available functions are:
 
 ## Link Type mapping
 
-A mapping file must contain at least a link mapping.
+A mapping file can specify Link Type mappings.
 
 The syntax is
 ```XML
@@ -243,3 +249,4 @@ The syntax is
 
 Note that the work item type can be different, e.g. mapping Bugs to Issues.
 
+If you do not specify any Link Type mapping, WitSync will use the type on the destination with identical name.

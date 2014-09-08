@@ -3,8 +3,8 @@
   <xs:element name="Mapping">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="SourceQuery" type="xs:string" minOccurs="1" maxOccurs="1" />
-        <xs:element name="DestinationQuery" type="xs:string" minOccurs="1" maxOccurs="1" />
+        <xs:element name="SourceQuery" type="xs:string" minOccurs="0" maxOccurs="1" />
+        <xs:element name="DestinationQuery" type="xs:string" minOccurs="0" maxOccurs="1" />
         <xs:element name="IndexFile" type="xs:string" minOccurs="0" maxOccurs="1" />
         <xs:element name="AreaMap" minOccurs="0" maxOccurs="1">
           <xs:complexType>
@@ -30,7 +30,7 @@
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element minOccurs="1" maxOccurs="unbounded" name="WorkItemMap">
+        <xs:element minOccurs="0" maxOccurs="unbounded" name="WorkItemMap">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="IDField" minOccurs="0" maxOccurs="1">
@@ -67,7 +67,7 @@
             <xs:attribute name="DestinationType" type="xs:string" use="required" />
           </xs:complexType>
         </xs:element>
-        <xs:element minOccurs="1" maxOccurs="unbounded" name="LinkTypeMap">
+        <xs:element minOccurs="0" maxOccurs="unbounded" name="LinkTypeMap">
           <xs:complexType>
             <xs:sequence>
               <xs:element minOccurs="1" maxOccurs="unbounded" name="LinkType">
