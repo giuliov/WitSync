@@ -40,7 +40,7 @@ You can use a single account when target and source belongs to the same AD domai
 
 Syntax is
 ```Batchfile
-WitSync.exe –a <action> -c <source_collection_url> -p <source_project_name> -d <destination_collection_url> -q <destination_project_name> -m <path_to_mapping_file> [-v[erbose]] [-t[est]] [_advanced_options_]
+WitSync.exe –a <action> -c <source_collection_url> -p <source_project_name> -d <destination_collection_url> -q <destination_project_name> [-m <path_to_mapping_file>] [-v[erbose]] [-t[est]] [_advanced_options_]
 ```
 The supported values for action are `SyncWorkItems` and `SyncAreasAndIterations`. This gives flexibility as Area/Iteration can be different in the two projects and you may not want syncronyze it.
 
@@ -60,7 +60,7 @@ The output will contain messages explaning what went wrong. To create a log file
 
 ## Mapping file
 
-The hard work is writing the `Mapping.xml` file. It defines in detail the source and target mapping; here is a simple case
+Mapping file is optional in case you want a hi-fidelity copy of the source, otherwise you have to go through the hard work of writing one. It defines in detail the source and target mapping; a simple case folows.
 
 ```XML
 <Mapping>

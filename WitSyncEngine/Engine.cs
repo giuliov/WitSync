@@ -58,6 +58,8 @@ namespace WitSync
                 destWIStore = destConn.Collection.GetService<WorkItemStore>();
             }//if
 
+            mapping.SetDefaults(sourceConn, sourceWIStore, destConn, destWIStore);
+
             var sourceRunner = new QueryRunner(sourceWIStore, sourceConn.ProjectName);
             eventSink.ExecutingSourceQuery(mapping.SourceQuery, sourceConn);
             var sourceResult = sourceRunner.RunQuery(mapping.SourceQuery);

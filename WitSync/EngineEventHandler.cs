@@ -263,5 +263,10 @@ namespace WitSync
             this.Info("WorkitemLink {0}->{1} (type {2}) does not match any rule."
                 , sourceLink.SourceId, sourceLink.TargetId, sourceLink.LinkTypeEnd.Name);
         }
+
+        public void MappingFileNotFoundAssumeDefaults(string path)
+        {
+            this.Warning("Mapping file '{0}' not found: using default mapping.", path);
+        }
     }
 }
