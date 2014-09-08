@@ -76,7 +76,7 @@ The hard work is writing the `Mapping.xml` file. It defines in detail the source
   </IterationMap>
   <WorkItemMap SourceType="Feature" DestinationType="Feature">
     <IDField Source="System.ID" Destination="Sample.OriginatingID"/>
-    <!—InitalStateOnDestination is used by the CreateThenUpdate option -->
+    <!-- InitalStateOnDestination is used by the CreateThenUpdate option -->
     <States InitalStateOnDestination="New">
       <State Source="Proposed" Destination="New"/>
       <State Source="Active" Destination="In Progress"/>
@@ -94,13 +94,17 @@ The hard work is writing the `Mapping.xml` file. It defines in detail the source
     <Field Source="State" Destination="State" Translate="MapState" />
     <Field Source="Area Path" Destination="Area Path" Translate="MapAreaPath"/>
     <Field Source="Iteration Path" Destination="Iteration Path" Translate="MapIterationPath"/>
-    <!-- explicit mapping -->
+    <!-- sample explicit mapping -->
     <Field Source="Title" Destination="Title"/>
     <Field Source="Description" Destination="Description"/>
     <Field Source="Assigned To" Destination="Assigned To"/>
     <!-- optional wildcard mapping -->
     <Field Source="*" Destination="*"/>
   </WorkItemMap>
+  <LinkTypeMap>
+    <!-- wildcard rule -->
+    <LinkType SourceType="*" DestinationType="*" />
+  </LinkTypeMap>
 </Mapping>
 ```
 

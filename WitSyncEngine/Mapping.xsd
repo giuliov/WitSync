@@ -67,6 +67,18 @@
             <xs:attribute name="DestinationType" type="xs:string" use="required" />
           </xs:complexType>
         </xs:element>
+        <xs:element minOccurs="1" maxOccurs="unbounded" name="LinkTypeMap">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="1" maxOccurs="unbounded" name="LinkType">
+                <xs:complexType>
+                  <xs:attribute name="SourceType" type="xs:string" use="required" />
+                  <xs:attribute name="DestinationType" type="xs:string" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

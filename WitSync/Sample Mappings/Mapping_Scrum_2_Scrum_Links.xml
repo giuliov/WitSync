@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Mapping>
+  <!-- Microsoft Visual Studio Scrum -->
+  <SourceQuery>Shared Queries\All</SourceQuery>
+  <!-- Microsoft Visual Studio Scrum -->
+  <DestinationQuery>Shared Queries\All</DestinationQuery>
+  <IndexFile>index.xml</IndexFile>
+  <AreaMap>
+    <!-- map to root -->
+    <Area SourcePath="*" DestinationPath=""/>
+  </AreaMap>
+  <IterationMap>
+    <!-- map to root -->
+    <Iteration SourcePath="*" DestinationPath=""/>
+  </IterationMap>
+  <WorkItemMap SourceType="Feature" DestinationType="Feature">
+    <!-- not mapped -->
+    <Field Source="Area ID" Destination=""/>
+    <Field Source="Iteration ID" Destination=""/>
+    <Field Source="Reason" Destination=""/>
+    <Field Source="State Change Date" Destination=""/>
+    <Field Source="Created Date" Destination=""/>
+    <Field Source="Changed Date" Destination=""/>
+    <!-- built-in functions -->
+    <Field Source="Area Path" Destination="Area Path" Translate="MapAreaPath"/>
+    <Field Source="Iteration Path" Destination="Iteration Path" Translate="MapIterationPath"/>
+    <!-- wildcard rule -->
+    <Field Source="*" Destination="*"/>
+  </WorkItemMap>
+  <WorkItemMap SourceType="Product Backlog Item" DestinationType="Product Backlog Item">
+    <!-- not mapped -->
+    <Field Source="Area ID" Destination=""/>
+    <Field Source="Iteration ID" Destination=""/>
+    <Field Source="Reason" Destination=""/>
+    <Field Source="State Change Date" Destination=""/>
+    <Field Source="Created Date" Destination=""/>
+    <Field Source="Changed Date" Destination=""/>
+    <!-- built-in functions -->
+    <Field Source="Area Path" Destination="Area Path" Translate="MapAreaPath"/>
+    <Field Source="Iteration Path" Destination="Iteration Path" Translate="MapIterationPath"/>
+    <!-- wildcard rule -->
+    <Field Source="*" Destination="*"/>
+  </WorkItemMap>
+  <WorkItemMap SourceType="Task" DestinationType="Task">
+    <!-- not mapped -->
+    <Field Source="Area ID" Destination=""/>
+    <Field Source="Iteration ID" Destination=""/>
+    <Field Source="Reason" Destination=""/>
+    <Field Source="State Change Date" Destination=""/>
+    <Field Source="Created Date" Destination=""/>
+    <Field Source="Changed Date" Destination=""/>
+    <!-- built-in functions -->
+    <Field Source="Area Path" Destination="Area Path" Translate="MapAreaPath"/>
+    <Field Source="Iteration Path" Destination="Iteration Path" Translate="MapIterationPath"/>
+    <!-- wildcard rule -->
+    <Field Source="*" Destination="*"/>
+  </WorkItemMap>
+  <WorkItemMap SourceType="Test Case" DestinationType="Test Case">
+    <!-- not mapped -->
+    <Field Source="Area ID" Destination=""/>
+    <Field Source="Iteration ID" Destination=""/>
+    <Field Source="Reason" Destination=""/>
+    <Field Source="State Change Date" Destination=""/>
+    <Field Source="Created Date" Destination=""/>
+    <Field Source="Changed Date" Destination=""/>
+    <!-- built-in functions -->
+    <Field Source="Area Path" Destination="Area Path" Translate="MapAreaPath"/>
+    <Field Source="Iteration Path" Destination="Iteration Path" Translate="MapIterationPath"/>
+    <!-- wildcard rule -->
+    <Field Source="*" Destination="*"/>
+  </WorkItemMap>
+  <WorkItemMap SourceType="Shared Steps" DestinationType="Shared Steps">
+    <!-- not mapped -->
+    <Field Source="Area ID" Destination=""/>
+    <Field Source="Iteration ID" Destination=""/>
+    <Field Source="Reason" Destination=""/>
+    <Field Source="State Change Date" Destination=""/>
+    <Field Source="Created Date" Destination=""/>
+    <Field Source="Changed Date" Destination=""/>
+    <!-- built-in functions -->
+    <Field Source="Area Path" Destination="Area Path" Translate="MapAreaPath"/>
+    <Field Source="Iteration Path" Destination="Iteration Path" Translate="MapIterationPath"/>
+    <!-- wildcard rule -->
+    <Field Source="*" Destination="*"/>
+  </WorkItemMap>
+  <LinkTypeMap>
+    <!-- wildcard rule -->
+    <LinkType SourceType="*" DestinationType="*" />
+  </LinkTypeMap>
+</Mapping>

@@ -118,7 +118,8 @@ namespace WitSync
             }//if
 
             var linkMapper = new LinkMapper(context);
-            var changedLinks = linkMapper.MapLinks(sourceResult, destResult, validWorkItems);
+            //var changedLinks = linkMapper.MapLinks(sourceResult, destResult, validWorkItems);
+            var changedLinks = linkMapper.MapLinks(sourceResult.WorkItems.Values, validWorkItems);
 
             eventSink.SavingLinks(changedLinks, validWorkItems);
             SaveLinks(mapping, index, destWIStore, validWorkItems, testOnly);

@@ -198,6 +198,23 @@ namespace WitSync
                 }//for
             }//for
 
+            var allSourceLinkTypes = this.sourceWIStore.WorkItemLinkTypes;
+            var allDestLinkTypes = this.destWIStore.WorkItemLinkTypes;
+            foreach (var linkMap in mapping.LinkTypeMap)
+            {
+                if (linkMap.IsWildcard && linkMap.DestinationType != "*")
+                    Log("Invalid Link wildcard rule.");
+
+                if (!linkMap.IsWildcard)
+                {
+                    if (!allSourceLinkTypes.Any(st=> st.ForwardEnd.Name == linkMap.SourceType))
+                        Log("Source link type '{0}' does not exist.", linkMap.SourceType);
+                    if (!allDestLinkTypes.Any(st=> st.ForwardEnd.Name == linkMap.DestinationType))
+                        Log("Destination link type '{0}' does not exist.", linkMap.DestinationType);
+                    // TODO check if mapping is sensible
+                }//if
+            }
+
             //TODO more checks, e.g. on fields and functions
         }
     }

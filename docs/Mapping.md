@@ -227,3 +227,19 @@ The only available functions are:
 |MapAreaPath      | Use Area mapping to convert source Area Path values to target           |
 |MapIterationPath | Use Iteration mapping to convert source Iteration Path values to target |
 
+
+## Link Type mapping
+
+A mapping file must contain at least a link mapping.
+
+The syntax is
+```XML
+  <LinkTypeMap>
+    <LinkType SourceType="source_work_item_type" DestinationType="destination_work_item_type" />
+    <!-- wildcard rule -->
+    <LinkType SourceType="*" DestinationType="*" />
+  </LinkTypeMap>
+```
+
+Note that the work item type can be different, e.g. mapping Bugs to Issues.
+

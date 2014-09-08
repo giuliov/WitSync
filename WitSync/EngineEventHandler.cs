@@ -249,7 +249,7 @@ namespace WitSync
         {
             this.Info("WorkitemLink source {0}->{1} (type {2}) already maps to {3}->{4} (type {5})."
                 , sourceLink.SourceId, sourceLink.TargetId, sourceLink.LinkTypeEnd.Name
-                , relationship.SourceId, relationship.TargetId, relationship.LinkTypeEnd.LinkType.ReferenceName);
+                , relationship.SourceId, relationship.TargetId, relationship.LinkTypeEnd.Name);
         }
 
         public void TargetMissingForLink(WorkItemLink sourceLink, int parentId, int childId)
