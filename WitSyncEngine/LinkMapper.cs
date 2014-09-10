@@ -22,56 +22,77 @@ namespace WitSync
             {
                 foreach (WorkItemLink sourceLink in sourceWI.WorkItemLinks)
                 {
-                    var rule = this.Mapping.FindLinkRule(sourceLink.LinkTypeEnd.Name);
-                    if (rule != null)
+                    WorkItemLink destinationLink = null;
+                    try
                     {
-                        this.EventSink.AnalyzingSourceLink(sourceLink);
-
-                        // we must be sure that link.SourceId and link.TargetId have a link in destination project
-                        int sourceIdOnDest = this.Index.GetIdFromSourceId(sourceLink.SourceId);
-                        int targetIdOnDest = this.Index.GetIdFromSourceId(sourceLink.TargetId);
-                        if (sourceIdOnDest > 0 && targetIdOnDest > 0)
-                        {
-                            var sourceWIOnDest = validWorkItems.Where(w => w.Id == sourceIdOnDest).FirstOrDefault();
-                            Debug.Assert(sourceWIOnDest != null);
-
-                            WorkItemLinkTypeEnd destLinkType = null;
-                            if (rule.IsWildcard)
-                            {
-                                destLinkType = sourceLink.LinkTypeEnd;
-                            }
-                            else
-                            {
-                                // HACK
-                                destLinkType = this.DestinationStore.WorkItemLinkTypes.Where(t => t.ForwardEnd.Name == rule.DestinationType).FirstOrDefault().ForwardEnd;
-                            }//if
-                            var relationship = new WorkItemLink(destLinkType, sourceIdOnDest, targetIdOnDest);
-                            if (!sourceWIOnDest.WorkItemLinks.Contains(relationship))
-                            {
-                                sourceWIOnDest.WorkItemLinks.Add(relationship);
-                                //track
-                                changedLinks.Add(relationship);
-
-                                this.EventSink.MakingNewLink(relationship);
-                            }
-                            else
-                            {
-                                this.EventSink.LinkExists(sourceLink, relationship);
-                            }//if
-                        }
-                        else
-                        {
-                            this.EventSink.TargetMissingForLink(sourceLink, sourceIdOnDest, targetIdOnDest);
-                        }//if
+                        destinationLink = MapSingleLink(sourceLink, validWorkItems);
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        this.EventSink.SkippingLink(sourceLink);
-                    }//if
+                        this.EventSink.ExceptionWhileMappingLink(ex, sourceLink);
+                    }
+                    if (destinationLink != null)
+                    {
+                        changedLinks.Add(destinationLink);
+                    }
                 }//for
             }//for
 
             return changedLinks;
+        }
+
+        private WorkItemLink MapSingleLink(WorkItemLink sourceLink, List<WorkItem> validWorkItems)
+        {
+            WorkItemLink destinationLink = null;
+
+            var rule = this.Mapping.FindLinkRule(sourceLink.LinkTypeEnd.Name);
+            if (rule != null)
+            {
+                this.EventSink.AnalyzingSourceLink(sourceLink);
+
+                // we must be sure that link.SourceId and link.TargetId have a link in destination project
+                int sourceIdOnDest = this.Index.GetIdFromSourceId(sourceLink.SourceId);
+                int targetIdOnDest = this.Index.GetIdFromSourceId(sourceLink.TargetId);
+                if (sourceIdOnDest > 0 && targetIdOnDest > 0)
+                {
+                    var sourceWIOnDest = validWorkItems.Where(w => w.Id == sourceIdOnDest).FirstOrDefault();
+                    Debug.Assert(sourceWIOnDest != null);
+
+                    WorkItemLinkTypeEnd destLinkType = null;
+                    if (rule.IsWildcard)
+                    {
+                        destLinkType = sourceLink.LinkTypeEnd;
+                    }
+                    else
+                    {
+                        // HACK
+                        destLinkType = this.DestinationStore.WorkItemLinkTypes.Where(t => t.ForwardEnd.Name == rule.DestinationType).FirstOrDefault().ForwardEnd;
+                    }//if
+                    var relationship = new WorkItemLink(destLinkType, sourceIdOnDest, targetIdOnDest);
+                    if (!sourceWIOnDest.WorkItemLinks.Contains(relationship))
+                    {
+                        sourceWIOnDest.WorkItemLinks.Add(relationship);
+                        //track
+                        destinationLink = relationship;
+
+                        this.EventSink.MakingNewLink(relationship);
+                    }
+                    else
+                    {
+                        this.EventSink.LinkExists(sourceLink, relationship);
+                    }//if
+                }
+                else
+                {
+                    this.EventSink.TargetMissingForLink(sourceLink, sourceIdOnDest, targetIdOnDest);
+                }//if
+            }
+            else
+            {
+                this.EventSink.SkippingLink(sourceLink);
+            }//if
+
+            return destinationLink;
         }
     }
 }

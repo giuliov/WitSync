@@ -52,5 +52,7 @@ namespace WitSync
         void TargetMissingForLink(WorkItemLink sourceLink, int parentId, int childId);
         void SkippingLink(WorkItemLink sourceLink);
         void MappingFileNotFoundAssumeDefaults(string path);
+        void ExceptionWhileMappingLink(Exception ex, WorkItemLink sourceLink);
+        void ExceptionWhileMappingWorkItem(Exception ex, WorkItem sourceWorkItem);
     }
 }

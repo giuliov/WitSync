@@ -42,20 +42,27 @@ namespace WitSync
             // First pass: workitems
             foreach (var sourceWorkItem in sourceWorkItems)
             {
-                if (IsNewWorkItemId(sourceWorkItem.Id))
+                try
                 {
-                    var newWI = NewWorkItem(sourceWorkItem);
-                    if (newWI != null)
+                    if (IsNewWorkItemId(sourceWorkItem.Id))
                     {
-                        newWorkItems.Add(newWI);
-                        this.Index.Add(sourceWorkItem.Id, newWI);
+                        var newWI = NewWorkItem(sourceWorkItem);
+                        if (newWI != null)
+                        {
+                            newWorkItems.Add(newWI);
+                            this.Index.Add(sourceWorkItem.Id, newWI);
+                        }
                     }
+                    else
+                    {
+                        var oldWI = this.Index.GetWorkItemFromSourceId(sourceWorkItem.Id);
+                        updatedWorkItems.Add(UpdateWorkItem(sourceWorkItem, oldWI));
+                    }//if
                 }
-                else
+                catch (Exception ex)
                 {
-                    var oldWI = this.Index.GetWorkItemFromSourceId(sourceWorkItem.Id);
-                    updatedWorkItems.Add(UpdateWorkItem(sourceWorkItem, oldWI));
-                }//if
+                    this.EventSink.ExceptionWhileMappingWorkItem(ex, sourceWorkItem);
+                }
             }//for
         }
 

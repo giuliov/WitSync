@@ -268,5 +268,18 @@ namespace WitSync
         {
             this.Warning("Mapping file '{0}' not found: using default mapping.", path);
         }
+
+        public void ExceptionWhileMappingWorkItem(Exception ex, WorkItem sourceWorkItem)
+        {
+            this.Error("Error '{0}' while mapping workitem #{1} '{2}'"
+                , ex.Message, sourceWorkItem.Id, sourceWorkItem.Title);
+        }
+
+        public void ExceptionWhileMappingLink(Exception ex, WorkItemLink sourceLink)
+        {
+            this.Error("Error '{0}' while mapping link {1}->{2} (type {3})."
+                , ex.Message
+                , sourceLink.SourceId, sourceLink.TargetId, sourceLink.LinkTypeEnd.Name);
+        }
     }
 }
