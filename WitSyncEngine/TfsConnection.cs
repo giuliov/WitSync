@@ -13,7 +13,7 @@ namespace WitSync
     {
         public Uri CollectionUrl { get; set; }
         public string ProjectName { get; set; }
-        public NetworkCredential Credential { protected get; set; }
+        public NetworkCredential Credential { get; set; }
 
         // see http://msdn.microsoft.com/en-us/library/bb130306.aspx
 

@@ -90,6 +90,8 @@ namespace WitSync
         public StateList StateList;
         [XmlElement("Field")]
         public FieldMap[] Fields;
+        [XmlAttribute("Attachments")]
+        public bool SyncAttachments;
 
         [XmlIgnore]
         public IEnumerable<FieldMap> AllFields
@@ -284,6 +286,7 @@ namespace WitSync
             mapping.SaveTo(path);
         }
 
+        // TODO move this code out of this class to remove dependency on Microsoft.TeamFoundation.WorkItemTracking.Client
         internal void SetDefaults(TfsConnection sourceConn, WorkItemStore sourceWIStore, TfsConnection destConn, WorkItemStore destWIStore)
         {
             // add defaults
@@ -300,6 +303,7 @@ namespace WitSync
                     {
                         SourceType = wit.Name,
                         DestinationType = wit.Name,
+                        SyncAttachments = true,
                         Fields = new FieldMap[] {
                             // HACK these names are OK for Scrum, but ...
                             new FieldMap() { Source = "Area ID", Destination = "" },

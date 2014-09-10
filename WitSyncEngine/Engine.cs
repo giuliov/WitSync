@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -89,7 +90,7 @@ namespace WitSync
             // this needs also connection to target, better after query execution, so we have warm caches
             var index = BuildIndex(destWIStore, destResult.WorkItems.Values, mapping);
 
-            var context = new SyncContext(sourceWIStore, sourceConn.ProjectName, destWIStore, destConn.ProjectName, mapping, index, eventSink);
+            var context = new SyncContext(sourceConn, sourceWIStore, sourceConn.ProjectName, destWIStore, destConn.ProjectName, mapping, index, eventSink);
 
             var workItemMapper = new WorkItemMapper(context);
             // configure options
@@ -116,8 +117,11 @@ namespace WitSync
             {
                 // normal path
                 var changedWorkItems = newWorkItems.Concat(updatedWorkItems).ToList();
-                validWorkItems.AddRange(SaveWorkItems(mapping, index, destWIStore, changedWorkItems, testOnly));
+                var savedWorkItems = SaveWorkItems(mapping, index, destWIStore, changedWorkItems, testOnly);
+                validWorkItems.AddRange(savedWorkItems);
             }//if
+
+            workItemMapper.CleanUp();
 
             var linkMapper = new LinkMapper(context);
             var changedLinks = linkMapper.MapLinks(sourceResult.WorkItems.Values, validWorkItems);
