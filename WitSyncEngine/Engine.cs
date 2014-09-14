@@ -36,6 +36,8 @@ namespace WitSync
 
         public int Sync(ProjectMapping mapping, bool testOnly, EngineOptions options)
         {
+            eventSink.DumpOptions(options);
+
             saveErrors = 0;
             testOnly |= options.HasFlag(EngineOptions.TestOnly);
 
@@ -171,11 +173,12 @@ namespace WitSync
                 failedWorkItems = ExamineSaveErrors(errors);
             }//if
 
-            var validWorkItems = changedWorkItems.Where(candidate => !failedWorkItems.Contains(candidate));
+            var validWorkItems = changedWorkItems.Except(failedWorkItems);
             // some succeded: their Ids could be changed, so refresh index
             if (!testOnly)
             {
-                UpdateIndex(index, changedWorkItems, mapping);
+                // FIX should not include failedWorkItems
+                UpdateIndex(index, validWorkItems, mapping);
             }
 
             return validWorkItems.ToList();
