@@ -54,5 +54,6 @@ namespace WitSync
         void MappingFileNotFoundAssumeDefaults(string path);
         void ExceptionWhileMappingLink(Exception ex, WorkItemLink sourceLink);
         void ExceptionWhileMappingWorkItem(Exception ex, WorkItem sourceWorkItem);
+        void DumpOptions(WitSyncEngine.EngineOptions options);
     }
 }
