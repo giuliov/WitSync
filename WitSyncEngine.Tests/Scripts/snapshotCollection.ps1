@@ -4,3 +4,5 @@
 & $TfsConfig collection /detach /collectionName:WitSync
 Invoke-Sqlcmd -Query "ALTER DATABASE [Tfs_WitSync] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; EXEC master.dbo.sp_detach_db @dbname = N'Tfs_WitSync'" -ServerInstance .\SQLEXPRESS
 Copy-Item "$sqlDataPath\Tfs_WitSync*" "$dataSavePath"
+
+./restartCollection.ps1
