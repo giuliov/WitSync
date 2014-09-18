@@ -65,6 +65,7 @@
             </xs:sequence>
             <xs:attribute name="SourceType" type="xs:string" use="required" />
             <xs:attribute name="DestinationType" type="xs:string" use="required" />
+            <xs:attribute name="Attachments" type="xs:boolean" use="optional" />
           </xs:complexType>
         </xs:element>
         <xs:element minOccurs="0" maxOccurs="unbounded" name="LinkTypeMap">

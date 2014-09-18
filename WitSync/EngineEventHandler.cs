@@ -31,7 +31,7 @@ namespace WitSync
 
         public void DestinationConnected(TfsConnection destConn)
         {
-            this.Info("Connected to source {0}\\{1} as {2}.", destConn.CollectionUrl, destConn.ProjectName, GetUsername(destConn));
+            this.Info("Connected to destination {0}\\{1} as {2}.", destConn.CollectionUrl, destConn.ProjectName, GetUsername(destConn));
         }
 
         protected string GetUsername(TfsConnection conn)
@@ -266,7 +266,32 @@ namespace WitSync
 
         public void MappingFileNotFoundAssumeDefaults(string path)
         {
-            this.Warning("Mapping file '{0}' not found: using default mapping.", path);
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                this.Info("No mapping file specified: using default mapping.");
+            }
+            else
+            {
+                this.Warning("Mapping file '{0}' not found: using default mapping.", path);
+            }
+        }
+
+        public void ExceptionWhileMappingWorkItem(Exception ex, WorkItem sourceWorkItem)
+        {
+            this.Error("Error '{0}' while mapping workitem #{1} '{2}'"
+                , ex.Message, sourceWorkItem.Id, sourceWorkItem.Title);
+        }
+
+        public void ExceptionWhileMappingLink(Exception ex, WorkItemLink sourceLink)
+        {
+            this.Error("Error '{0}' while mapping link {1}->{2} (type {3})."
+                , ex.Message
+                , sourceLink.SourceId, sourceLink.TargetId, sourceLink.LinkTypeEnd.Name);
+        }
+
+        public void DumpOptions(WitSyncEngine.EngineOptions options)
+        {
+            this.Verbose("Active options: {0}", options);
         }
     }
 }

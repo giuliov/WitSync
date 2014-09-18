@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -42,20 +43,27 @@ namespace WitSync
             // First pass: workitems
             foreach (var sourceWorkItem in sourceWorkItems)
             {
-                if (IsNewWorkItemId(sourceWorkItem.Id))
+                try
                 {
-                    var newWI = NewWorkItem(sourceWorkItem);
-                    if (newWI != null)
+                    if (IsNewWorkItemId(sourceWorkItem.Id))
                     {
-                        newWorkItems.Add(newWI);
-                        this.Index.Add(sourceWorkItem.Id, newWI);
+                        var newWI = NewWorkItem(sourceWorkItem);
+                        if (newWI != null)
+                        {
+                            newWorkItems.Add(newWI);
+                            this.Index.Add(sourceWorkItem.Id, newWI);
+                        }
                     }
+                    else
+                    {
+                        var oldWI = this.Index.GetWorkItemFromSourceId(sourceWorkItem.Id);
+                        updatedWorkItems.Add(UpdateWorkItem(sourceWorkItem, oldWI));
+                    }//if
                 }
-                else
+                catch (Exception ex)
                 {
-                    var oldWI = this.Index.GetWorkItemFromSourceId(sourceWorkItem.Id);
-                    updatedWorkItems.Add(UpdateWorkItem(sourceWorkItem, oldWI));
-                }//if
+                    this.EventSink.ExceptionWhileMappingWorkItem(ex, sourceWorkItem);
+                }
             }//for
         }
 
@@ -84,6 +92,7 @@ namespace WitSync
             }
 
             SetWorkItemFields(source, map, target);
+            SetAttachments(source, map, target);
 
             Validate(target);
 
@@ -102,6 +111,7 @@ namespace WitSync
             }
 
             SetWorkItemFields(source, map, target);
+            SetAttachments(source, map, target);
 
             Validate(target);
 
@@ -219,6 +229,59 @@ namespace WitSync
             }
         }
 
+        private void SetAttachments(WorkItem source, WorkItemMap map, WorkItem target)
+        {
+            // TODO check SourceStore.MaxBulkUpdateBatchSize vs DestinationStore.MaxBulkUpdateBatchSize
+
+            if (map.SyncAttachments && source.AttachedFileCount > 0)
+            {
+                // see http://stackoverflow.com/questions/3507939/how-can-i-add-an-attachment-via-the-sdk-to-a-work-item-without-using-a-physical
+                foreach (Attachment sourceAttachment in source.Attachments)
+                {
+                    foreach (Attachment targetAttachment in target.Attachments)
+                    {
+                        if (targetAttachment.Name == sourceAttachment.Name
+                            && targetAttachment.Length == targetAttachment.Length)
+                        {
+                            goto nextAttachment;
+                        }
+                    }
+
+                    // not found
+                    string tempFile = DownloadAttachment(sourceAttachment);
+                    Attachment newAttachment = new Attachment(tempFile, sourceAttachment.Comment);
+                    target.Attachments.Add(newAttachment);
+
+                nextAttachment:
+                    Debug.WriteLine("Matching attachement found");
+                }//for
+            }//if
+        }
+
+        private string DownloadAttachment(Attachment sourceAttachment)
+        {
+            var wc = new System.Net.WebClient();
+            var cred = this.SourceConnection.Credential;
+            if (cred != null
+                && !string.IsNullOrWhiteSpace(cred.UserName))
+            {
+                wc.Credentials = this.SourceConnection.Credential;
+                wc.UseDefaultCredentials = false;
+            }
+            else
+            {
+                wc.UseDefaultCredentials = true;
+            }
+
+            // two attachments may have the same name, so we generate a unique path (suboptimal)
+            string tempFolder = Path.Combine(GetTemporaryAttachmentFolder(), sourceAttachment.FileGuid);
+            Directory.CreateDirectory(tempFolder);
+            string tempFile = Path.Combine(tempFolder, sourceAttachment.Name);
+
+            wc.DownloadFile(sourceAttachment.Uri, tempFile);
+            return tempFile;
+        }
+
         private bool Validate(WorkItem workItem)
         {
             var result = workItem.Validate();
@@ -227,6 +290,20 @@ namespace WitSync
                 this.EventSink.ValidationError(item);
             }
             return result.Count == 0;
+        }
+
+        internal void CleanUp()
+        {
+            if (Directory.Exists(GetTemporaryAttachmentFolder()))
+            {
+                // cleanup attachment temp
+                Directory.Delete(GetTemporaryAttachmentFolder(), true);
+            }
+        }
+
+        private string GetTemporaryAttachmentFolder()
+        {
+            return Path.Combine(Path.GetTempPath(), "WitSyncAttachments");
         }
     }
 }

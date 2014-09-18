@@ -15,7 +15,7 @@ The hard work is writing the _Mapping_ file. It defines in detail the source and
     <!-- same (relative) path -->
     <Iteration SourcePath="*" DestinationPath="*"/>
   </IterationMap>
-  <WorkItemMap SourceType="Feature" DestinationType="Feature">
+  <WorkItemMap SourceType="Feature" DestinationType="Feature" Attachments="true">
     <!-- this is used instead of an index -->
     <IDField Source="System.ID" Destination="Sample.OriginatingID"/>
     <!-- InitalStateOnDestination is used by the CreateThenUpdate option -->
@@ -153,7 +153,7 @@ A mapping file usually contains some work item mappings.
 
 The syntax is
 ```XML
-  <WorkItemMap SourceType="source_work_item_type" DestinationType="destination_work_item_type">
+  <WorkItemMap SourceType="source_work_item_type" DestinationType="destination_work_item_type" Attachments="boolean">
     <!-- IDField is optional -->
     <IDField Source="System.ID" Destination="field_reference_name_on_destination"/>
     <!-- State table is optional -->
@@ -165,6 +165,8 @@ The syntax is
 ```
 
 Note that the work item type can be different, e.g. mapping Bugs to Issues.
+
+To avoid syncing attachments, set Attachments to `false`.
 
 If you do not specify any Work Item mapping, Work Items maps to the same type on the destination, assuming the same set of States and Fields.
 
