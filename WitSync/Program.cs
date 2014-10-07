@@ -46,16 +46,33 @@ namespace WitSync
             if (options.TestOnly)
                 Console.WriteLine("** TEST MODE: no data will be written on destination **");
 
+            if (options.Verbose)
+            {
+                EventHandlerBase.GlobalVerbose(options.ToString());
+            }//if
+
             try
             {
                 switch (options.Action)
                 {
+                    /*
+                                    -a SyncWorkItems -c http://localhost:8080/tfs/WitSync -p "WitSyncSrc" -d http://localhost:8080/tfs/WitSync -q "WitSyncDest" -i Links.idx -v
+                                    */
                     case WitSyncCommandLineOptions.Verbs.SyncWorkItems:
                         return RunSync(options);
                     case WitSyncCommandLineOptions.Verbs.SyncAreasAndIterations:
-                        return RunSyncAreasAndIterations(options);
+                        return RunSyncAreasAndIterations(options, true, true);
                     case WitSyncCommandLineOptions.Verbs.GenerateSampleMappingFile:
                         return GenerateSampleMappingFile(options);
+                    case WitSyncCommandLineOptions.Verbs.SyncAreas:
+                        return RunSyncAreasAndIterations(options, true, false);
+                    case WitSyncCommandLineOptions.Verbs.SyncIterations:
+                        return RunSyncAreasAndIterations(options, false, true);
+                    /*
+                                    -a SyncGloballists -c http://localhost:8080/tfs/WitSync -p "WitSyncSrc" -d http://localhost:8080/tfs/WitSync -q "WitSyncDest" -m "Sample Mappings\globallists.yml" -v
+                                    */
+                    case WitSyncCommandLineOptions.Verbs.SyncGloballists:
+                        return RunSyncGloballists(options);
                 }//switch
             }
             catch (Exception ex)
@@ -68,7 +85,21 @@ namespace WitSync
             return -1;
         }
 
-        private static int RunSyncAreasAndIterations(WitSyncCommandLineOptions options)
+        private static int RunSyncGloballists(WitSyncCommandLineOptions options)
+        {
+            var eventHandler = new EngineEventHandler(options.Verbose);
+
+            var mapping = GlobalListMapping.LoadFrom(options.MappingFile);
+
+            TfsConnection source;
+            TfsConnection dest;
+            MakeConnection(options, out source, out dest);
+
+            var engine = new GlobalListsSyncEngine(source, dest, eventHandler);
+            return engine.Sync(mapping, options.TestOnly);
+        }
+
+        private static int RunSyncAreasAndIterations(WitSyncCommandLineOptions options, bool areas, bool iterations)
         {
             var eventHandler = new EngineEventHandler(options.Verbose);
 
@@ -77,7 +108,7 @@ namespace WitSync
             MakeConnection(options, out source, out dest);
 
             var engine = new AreasAndIterationsSyncEngine(source, dest, eventHandler);
-            return engine.Sync(options.TestOnly);
+            return engine.Sync(areas, iterations, options.TestOnly);
         }
 
 

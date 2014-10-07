@@ -1,6 +1,11 @@
 # Mapping file
 
-The hard work is writing the _Mapping_ file. It defines in detail the source and target mapping; here is a simple case
+Mapping file is not strictly required if you want a dumb sync.
+
+If you want fine control, you must writing the _Mapping_ file. It defines in detail the source and target mapping, 
+so it is a tedious work.
+
+## Sample mapping
 
 ```XML
 <Mapping>

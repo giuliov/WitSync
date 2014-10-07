@@ -156,3 +156,5 @@ $RECYCLE.BIN/
 .DS_Store
 *.mdf
 *.ldf
+xcopy/
+packages/

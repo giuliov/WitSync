@@ -293,5 +293,35 @@ namespace WitSync
         {
             this.Verbose("Active options: {0}", options);
         }
+
+        public void ReadingGlobalListsFromSource()
+        {
+            this.Info("Reading GlobalLists from source Collection.");
+        }
+
+        public void SelectingGlobalLists()
+        {
+            this.Verbose("Selecting GlobalLists to sync.");
+        }
+
+        public void GlobalListQueuedForUpdate(string glName)
+        {
+            this.Verbose("GlobalList {0} queued for sync", glName);
+        }
+
+        public void BuildingGlobalListUpdateMessage()
+        {
+            this.Verbose("Building GlobalList update message.");
+        }
+
+        public void UpdatingGlobalListsOnDestination()
+        {
+            this.Info("Updating GlobalList(s) on destination Collection.");
+        }
+
+        public void GlobalListsUpdated()
+        {
+            this.Info("GlobalList(s) updated on destination Collection.");
+        }
     }
 }

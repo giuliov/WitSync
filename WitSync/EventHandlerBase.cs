@@ -102,5 +102,10 @@ namespace WitSync
         {
             Out(ConsoleColor.Red, OutputFlags.All, "ERROR: ", format, args);
         }
+
+        static public void GlobalVerbose(string format, params object[] args)
+        {
+            Out(ConsoleColor.Gray, OutputFlags.All, "VERBOSE: ", format, args);
+        }
     }
 }

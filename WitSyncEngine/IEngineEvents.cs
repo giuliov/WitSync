@@ -55,5 +55,11 @@ namespace WitSync
         void ExceptionWhileMappingLink(Exception ex, WorkItemLink sourceLink);
         void ExceptionWhileMappingWorkItem(Exception ex, WorkItem sourceWorkItem);
         void DumpOptions(WitSyncEngine.EngineOptions options);
+        void ReadingGlobalListsFromSource();
+        void GlobalListQueuedForUpdate(string glName);
+        void UpdatingGlobalListsOnDestination();
+        void SelectingGlobalLists();
+        void BuildingGlobalListUpdateMessage();
+        void GlobalListsUpdated();
     }
 }

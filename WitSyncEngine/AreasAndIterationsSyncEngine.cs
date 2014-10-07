@@ -27,7 +27,7 @@ namespace WitSync
         ICommonStructureService4 sourceCSS = null;
         ICommonStructureService4 destCSS = null;
 
-        public int Sync(bool testOnly)
+        public int Sync(bool areas, bool iterations, bool testOnly)
         {
             eventSink.ConnectingSource(sourceConn);
             sourceConn.Connect();
@@ -56,13 +56,19 @@ namespace WitSync
                 }
             }
 
-            // TODO: how do you manage a node moved????
-            SyncNodes(sourceProject.AreaRootNodes);
-            SyncNodes(sourceProject.IterationRootNodes);
+            if (areas)
+            {
+                SyncNodes(sourceProject.AreaRootNodes);
+            }
+            if (iterations)
+            {
+                SyncNodes(sourceProject.IterationRootNodes);
+            }
 
             return saveErrors;
         }
 
+        // TODO: how do you manage a node that moved????
         private void SyncNodes(NodeCollection nodes)
         {
             foreach (Node node in nodes)

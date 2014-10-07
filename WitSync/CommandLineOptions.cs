@@ -11,7 +11,7 @@ namespace WitSync
     [CommandLineManager(
         ApplicationName = "WitSync",
         Copyright = "Copyright (c) Giulio Vian",
-        Version = "0.3.1.0",
+        Version = "0.4.0.0",
         EnabledOptionStyles = OptionStyles.Windows | OptionStyles.ShortUnix | OptionStyles.LongUnix)]
     public class WitSyncCommandLineOptions
     {
@@ -19,6 +19,9 @@ namespace WitSync
         {
             SyncWorkItems,
             SyncAreasAndIterations,
+            SyncAreas,
+            SyncIterations,
+            SyncGloballists,
             GenerateSampleMappingFile
         }
 
@@ -28,7 +31,7 @@ namespace WitSync
 
         [CommandLineOption(Name = "a", Aliases = "action"
             , MinOccurs = 1
-            , Description = "Action, one of: SyncWorkItems,SyncAreasAndIterations.")]
+            , Description = "Action, one of: SyncWorkItems,SyncAreas,SyncIterations,SyncGloballists,SyncAreasAndIterations.")]
         public Verbs Action { get; set; }
 
         [CommandLineOption(Name = "c", Aliases = "sourceCollection"
@@ -65,7 +68,7 @@ namespace WitSync
             , Description = "Mapping file, e.g. MyMappingFile.xml")]
         public string MappingFile { get; set; }
         [CommandLineOption(Name = "i", Aliases = "index indexFile"
-            , MinOccurs = 1
+            , MinOccurs = 0 //HACK is mandatory if ...
             , Description = "Index file, e.g. MyIndex.xml")]
         public string IndexFile { get; set; }
 
@@ -122,6 +125,21 @@ namespace WitSync
 
                 return result;
             }
+        }
+
+        public override string ToString()
+        {
+            var buf = new StringBuilder();
+            buf.AppendLine();
+            buf.AppendFormat("  Action: {0}", this.Action);
+            buf.AppendLine();
+            buf.AppendFormat("  Mapping file: {0}", this.MappingFile);
+            buf.AppendLine();
+            buf.AppendFormat("  Index file: {0}", this.IndexFile);
+            buf.AppendLine();
+            buf.AppendFormat("  Advanced options: {0}", this.AdvancedOptions);
+            buf.AppendLine();
+            return buf.ToString();
         }
     }
 }

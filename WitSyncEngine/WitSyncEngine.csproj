@@ -53,11 +53,16 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="YamlDotNet">
+      <HintPath>..\packages\YamlDotNet.3.3.0\lib\net35\YamlDotNet.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GlobalListMapping.cs" />
+    <Compile Include="GlobalListsSyncEngine.cs" />
     <Compile Include="AreasAndIterationsSyncEngine.cs" />
     <Compile Include="CollectionExtensions.cs" />
-    <Compile Include="Engine.cs" />
+    <Compile Include="WitSyncEngine.cs" />
     <Compile Include="IEngineEvents.cs" />
     <Compile Include="LinkMapper.cs" />
     <Compile Include="WorkItemMapper.cs" />
@@ -75,6 +80,9 @@
     <EmbeddedResource Include="Mapping.xsd">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
