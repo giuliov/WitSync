@@ -45,10 +45,15 @@ namespace WitSync
         {
             WorkItemLink destinationLink = null;
 
+            // BUG: wildcard rule may get Changest links also!!! How do you propagate???
             var rule = this.Mapping.FindLinkRule(sourceLink.LinkTypeEnd.Name);
             if (rule != null)
             {
                 this.EventSink.AnalyzingSourceLink(sourceLink);
+
+                // rule: do not map
+                if (string.IsNullOrWhiteSpace(rule.DestinationType))
+                    return null;
 
                 // we must be sure that link.SourceId and link.TargetId have a link in destination project
                 int sourceIdOnDest = this.Index.GetIdFromSourceId(sourceLink.SourceId);
