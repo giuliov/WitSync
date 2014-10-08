@@ -61,5 +61,8 @@ namespace WitSync
         void SelectingGlobalLists();
         void BuildingGlobalListUpdateMessage();
         void GlobalListsUpdated();
+        void SyncingIterations();
+        void SyncingAreas();
+        void ReadingAreaAndIterationInfoFromSource();
     }
 }

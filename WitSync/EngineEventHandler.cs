@@ -66,7 +66,7 @@ namespace WitSync
         public void SyncFinished(int errors)
         {
             var elapsed = DateTimeOffset.UtcNow - syncStart;
-            this.Info("Syncronization completed in {0} with {1} error(s).", elapsed, errors);
+            this.Info("Syncronization completed in {0:d'.'hh':'mm':'ss} with {1} error(s).", elapsed, errors);
         }
 
         public void SavingWorkItems(List<WorkItem> newWorkItems, List<WorkItem> updatedWorkItems)
@@ -322,6 +322,21 @@ namespace WitSync
         public void GlobalListsUpdated()
         {
             this.Info("GlobalList(s) updated on destination Collection.");
+        }
+
+        public void ReadingAreaAndIterationInfoFromSource()
+        {
+            this.Info("Reading Area and Iteration configuration from source Collection.");
+        }
+
+        public void SyncingAreas()
+        {
+            this.Info("Adding Iteration(s) on destination Collection.");
+        }
+
+        public void SyncingIterations()
+        {
+            this.Info("Adding Area(s) on destination Collection.");
         }
     }
 }
