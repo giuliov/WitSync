@@ -15,6 +15,11 @@ namespace WitSync
             All = 0xff
         }
 
+        private const ConsoleColor VerboseColor = ConsoleColor.DarkGray;
+        private const ConsoleColor InfoColor = ConsoleColor.Cyan;
+        private const ConsoleColor WarningColor = ConsoleColor.Yellow;
+        private const ConsoleColor ErrorColor = ConsoleColor.Red;
+
         private bool verbose;
 
         public EventHandlerBase(bool verbose)
@@ -25,18 +30,18 @@ namespace WitSync
         protected void Verbose(string format, params object[] args)
         {
             OutputFlags outFlags = this.verbose ? OutputFlags.All : OutputFlags.Debug;
-            Out(ConsoleColor.Gray, outFlags, "VERBOSE: ", format, args);
+            Out(VerboseColor, outFlags, "VERBOSE: ", format, args);
         }
 
         protected void UniqueVerbose(string format, params object[] args)
         {
             OutputFlags outFlags = this.verbose ? OutputFlags.All : OutputFlags.Debug;
-            UniqueOut(ConsoleColor.Gray, outFlags, "VERBOSE: ", format, args);
+            UniqueOut(VerboseColor, outFlags, "VERBOSE: ", format, args);
         }
 
         protected void Info(string format, params object[] args)
         {
-            Out(ConsoleColor.Cyan, OutputFlags.All, string.Empty, format, args);
+            Out(InfoColor, OutputFlags.All, string.Empty, format, args);
         }
 
         protected void Warning(string format, params object[] args)
@@ -105,7 +110,7 @@ namespace WitSync
 
         static public void GlobalVerbose(string format, params object[] args)
         {
-            Out(ConsoleColor.Gray, OutputFlags.All, "VERBOSE: ", format, args);
+            Out(VerboseColor, OutputFlags.All, "VERBOSE: ", format, args);
         }
     }
 }
