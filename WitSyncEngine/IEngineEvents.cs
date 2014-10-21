@@ -64,5 +64,7 @@ namespace WitSync
         void SyncingIterations();
         void SyncingAreas();
         void ReadingAreaAndIterationInfoFromSource();
+
+        void InternalError(Exception ex);
     }
 }

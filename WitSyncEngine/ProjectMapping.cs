@@ -136,7 +136,7 @@ namespace WitSync
     }
 
     [XmlRoot("Mapping")]
-    public class ProjectMapping
+    public class ProjectMapping : MappingBase
     {
         [XmlElement]
         public string SourceQuery;

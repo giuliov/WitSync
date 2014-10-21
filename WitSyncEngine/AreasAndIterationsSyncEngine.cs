@@ -8,18 +8,14 @@ using System.Text;
 namespace WitSync
 {
 
-    public class AreasAndIterationsSyncEngine
+    public class AreasAndIterationsSyncEngine : EngineBase
     {
-        protected TfsConnection sourceConn;
-        protected TfsConnection destConn;
-        protected IEngineEvents eventSink;
-        protected int saveErrors = 0;
-
-        public AreasAndIterationsSyncEngine(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
+        [Flags]
+        public enum EngineOptions
         {
-            this.sourceConn = source;
-            this.destConn = dest;
-            this.eventSink = eventHandler;
+            TestOnly = 0x1,
+            Areas = 0x2,
+            Iterations = 0x4,
         }
 
         NodeInfo rootAreaNode = null;
@@ -27,20 +23,34 @@ namespace WitSync
         ICommonStructureService4 sourceCSS = null;
         ICommonStructureService4 destCSS = null;
 
-        public int Sync(bool areas, bool iterations, bool testOnly)
+        public AreasAndIterationsSyncEngine(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
+            : base(source, dest, eventHandler)
         {
-            eventSink.ConnectingSource(sourceConn);
-            sourceConn.Connect();
-            eventSink.SourceConnected(sourceConn);
-            eventSink.ConnectingDestination(destConn);
-            destConn.Connect();
-            eventSink.DestinationConnected(destConn);
+            //no-op
+        }
+
+        public EngineOptions Options { set { this.options =value;}}
+
+        protected EngineOptions options;
+
+        public override int Prepare(bool testOnly)
+        {
+            return 0;
+        }
+
+        public override int Execute(bool testOnly)
+        {
+            bool areas = options.HasFlag(EngineOptions.Areas);
+            bool iterations = options.HasFlag(EngineOptions.Iterations);
+
 
             var sourceWIStore = sourceConn.Collection.GetService<WorkItemStore>();
             var destWIStore = destConn.Collection.GetService<WorkItemStore>();
 
             var sourceProject = sourceWIStore.Projects[sourceConn.ProjectName];
             var destProject = destWIStore.Projects[destConn.ProjectName];
+
+            eventSink.ReadingAreaAndIterationInfoFromSource();
 
             sourceCSS = sourceConn.Collection.GetService<ICommonStructureService4>();
             destCSS = destConn.Collection.GetService<ICommonStructureService4>();
@@ -58,10 +68,12 @@ namespace WitSync
 
             if (areas)
             {
+                eventSink.SyncingAreas();
                 SyncNodes(sourceProject.AreaRootNodes);
             }
             if (iterations)
             {
+                eventSink.SyncingIterations();
                 SyncNodes(sourceProject.IterationRootNodes);
             }
 

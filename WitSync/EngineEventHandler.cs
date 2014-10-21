@@ -338,5 +338,10 @@ namespace WitSync
         {
             this.Info("Adding Area(s) on destination Collection.");
         }
+
+        public void InternalError(Exception ex)
+        {
+            this.Error("Internal error: {0}\r\n{1}", ex.Message, ex.StackTrace);
+        }
     }
 }

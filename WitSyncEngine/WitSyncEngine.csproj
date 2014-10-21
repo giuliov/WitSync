@@ -58,10 +58,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EngineBase.cs" />
     <Compile Include="GlobalListMapping.cs" />
     <Compile Include="GlobalListsSyncEngine.cs" />
     <Compile Include="AreasAndIterationsSyncEngine.cs" />
     <Compile Include="CollectionExtensions.cs" />
+    <Compile Include="SyncPipeline.cs" />
     <Compile Include="WitSyncEngine.cs" />
     <Compile Include="IEngineEvents.cs" />
     <Compile Include="LinkMapper.cs" />

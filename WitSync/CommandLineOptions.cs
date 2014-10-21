@@ -11,18 +11,18 @@ namespace WitSync
     [CommandLineManager(
         ApplicationName = "WitSync",
         Copyright = "Copyright (c) Giulio Vian",
-        Version = "0.4.0.0",
+        Version = "0.5.0.0",
         EnabledOptionStyles = OptionStyles.Windows | OptionStyles.ShortUnix | OptionStyles.LongUnix)]
     public class WitSyncCommandLineOptions
     {
+        [Flags]
         public enum Verbs
         {
-            SyncWorkItems,
-            SyncAreasAndIterations,
-            SyncAreas,
-            SyncIterations,
-            SyncGloballists,
-            GenerateSampleMappingFile
+            // value order is important!
+            SyncGloballists = 1,
+            SyncAreas = 2,
+            SyncIterations = 4,
+            SyncWorkItems = 8
         }
 
         public WitSyncCommandLineOptions()

@@ -9,13 +9,8 @@ using System.Threading.Tasks;
 
 namespace WitSync
 {
-    public class WitSyncEngine
+    public class WitSyncEngine : EngineBase
     {
-        protected TfsConnection sourceConn;
-        protected TfsConnection destConn;
-        protected IEngineEvents eventSink;
-        protected int saveErrors = 0;
-
         [Flags]
         public enum EngineOptions
         {
@@ -28,26 +23,25 @@ namespace WitSync
         }
 
         public WitSyncEngine(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
+            : base(source, dest, eventHandler)
         {
-            sourceConn = source;
-            destConn = dest;
-            eventSink = eventHandler;
+            //no-op
         }
 
-        public int Sync(ProjectMapping mapping, bool testOnly, EngineOptions options)
+        public Func<ProjectMapping> MapGetter { get; set; }
+        public EngineOptions Options { set { this.options = value; } }
+
+        protected ProjectMapping mapping;
+        protected EngineOptions options;
+
+        public override int Prepare(bool testOnly)
         {
-            eventSink.DumpOptions(options);
+            mapping = MapGetter();
+            return 0;
+        }
 
-            saveErrors = 0;
-            testOnly |= options.HasFlag(EngineOptions.TestOnly);
-
-            eventSink.ConnectingSource(sourceConn);
-            sourceConn.Connect();
-            eventSink.SourceConnected(sourceConn);
-            eventSink.ConnectingDestination(destConn);
-            destConn.Connect();
-            eventSink.DestinationConnected(destConn);
-
+        public override int Execute(bool testOnly)
+        {
             var sourceWIStore = sourceConn.Collection.GetService<WorkItemStore>();
             WorkItemStore destWIStore = null;
             if (options.HasFlag(EngineOptions.BypassWorkItemStoreRules))
@@ -100,7 +94,6 @@ namespace WitSync
             workItemMapper.OpenTargetWorkItem = options.HasFlag(EngineOptions.OpenTargetWorkItem);
             workItemMapper.PartialOpenTargetWorkItem = options.HasFlag(EngineOptions.PartialOpenTargetWorkItem);
 
-            eventSink.SyncStarted();
             List<WorkItem> newWorkItems;
             List<WorkItem> updatedWorkItems;
             workItemMapper.MapWorkItems(sourceResult, destResult, out newWorkItems, out updatedWorkItems);

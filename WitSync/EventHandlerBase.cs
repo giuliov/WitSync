@@ -103,11 +103,7 @@ namespace WitSync
             }
         }
 
-        static public void GlobalError(string format, params object[] args)
-        {
-            Out(ConsoleColor.Red, OutputFlags.All, "ERROR: ", format, args);
-        }
-
+        //HACK
         static public void GlobalVerbose(string format, params object[] args)
         {
             Out(VerboseColor, OutputFlags.All, "VERBOSE: ", format, args);

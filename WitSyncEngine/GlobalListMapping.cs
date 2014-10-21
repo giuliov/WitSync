@@ -9,7 +9,7 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace WitSync
 {
-    public class GlobalListMapping
+    public class GlobalListMapping : MappingBase
     {
         public static GlobalListMapping LoadFrom(string path)
         {

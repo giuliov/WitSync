@@ -9,29 +9,26 @@ using System.Xml;
 namespace WitSync
 {
 
-    public class GlobalListsSyncEngine
+    public class GlobalListsSyncEngine : EngineBase
     {
-        protected TfsConnection sourceConn;
-        protected TfsConnection destConn;
-        protected IEngineEvents eventSink;
-        protected int saveErrors = 0;
-
         public GlobalListsSyncEngine(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
+            : base(source, dest, eventHandler)
         {
-            this.sourceConn = source;
-            this.destConn = dest;
-            this.eventSink = eventHandler;
+            //no-op
         }
 
-        public int Sync(GlobalListMapping mapping, bool testOnly)
-        {
-            eventSink.ConnectingSource(sourceConn);
-            sourceConn.Connect();
-            eventSink.SourceConnected(sourceConn);
-            eventSink.ConnectingDestination(destConn);
-            destConn.Connect();
-            eventSink.DestinationConnected(destConn);
+        public Func<GlobalListMapping> MapGetter { get; set; }
 
+        protected GlobalListMapping mapping;
+
+        public override int Prepare(bool testOnly)
+        {
+            mapping = MapGetter();
+            return 0;
+        }
+
+        public override int Execute(bool testOnly)
+        {
             var sourceWIStore = sourceConn.Collection.GetService<WorkItemStore>();
             var destWIStore = destConn.Collection.GetService<WorkItemStore>();
 

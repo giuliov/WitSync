@@ -11,10 +11,15 @@ namespace WitSync
 {
     class Program
     {
+        /*
+         -a SyncWorkItems -c http://localhost:8080/tfs/WitSync -p "WitSyncSrc" -d http://localhost:8080/tfs/WitSync -q "WitSyncDest" -i Links.idx -v
+         -a SyncGloballists -c http://localhost:8080/tfs/WitSync -p "WitSyncSrc" -d http://localhost:8080/tfs/WitSync -q "WitSyncDest" -m "Sample Mappings\globallists.yml" -v
+         */
         static int Main(string[] args)
         {
             int lastColumn;
 
+            // nice output formatting
             try
             {
                 lastColumn = Console.BufferWidth - 2;
@@ -24,6 +29,7 @@ namespace WitSync
                 lastColumn = 78;
             }//try
 
+            // parse command line
             var options = new WitSyncCommandLineOptions();
 
             CommandLineParser parser = new CommandLineParser(options);
@@ -40,7 +46,7 @@ namespace WitSync
                 Console.WriteLine(parser.UsageInfo.GetOptionsAsString(lastColumn));
                 Console.WriteLine(parser.UsageInfo.GetErrorsAsString(lastColumn));
                 return -1;
-            }
+            }//if
 
             // command line parsing succeeded
             if (options.TestOnly)
@@ -51,109 +57,79 @@ namespace WitSync
                 EventHandlerBase.GlobalVerbose(options.ToString());
             }//if
 
-            try
-            {
-                switch (options.Action)
-                {
-                    /*
-                                    -a SyncWorkItems -c http://localhost:8080/tfs/WitSync -p "WitSyncSrc" -d http://localhost:8080/tfs/WitSync -q "WitSyncDest" -i Links.idx -v
-                                    */
-                    case WitSyncCommandLineOptions.Verbs.SyncWorkItems:
-                        return RunSync(options);
-                    case WitSyncCommandLineOptions.Verbs.SyncAreasAndIterations:
-                        return RunSyncAreasAndIterations(options, true, true);
-                    case WitSyncCommandLineOptions.Verbs.GenerateSampleMappingFile:
-                        return GenerateSampleMappingFile(options);
-                    case WitSyncCommandLineOptions.Verbs.SyncAreas:
-                        return RunSyncAreasAndIterations(options, true, false);
-                    case WitSyncCommandLineOptions.Verbs.SyncIterations:
-                        return RunSyncAreasAndIterations(options, false, true);
-                    /*
-                                    -a SyncGloballists -c http://localhost:8080/tfs/WitSync -p "WitSyncSrc" -d http://localhost:8080/tfs/WitSync -q "WitSyncDest" -m "Sample Mappings\globallists.yml" -v
-                                    */
-                    case WitSyncCommandLineOptions.Verbs.SyncGloballists:
-                        return RunSyncGloballists(options);
-                }//switch
-            }
-            catch (Exception ex)
-            {
-                EventHandlerBase.GlobalError("Internal error: {0}\r\n{1}", ex.Message, ex.StackTrace);
-                return -99;
-            }//try
-
-            // should never get here...
-            return -1;
-        }
-
-        private static int RunSyncGloballists(WitSyncCommandLineOptions options)
-        {
+            // with user's need in hand, build the pipeline
             var eventHandler = new EngineEventHandler(options.Verbose);
-
-            var mapping = GlobalListMapping.LoadFrom(options.MappingFile);
-
             TfsConnection source;
             TfsConnection dest;
             MakeConnection(options, out source, out dest);
 
-            var engine = new GlobalListsSyncEngine(source, dest, eventHandler);
-            return engine.Sync(mapping, options.TestOnly);
-        }
+            var pipeline = new SyncPipeline(source, dest, eventHandler);
 
-        private static int RunSyncAreasAndIterations(WitSyncCommandLineOptions options, bool areas, bool iterations)
-        {
-            var eventHandler = new EngineEventHandler(options.Verbose);
-
-            TfsConnection source;
-            TfsConnection dest;
-            MakeConnection(options, out source, out dest);
-
-            var engine = new AreasAndIterationsSyncEngine(source, dest, eventHandler);
-            return engine.Sync(areas, iterations, options.TestOnly);
-        }
-
-
-        private static int GenerateSampleMappingFile(WitSyncCommandLineOptions options)
-        {
-            ProjectMapping.GenerateSampleMappingFile(options.MappingFile);
-            return 0;
-        }
-
-        private static int RunSync(WitSyncCommandLineOptions options)
-        {
-            var eventHandler = new EngineEventHandler(options.Verbose);
-
-            ProjectMapping mapping;
-            if (System.IO.File.Exists(options.MappingFile))
+            var stageBuilder = new Dictionary<WitSyncCommandLineOptions.Verbs,Func<EngineBase>>();
+            stageBuilder[WitSyncCommandLineOptions.Verbs.SyncGloballists] = () =>
             {
-                mapping = ProjectMapping.LoadFrom(options.MappingFile);
-                if (mapping.ErrorsCount > 0)
+                var engine = new GlobalListsSyncEngine(source, dest, eventHandler);
+                engine.MapGetter = () => { return GlobalListMapping.LoadFrom(options.MappingFile); };
+                return engine;
+            };
+            stageBuilder[WitSyncCommandLineOptions.Verbs.SyncAreas] = () =>
+            {
+                var engine = new AreasAndIterationsSyncEngine(source, dest, eventHandler);
+                engine.Options = AreasAndIterationsSyncEngine.EngineOptions.Areas;
+                return engine;
+            };
+            stageBuilder[WitSyncCommandLineOptions.Verbs.SyncIterations] = () =>
+            {
+                var engine = new AreasAndIterationsSyncEngine(source, dest, eventHandler);
+                engine.Options = AreasAndIterationsSyncEngine.EngineOptions.Iterations;
+                return engine;
+            };
+            stageBuilder[WitSyncCommandLineOptions.Verbs.SyncWorkItems] = () =>
+            {
+                var engine = new WitSyncEngine(source, dest, eventHandler);
+                engine.MapGetter = () => {
+                        ProjectMapping mapping = null;
+
+                        if (System.IO.File.Exists(options.MappingFile))
+                        {
+                            mapping = ProjectMapping.LoadFrom(options.MappingFile);
+                            if (mapping.ErrorsCount > 0)
+                            {
+                                foreach (var err in mapping.ErrorMessage)
+                                {
+                                    eventHandler.MappingGenericValidationError(err, null);
+                                }
+                                // TODO return 100 + mapping.ErrorsCount;
+                            }//if
+                        }
+                        else
+                        {
+                            eventHandler.MappingFileNotFoundAssumeDefaults(options.MappingFile);
+                            // assume
+                            mapping = new ProjectMapping();
+                        }//if
+                        if (mapping != null
+                            && !string.IsNullOrEmpty(options.IndexFile))
+                        {
+                            // if specified both in the mapping and on the command line, latter wins
+                            mapping.IndexFile = options.IndexFile;
+                        }//if
+
+                        return mapping;
+                    };//lambda
+                engine.Options = options.AdvancedOptions;
+                return engine;
+            };//lambda
+
+            foreach (WitSyncCommandLineOptions.Verbs stage in Enum.GetValues(typeof(WitSyncCommandLineOptions.Verbs)))
+            {
+                if ((options.Action & stage) == stage)
                 {
-                    foreach (var err in mapping.ErrorMessage)
-                    {
-                        eventHandler.MappingGenericValidationError(err, null);
-                    }
-                    return 100 + mapping.ErrorsCount;
+                    pipeline.AddStage(stageBuilder[stage]);
                 }//if
-            }
-            else
-            {
-                eventHandler.MappingFileNotFoundAssumeDefaults(options.MappingFile);
-                // assume
-                mapping = new ProjectMapping();
-            }
+            }//for
 
-            if (!string.IsNullOrEmpty(options.IndexFile))
-            {
-                // if specified both in the mapping and on the command line, latter wins
-                mapping.IndexFile = options.IndexFile;
-            }
-
-            TfsConnection source;
-            TfsConnection dest;
-            MakeConnection(options, out source, out dest);
-
-            var engine = new WitSyncEngine(source, dest, eventHandler);
-            return engine.Sync(mapping, options.TestOnly, options.AdvancedOptions);
+            return pipeline.Execute(options.TestOnly);
         }
 
         private static void MakeConnection(WitSyncCommandLineOptions options, out TfsConnection source, out TfsConnection dest)
