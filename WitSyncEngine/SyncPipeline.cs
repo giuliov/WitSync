@@ -31,26 +31,18 @@ namespace WitSync
         protected IEngineEvents eventSink;
         protected int syncErrors = 0;
 
-        public int Execute(bool testOnly)
+        public int Execute(bool stopPipelineOnFirstError, bool testOnly)
         {
             try
             {
-                // connect
-                eventSink.ConnectingSource(sourceConn);
-                sourceConn.Connect();
-                eventSink.SourceConnected(sourceConn);
-                eventSink.ConnectingDestination(destConn);
-                destConn.Connect();
-                eventSink.DestinationConnected(destConn);
+                //PrepareStages(stopPipelineOnFirstError, testOnly);
+
+                Connect();
 
                 // execute the stages in order
                 eventSink.SyncStarted();
 
-                foreach (var stageBuilder in stageBuilders)
-                {
-                    var stage = stageBuilder();
-                    int stageErrors = stage.Execute(testOnly);
-                }//for
+                ExecuteStages(stopPipelineOnFirstError, testOnly);
 
                 eventSink.SyncFinished(syncErrors);
                 return syncErrors;
@@ -60,6 +52,61 @@ namespace WitSync
                 eventSink.InternalError(ex);                
                 return -99;
             }//try
+        }
+
+        private void PrepareStages(bool stopPipelineOnFirstError, bool testOnly)
+        {
+            foreach (var stageBuilder in stageBuilders)
+            {
+                var stage = stageBuilder();
+                int stageErrors = -1;
+                try
+                {
+                    eventSink.PreparingStage(stage);
+                    stageErrors = stage.Prepare(testOnly);
+                    eventSink.StagePrepared(stage);
+                }
+                catch (Exception ex)
+                {
+                    if (stopPipelineOnFirstError)
+                        throw;
+                    else
+                        eventSink.StagePreparationError(stage, ex);
+                }//try
+            }//for
+        }
+
+        private void Connect()
+        {
+            // connect
+            eventSink.ConnectingSource(sourceConn);
+            sourceConn.Connect();
+            eventSink.SourceConnected(sourceConn);
+            eventSink.ConnectingDestination(destConn);
+            destConn.Connect();
+            eventSink.DestinationConnected(destConn);
+        }
+
+        private void ExecuteStages(bool stopPipelineOnFirstError, bool testOnly)
+        {
+            foreach (var stageBuilder in stageBuilders)
+            {
+                var stage = stageBuilder();
+                int stageErrors = -1;
+                try
+                {
+                    eventSink.ExecutingStage(stage);
+                    stageErrors = stage.Execute(testOnly);
+                    eventSink.StageSucceeded(stage);
+                }
+                catch (Exception ex)
+                {
+                    if (stopPipelineOnFirstError)
+                        throw;
+                    else
+                        eventSink.StageError(stage, ex);
+                }//try
+            }//for
         }
     }
 }

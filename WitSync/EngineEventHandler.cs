@@ -343,5 +343,41 @@ namespace WitSync
         {
             this.Error("Internal error: {0}\r\n{1}", ex.Message, ex.StackTrace);
         }
+
+        protected DateTimeOffset stageStart;
+
+        public void ExecutingStage(EngineBase stage)
+        {
+            stageStart = DateTimeOffset.UtcNow;
+            this.Info("Stage {0} started.", stage.Name);
+        }
+
+        public void StageSucceeded(EngineBase stage)
+        {
+            var elapsed = DateTimeOffset.UtcNow - stageStart;
+            this.Info("Stage {0} successfully completed in {1:d'.'hh':'mm':'ss}.", stage.Name, elapsed);
+        }
+
+        public void StageError(EngineBase stage, Exception ex)
+        {
+            var elapsed = DateTimeOffset.UtcNow - stageStart;
+            this.Warning("Stage {0} failed at {1:d'.'hh':'mm':'ss}, continuing with next stages; error was {1}", stage.Name, ex.Message);
+            this.Verbose(ex.StackTrace);
+        }
+
+        public void PreparingStage(EngineBase stage)
+        {
+            this.Info("Preparing stage {0}.", stage.Name);
+        }
+
+        public void StagePrepared(EngineBase stage)
+        {
+            this.Info("Stage {0} ready.", stage.Name);
+        }
+
+        public void StagePreparationError(EngineBase stage, Exception ex)
+        {
+            this.Info("Stage {0} not ready, continuing with next stages; error was {1}", stage.Name, ex.Message);
+        }
     }
 }

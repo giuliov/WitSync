@@ -29,10 +29,38 @@ namespace WitSync
         {
         }
 
-        [CommandLineOption(Name = "a", Aliases = "action"
-            , MinOccurs = 1
-            , Description = "Action, one of: SyncWorkItems,SyncAreas,SyncIterations,SyncGloballists,SyncAreasAndIterations.")]
-        public Verbs Action { get; set; }
+        // commands
+        [CommandLineOption(BoolFunction = BoolFunction.TrueIfPresent
+            , Description = "SyncGloballists")]
+        public bool SyncGloballists { get; set; }
+        [CommandLineOption(BoolFunction = BoolFunction.TrueIfPresent
+            , Description = "SyncAreas")]
+        public bool SyncAreas { get; set; }
+        [CommandLineOption(BoolFunction = BoolFunction.TrueIfPresent
+            , Description = "SyncIterations")]
+        public bool SyncIterations { get; set; }
+        [CommandLineOption(BoolFunction = BoolFunction.TrueIfPresent
+            , Description = "SyncWorkItems")]
+        public bool SyncWorkItems { get; set; }
+
+        public Verbs Action
+        {
+            get
+            {
+                Verbs result = 0;
+                if (SyncGloballists)
+                    result |= Verbs.SyncGloballists;
+                if (SyncAreas)
+                    result |= Verbs.SyncAreas;
+                if (SyncIterations)
+                    result |= Verbs.SyncIterations;
+                if (SyncWorkItems)
+                    result |= Verbs.SyncWorkItems;
+                return result;
+            }
+        }
+
+        // options
 
         [CommandLineOption(Name = "c", Aliases = "sourceCollection"
             , MinOccurs = 1
@@ -77,6 +105,10 @@ namespace WitSync
             , Description = "Prints detailed output")]
         public bool Verbose { get; set; }
 
+        [CommandLineOption(Name = "e", Aliases = "stopOnError"
+            , BoolFunction = BoolFunction.TrueIfPresent
+            , Description = "Stops if pipeline stage fails")]
+        public bool StopPipelineOnFirstError { get; set; }
         [CommandLineOption(Name = "t", Aliases = "test trial"
             , BoolFunction = BoolFunction.TrueIfPresent
             , Description = "Test and does not save changes to target")]

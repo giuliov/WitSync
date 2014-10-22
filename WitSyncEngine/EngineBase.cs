@@ -23,5 +23,7 @@ namespace WitSync
 
         abstract public int Prepare(bool testOnly);
         abstract public int Execute(bool testOnly);
+
+        public virtual string Name { get { return this.GetType().Name; } }
     }
 }

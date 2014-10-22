@@ -63,6 +63,7 @@
     <Compile Include="GlobalListsSyncEngine.cs" />
     <Compile Include="AreasAndIterationsSyncEngine.cs" />
     <Compile Include="CollectionExtensions.cs" />
+    <Compile Include="WitMapping.cs" />
     <Compile Include="SyncPipeline.cs" />
     <Compile Include="WitSyncEngine.cs" />
     <Compile Include="IEngineEvents.cs" />
@@ -70,7 +71,6 @@
     <Compile Include="WorkItemMapper.cs" />
     <Compile Include="MapperFunctions.cs" />
     <Compile Include="MappingChecker.cs" />
-    <Compile Include="ProjectMapping.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryRunner.cs" />
     <Compile Include="SyncContext.cs" />

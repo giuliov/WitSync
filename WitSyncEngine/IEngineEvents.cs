@@ -64,7 +64,12 @@ namespace WitSync
         void SyncingIterations();
         void SyncingAreas();
         void ReadingAreaAndIterationInfoFromSource();
-
         void InternalError(Exception ex);
+        void ExecutingStage(EngineBase stage);
+        void StageSucceeded(EngineBase stage);
+        void StageError(EngineBase stage, Exception ex);
+        void PreparingStage(EngineBase stage);
+        void StagePrepared(EngineBase stage);
+        void StagePreparationError(EngineBase stage, Exception ex);
     }
 }

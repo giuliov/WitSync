@@ -1,0 +1,26 @@
+﻿globallists:
+  include:
+  - Versions - City
+  - Environments - City
+workitems:
+  sourceQuery: >
+    SELECT [System.Id], [System.WorkItemType], [System.Title], [System.AssignedTo], [System.State], [System.Tags]
+    FROM WorkItems
+    WHERE [System.TeamProject] = @project
+    AND [System.WorkItemType] <> ''
+    AND [System.State] <> ''
+  destinationQuery: >
+    SELECT [System.Id], [System.WorkItemType], [System.Title], [System.AssignedTo], [System.State], [System.Tags]
+    FROM WorkItems
+    WHERE [System.TeamProject] = @project
+    AND [System.WorkItemType] <> ''
+    AND [System.State] <> ''
+  workItemMappings:
+  - sourceType: Task
+    destinationType: Task
+    iDField:
+      destination: Custom.OriginalID
+    stateList:
+      states:
+      - source: New
+        destination: New
