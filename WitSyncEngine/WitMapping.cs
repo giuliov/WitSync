@@ -44,6 +44,7 @@ namespace WitSync
         [XmlAttribute]
         public string Set { get; set; }
 
+        [YamlIgnore]
         public bool IsWildcard { get { return Source == "*"; } }
 
         public override string ToString()
@@ -82,6 +83,12 @@ namespace WitSync
     [XmlType]
     public class WorkItemMap
     {
+        public WorkItemMap()
+        {
+            // default
+            this.SyncAttachments = true;
+        }
+
         [XmlAttribute]
         public string SourceType { get; set; }
         [XmlAttribute]
@@ -96,6 +103,7 @@ namespace WitSync
         public bool SyncAttachments { get; set; }
 
         [XmlIgnore]
+        [YamlIgnore]
         public IEnumerable<FieldMap> AllFields
         {
             get
@@ -134,6 +142,7 @@ namespace WitSync
         [XmlAttribute]
         public string DestinationType { get; set; }
 
+        [YamlIgnore]
         public bool IsWildcard { get { return SourceType == "*"; } }
     }
 
@@ -225,9 +234,11 @@ namespace WitSync
 
         // Validation Error Count
         [XmlIgnore]
+        [YamlIgnore]
         public int ErrorsCount { get { return ErrorMessage.Count; } }
         // Validation Error Message
         [XmlIgnore]
+        [YamlIgnore]
         public List<string> ErrorMessage = new List<string>();
 
         public void ValidationHandler(object sender, ValidationEventArgs args)
@@ -295,31 +306,43 @@ namespace WitSync
             this.DestinationQuery = this.DestinationQuery ?? string.Format("SELECT id FROM workitems WHERE [Team Project]='{0}'", destConn.ProjectName);
             this.AreaMap = this.AreaMap ?? new AreaMap[] { new AreaMap() { SourcePath = "*", DestinationPath = "*" } };
             this.IterationMap = this.IterationMap ?? new IterationMap[] { new IterationMap() { SourcePath = "*", DestinationPath = "*" } };
+            var defaultFieldRules = new FieldMap[] {
+                // HACK these names are OK for Scrum, but ...
+                new FieldMap() { Source = "Area ID", Destination = "" },
+                new FieldMap() { Source = "Area Path", Destination = "Area Path", Translate = "MapAreaPath"},
+                new FieldMap() { Source = "Iteration ID", Destination = "" },
+                new FieldMap() { Source = "Iteration Path", Destination = "Iteration Path", Translate = "MapIterationPath" },
+                new FieldMap() { Source = "Reason", Destination = "" },
+                new FieldMap() { Source = "State Change Date", Destination = "" },
+                new FieldMap() { Source = "Created Date", Destination = "" },
+                new FieldMap() { Source = "Changed Date", Destination = "" },
+                new FieldMap() { Source = "*", Destination = "*" }
+            };
+            var sourceWItypes = sourceWIStore.Projects[sourceConn.ProjectName].WorkItemTypes;
             if (this.WorkItemMappings == null)
             {
                 var mappings = new List<WorkItemMap>();
-                foreach (WorkItemType wit in sourceWIStore.Projects[sourceConn.ProjectName].WorkItemTypes)
+                mappings.AddRange(sourceWItypes.ConvertAll(wit =>
                 {
-                    mappings.Add(new WorkItemMap()
-                    {
-                        SourceType = wit.Name,
-                        DestinationType = wit.Name,
-                        SyncAttachments = true,
-                        Fields = new FieldMap[] {
-                            // HACK these names are OK for Scrum, but ...
-                            new FieldMap() { Source = "Area ID", Destination = "" },
-                            new FieldMap() { Source = "Area Path", Destination = "Area Path", Translate = "MapAreaPath"},
-                            new FieldMap() { Source = "Iteration ID", Destination = "" },
-                            new FieldMap() { Source = "Iteration Path", Destination = "Iteration Path", Translate = "MapIterationPath" },
-                            new FieldMap() { Source = "Reason", Destination = "" },
-                            new FieldMap() { Source = "State Change Date", Destination = "" },
-                            new FieldMap() { Source = "Created Date", Destination = "" },
-                            new FieldMap() { Source = "Changed Date", Destination = "" },
-                            new FieldMap() { Source = "*", Destination = "*" }
-                        }
-                    });
-                }//for
+                    return new WorkItemMap()
+                        {
+                            SourceType = wit.Name,
+                            DestinationType = wit.Name,
+                            SyncAttachments = true,
+                            Fields = defaultFieldRules
+                        };
+                }));
                 this.WorkItemMappings = mappings.ToArray();
+            }
+            else
+            {
+                this.WorkItemMappings.ForEach(m =>
+                {
+                    if (m.Fields == null)
+                    {
+                        m.Fields = defaultFieldRules;
+                    }
+                });
             }
             this.LinkTypeMap = this.LinkTypeMap ?? new LinkTypeMap[] { new LinkTypeMap() { SourceType = "*", DestinationType = "*" } };
         }

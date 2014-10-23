@@ -401,5 +401,19 @@ namespace WitSync
             this.Warning("Stage {0} not ready, continuing with next stages; error was {1}", stage.Name, ex.Message);
             this.Verbose(ex.StackTrace);
         }
+
+        public void DumpMapping(ProjectMapping mapping)
+        {
+            var output = new System.IO.StringWriter();
+            output.WriteLine();
+            output.WriteLine("# mapping dump start #");
+            var serializer = new YamlDotNet.Serialization.Serializer(YamlDotNet.Serialization.SerializationOptions.EmitDefaults, new YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention());
+            serializer.Serialize(output, mapping);
+            output.WriteLine("# mapping dump  end  #");
+            output.Flush();
+
+            this.Verbose("Dumping Mapping");
+            base.RawOut(VerboseColor, OutputFlags.All,output.ToString());
+        }
     }
 }

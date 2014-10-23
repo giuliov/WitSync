@@ -57,6 +57,8 @@ namespace WitSync
 
             mapping.SetDefaults(sourceConn, sourceWIStore, destConn, destWIStore);
 
+            eventSink.DumpMapping(mapping);
+
             var sourceRunner = new QueryRunner(sourceWIStore, sourceConn.ProjectName);
             eventSink.ExecutingSourceQuery(mapping.SourceQuery, sourceConn);
             var sourceResult = sourceRunner.RunQuery(mapping.SourceQuery);

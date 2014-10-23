@@ -71,5 +71,6 @@ namespace WitSync
         void PreparingStage(EngineBase stage);
         void StagePrepared(EngineBase stage, int stageErrors);
         void StagePreparationError(EngineBase stage, Exception ex);
+        void DumpMapping(ProjectMapping mapping);
     }
 }
