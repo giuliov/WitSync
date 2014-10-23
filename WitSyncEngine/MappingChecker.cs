@@ -37,15 +37,10 @@ namespace WitSync
 
         internal void Check(QueryResult sourceResult, ProjectMapping mapping, QueryResult destResult)
         {
-            if (mapping.HasIndex && System.IO.File.Exists(mapping.IndexFile))
-            {
-                //TODO check indexFile is valid
-            }//if
+            var workItemMappings = mapping.WorkItemMappings.ToList();
 
             var sourceWorkItems = sourceResult.WorkItems.Values.ToList();
             var destWorkItems = destResult.WorkItems.Values.ToList();
-
-            var workItemMappings = mapping.WorkItemMappings.ToList();
 
             var sourceTypeNames = sourceWorkItems.ConvertAll(wi => wi.Type.Name).Distinct();
             var mappedSourceTypeNames = workItemMappings.ConvertAll(m => m.SourceType);
@@ -57,6 +52,16 @@ namespace WitSync
             var mappedDestTypeNames = workItemMappings.ConvertAll(m => m.DestinationType);
             destTypeNames.Except(mappedDestTypeNames).ToList().ForEach(
                 t => Log("Missing mapping for destination type {0}", t));
+        }
+
+        internal void AgnosticCheck(ProjectMapping mapping)
+        {
+            if (mapping.HasIndex && System.IO.File.Exists(mapping.IndexFile))
+            {
+                //TODO check indexFile is valid
+            }//if
+
+            var workItemMappings = mapping.WorkItemMappings.ToList();
 
             var allSourceTypes = this.sourceWIStore.Projects[this.sourceProjectName].WorkItemTypes;
             var allDestTypes = this.destWIStore.Projects[this.destProjectName].WorkItemTypes;

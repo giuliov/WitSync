@@ -69,7 +69,16 @@ namespace WitSync
             MakeConnection(options, out source, out dest);
 
             var pipeline = new SyncPipeline(source, dest, eventHandler);
-            var map = SyncMapping.LoadFrom(options.MappingFile);
+            SyncMapping map;
+            if (System.IO.File.Exists(options.MappingFile))
+            {
+                map = SyncMapping.LoadFrom(options.MappingFile);
+            }
+            else
+            {
+                eventHandler.MappingFileNotFoundAssumeDefaults(options.MappingFile);
+                map = new SyncMapping();
+            }//if
             //TODO mapping validation
 
             var stageBuilder = new Dictionary<WitSyncCommandLineOptions.Verbs,Func<EngineBase>>();
@@ -94,7 +103,17 @@ namespace WitSync
             stageBuilder[WitSyncCommandLineOptions.Verbs.SyncWorkItems] = () =>
             {
                 var engine = new WitSyncEngine(source, dest, eventHandler);
-                engine.MapGetter = () => { return map.workitems; };
+                engine.MapGetter = () => {
+                    if (map.workitems == null)
+                        // mapping file could be empty
+                        map.workitems = new ProjectMapping();
+                    if (!string.IsNullOrEmpty(options.IndexFile))
+                    {
+                        // if specified both in the mapping and on the command line, latter wins
+                        map.workitems.IndexFile = options.IndexFile;
+                    } 
+                    return map.workitems;
+                };
                 engine.Options = options.AdvancedOptions;
                 return engine;
             };//lambda

@@ -36,9 +36,9 @@ namespace WitSync
         {
             try
             {
-                PrepareStages(stopPipelineOnFirstError, testOnly);
-
                 Connect();
+
+                PrepareStages(stopPipelineOnFirstError, testOnly);
 
                 // execute the stages in order
                 eventSink.SyncStarted();

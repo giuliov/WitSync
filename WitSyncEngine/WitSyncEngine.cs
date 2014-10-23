@@ -34,19 +34,18 @@ namespace WitSync
         protected ProjectMapping mapping;
         protected EngineOptions options;
 
+        protected WorkItemStore sourceWIStore;
+        protected WorkItemStore destWIStore;
+        internal ProjectMappingChecker checker;
+
         public override int Prepare(bool testOnly)
         {
             mapping = MapGetter();
             if (mapping == null)
                 // SetDefaults will fill this in
                 mapping = new ProjectMapping();
-            return 0;
-        }
 
-        public override int Execute(bool testOnly)
-        {
-            var sourceWIStore = sourceConn.Collection.GetService<WorkItemStore>();
-            WorkItemStore destWIStore = null;
+            sourceWIStore = sourceConn.Collection.GetService<WorkItemStore>();
             if (options.HasFlag(EngineOptions.BypassWorkItemStoreRules))
             {
                 eventSink.BypassingRulesOnDestinationWorkItemStore(destConn);
@@ -62,6 +61,17 @@ namespace WitSync
 
             eventSink.DumpMapping(mapping);
 
+            checker = new ProjectMappingChecker(sourceWIStore, sourceConn.ProjectName, destWIStore, destConn.ProjectName, eventSink);
+            checker.AgnosticCheck(mapping);
+            if (!checker.Passed)
+                // abort
+                return checker.ErrorCount;
+
+            return 0;
+        }
+
+        public override int Execute(bool testOnly)
+        {
             var sourceRunner = new QueryRunner(sourceWIStore, sourceConn.ProjectName);
             eventSink.ExecutingSourceQuery(mapping.SourceQuery, sourceConn);
             var sourceResult = sourceRunner.RunQuery(mapping.SourceQuery);
@@ -81,7 +91,6 @@ namespace WitSync
             }
 
             // use query data for more thorough checks
-            var checker = new ProjectMappingChecker(sourceWIStore, sourceConn.ProjectName, destWIStore, destConn.ProjectName, eventSink);
             checker.Check(sourceResult, mapping, destResult);
             if (!checker.Passed)
                 // abort
@@ -121,6 +130,7 @@ namespace WitSync
                 validWorkItems.AddRange(savedWorkItems);
             }//if
 
+            System.Threading.Thread.Sleep(10000);
             workItemMapper.CleanUp();
 
             var linkMapper = new LinkMapper(context);
@@ -129,7 +139,6 @@ namespace WitSync
             eventSink.SavingLinks(changedLinks, validWorkItems);
             SaveLinks(mapping, index, destWIStore, validWorkItems, testOnly);
 
-            eventSink.SyncFinished(saveErrors);
             return saveErrors;
         }
 
