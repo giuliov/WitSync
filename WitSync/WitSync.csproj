@@ -74,6 +74,7 @@
     <Content Include="Sample Mappings\test01.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="WitSync.nuspec" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WitSyncEngine\WitSyncEngine.csproj">
@@ -112,6 +113,9 @@
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>$(SolutionDir)\build\NuGet.exe pack $(ProjectDir)$(ProjectName).nuspec -Prop Configuration=$(ConfigurationName) -IncludeReferencedProjects -Output $(SolutionDir)\distr -Verbose</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

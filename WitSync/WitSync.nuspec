@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>witsync</id>
+    <version>0.5.0-beta</version>
+    <title>WitSync</title>
+    <authors>Giulio Vian</authors>
+    <owners>Giulio Vian</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/giuliov/WitSync</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Team Foundation Server Work Item Syncronization tool</description>
+    <releaseNotes>TODO : Summary of changes made in this release of the package.</releaseNotes>
+    <copyright>Copyright 2014</copyright>
+    <tags>TFS</tags>
+  </metadata>
+  <files>
+    <file src="..\README.md" target="" />
+    <file src="..\docs\**\*.*" target="docs" />
+    <file src="bin\Debug\*.exe" target="lib" />
+    <file src="bin\Debug\*.dll" target="lib" />
+  </files>
+</package>

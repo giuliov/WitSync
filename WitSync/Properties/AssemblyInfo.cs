@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("WitSync")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Team Foundation Server Work Item Syncronization tool")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("WitSync")]
