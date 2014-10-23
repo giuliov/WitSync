@@ -66,7 +66,14 @@ namespace WitSync
         public void SyncFinished(int errors)
         {
             var elapsed = DateTimeOffset.UtcNow - syncStart;
-            this.Info("Syncronization completed in {0:d'.'hh':'mm':'ss} with {1} error(s).", elapsed, errors);
+            if (errors != 0)
+            {
+                base.RawOut(ErrorColor, OutputFlags.All, "Syncronization completed in {0:d'.'hh':'mm':'ss} with {1} error(s).", elapsed, errors);
+            }
+            else
+            {
+                base.RawOut(SuccessColor, OutputFlags.All, "Syncronization completed in {0:d'.'hh':'mm':'ss} with no errors.", elapsed);
+            }
         }
 
         public void SavingWorkItems(List<WorkItem> newWorkItems, List<WorkItem> updatedWorkItems)
@@ -352,10 +359,17 @@ namespace WitSync
             this.Info("Stage {0} started.", stage.Name);
         }
 
-        public void StageSucceeded(EngineBase stage)
+        public void StageCompleted(EngineBase stage, int stageErrors)
         {
             var elapsed = DateTimeOffset.UtcNow - stageStart;
-            this.Info("Stage {0} successfully completed in {1:d'.'hh':'mm':'ss}.", stage.Name, elapsed);
+            if (stageErrors > 0)
+            {
+                base.RawOut(WarningColor, OutputFlags.All, "Stage {0} completed in {1:d'.'hh':'mm':'ss} with {2} error(s).", stage.Name, elapsed, stageErrors);
+            }
+            else
+            {
+                base.RawOut(SuccessColor, OutputFlags.All, "Stage {0} successfully completed in {1:d'.'hh':'mm':'ss}.", stage.Name, elapsed);
+            }
         }
 
         public void StageError(EngineBase stage, Exception ex)
@@ -370,9 +384,16 @@ namespace WitSync
             this.Verbose("Preparing stage {0}.", stage.Name);
         }
 
-        public void StagePrepared(EngineBase stage)
+        public void StagePrepared(EngineBase stage, int stageErrors)
         {
-            this.Verbose("Stage {0} ready.", stage.Name);
+            if (stageErrors > 0)
+            {
+                this.Warning("Stage {0} failed with {1} error(s).", stage.Name, stageErrors);
+            }
+            else
+            {
+                this.Verbose("Stage {0} ready.", stage.Name);
+            }
         }
 
         public void StagePreparationError(EngineBase stage, Exception ex)

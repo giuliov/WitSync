@@ -15,10 +15,11 @@ namespace WitSync
             All = 0xff
         }
 
-        private const ConsoleColor VerboseColor = ConsoleColor.DarkGray;
-        private const ConsoleColor InfoColor = ConsoleColor.Cyan;
-        private const ConsoleColor WarningColor = ConsoleColor.Yellow;
-        private const ConsoleColor ErrorColor = ConsoleColor.Red;
+        protected const ConsoleColor VerboseColor = ConsoleColor.DarkGray;
+        protected const ConsoleColor InfoColor = ConsoleColor.Cyan;
+        protected const ConsoleColor SuccessColor = ConsoleColor.Green;
+        protected const ConsoleColor WarningColor = ConsoleColor.Yellow;
+        protected const ConsoleColor ErrorColor = ConsoleColor.Red;
 
         private bool verbose;
 
@@ -39,6 +40,11 @@ namespace WitSync
             UniqueOut(VerboseColor, outFlags, "VERBOSE: ", format, args);
         }
 
+        protected void Success(string format, params object[] args)
+        {
+            Out(SuccessColor, OutputFlags.All, string.Empty, format, args);
+        }
+
         protected void Info(string format, params object[] args)
         {
             Out(InfoColor, OutputFlags.All, string.Empty, format, args);
@@ -46,22 +52,22 @@ namespace WitSync
 
         protected void Warning(string format, params object[] args)
         {
-            Out(ConsoleColor.Yellow, OutputFlags.All, "WARNING: ", format, args);
+            Out(WarningColor, OutputFlags.All, "WARNING: ", format, args);
         }
 
         protected void Error(string format, params object[] args)
         {
-            Out(ConsoleColor.Red, OutputFlags.All, "ERROR: ", format, args);
+            Out(ErrorColor, OutputFlags.All, "ERROR: ", format, args);
         }
 
         protected void UniqueWarning(string format, params object[] args)
         {
-            UniqueOut(ConsoleColor.Yellow, OutputFlags.All, "WARNING: ", format, args);
+            UniqueOut(WarningColor, OutputFlags.All, "WARNING: ", format, args);
         }
 
         protected void UniqueError(string format, params object[] args)
         {
-            UniqueOut(ConsoleColor.Red, OutputFlags.All, "ERROR: ", format, args);
+            UniqueOut(ErrorColor, OutputFlags.All, "ERROR: ", format, args);
         }
 
         private HashSet<int> outputted = new HashSet<int>();
@@ -76,6 +82,13 @@ namespace WitSync
                 OutCore(color, outFlags, prefix, message);
                 outputted.Add(key);
             }//if
+        }
+
+        protected void RawOut(ConsoleColor color, OutputFlags outFlags, string format, params object[] args)
+        {
+            string message = args != null ? string.Format(format, args: args) : format;
+
+            OutCore(color, outFlags, string.Empty, message);
         }
 
         static protected void Out(ConsoleColor color, OutputFlags outFlags, string prefix, string format, object[] args)

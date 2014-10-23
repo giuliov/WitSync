@@ -66,10 +66,10 @@ namespace WitSync
         void ReadingAreaAndIterationInfoFromSource();
         void InternalError(Exception ex);
         void ExecutingStage(EngineBase stage);
-        void StageSucceeded(EngineBase stage);
+        void StageCompleted(EngineBase stage, int stageErrors);
         void StageError(EngineBase stage, Exception ex);
         void PreparingStage(EngineBase stage);
-        void StagePrepared(EngineBase stage);
+        void StagePrepared(EngineBase stage, int stageErrors);
         void StagePreparationError(EngineBase stage, Exception ex);
     }
 }

@@ -67,7 +67,7 @@ namespace WitSync
                 {
                     eventSink.PreparingStage(stage);
                     stageErrors = stage.Prepare(testOnly);
-                    eventSink.StagePrepared(stage);
+                    eventSink.StagePrepared(stage, stageErrors);
 
                     preparedStages.Add(stage);
                 }
@@ -101,14 +101,19 @@ namespace WitSync
                 {
                     eventSink.ExecutingStage(stage);
                     stageErrors = stage.Execute(testOnly);
-                    eventSink.StageSucceeded(stage);
+                    eventSink.StageCompleted(stage, stageErrors);
+
+                    syncErrors += stageErrors;
                 }
                 catch (Exception ex)
                 {
                     if (stopPipelineOnFirstError)
                         throw;
                     else
+                    {
                         eventSink.StageError(stage, ex);
+                        syncErrors++;
+                    }
                 }//try
             }//for
         }
