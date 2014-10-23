@@ -19,6 +19,7 @@ namespace WitSync
         }
 
         List<Func<EngineBase>> stageBuilders = new List<Func<EngineBase>>();
+        List<EngineBase> preparedStages = new List<EngineBase>();
 
         public void AddStage<TEngine>(Func<TEngine> engineBuilder)
             where TEngine : EngineBase
@@ -35,7 +36,7 @@ namespace WitSync
         {
             try
             {
-                //PrepareStages(stopPipelineOnFirstError, testOnly);
+                PrepareStages(stopPipelineOnFirstError, testOnly);
 
                 Connect();
 
@@ -56,6 +57,8 @@ namespace WitSync
 
         private void PrepareStages(bool stopPipelineOnFirstError, bool testOnly)
         {
+            preparedStages.Clear();
+
             foreach (var stageBuilder in stageBuilders)
             {
                 var stage = stageBuilder();
@@ -65,6 +68,8 @@ namespace WitSync
                     eventSink.PreparingStage(stage);
                     stageErrors = stage.Prepare(testOnly);
                     eventSink.StagePrepared(stage);
+
+                    preparedStages.Add(stage);
                 }
                 catch (Exception ex)
                 {
@@ -89,9 +94,8 @@ namespace WitSync
 
         private void ExecuteStages(bool stopPipelineOnFirstError, bool testOnly)
         {
-            foreach (var stageBuilder in stageBuilders)
+            foreach (var stage in preparedStages)
             {
-                var stage = stageBuilder();
                 int stageErrors = -1;
                 try
                 {
