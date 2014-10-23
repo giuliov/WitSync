@@ -12,7 +12,13 @@ namespace WitSync
         ApplicationName = "WitSync",
         Copyright = "Copyright (c) Giulio Vian",
         Version = "0.5.0.0",
-        EnabledOptionStyles = OptionStyles.Windows | OptionStyles.ShortUnix | OptionStyles.LongUnix)]
+        EnabledOptionStyles = OptionStyles.Group | OptionStyles.Windows | OptionStyles.ShortUnix | OptionStyles.LongUnix)]
+    [CommandLineOptionGroup("commands", Name = "Commands",
+        Require = OptionGroupRequirement.AtLeastOne)]
+    [CommandLineOptionGroup("connection", Name = "Connection",
+        Require = OptionGroupRequirement.AtLeastOne)]
+    [CommandLineOptionGroup("options", Name = "Options")]
+    [CommandLineOptionGroup("advanced", Name = "Advanced Options")]
     public class WitSyncCommandLineOptions
     {
         [Flags]
@@ -30,17 +36,21 @@ namespace WitSync
         }
 
         // commands
-        [CommandLineOption(BoolFunction = BoolFunction.TrueIfPresent
-            , Description = "SyncGloballists")]
+        [CommandLineOption(GroupId = "commands"
+            , Name="g", Aliases="gl globallists"
+            , Description = "Syncronize GlobalLists data (use mapping file to filter)")]
         public bool SyncGloballists { get; set; }
-        [CommandLineOption(BoolFunction = BoolFunction.TrueIfPresent
-            , Description = "SyncAreas")]
+        [CommandLineOption(GroupId = "commands"
+            , Name = "a", Aliases = "area areas"
+            , Description = "Syncronize Areas (see documentation for limits)")]
         public bool SyncAreas { get; set; }
-        [CommandLineOption(BoolFunction = BoolFunction.TrueIfPresent
-            , Description = "SyncIterations")]
+        [CommandLineOption(GroupId = "commands"
+            , Name = "i", Aliases = "iteration iterations"
+            , Description = "Syncronize Iterations (see documentation for limits)")]
         public bool SyncIterations { get; set; }
-        [CommandLineOption(BoolFunction = BoolFunction.TrueIfPresent
-            , Description = "SyncWorkItems")]
+        [CommandLineOption(GroupId = "commands"
+            , Name = "w", Aliases = "wi workitem workitems"
+            , Description = "Syncronize WorkItems")]
         public bool SyncWorkItems { get; set; }
 
         public Verbs Action
@@ -62,79 +72,97 @@ namespace WitSync
 
         // options
 
-        [CommandLineOption(Name = "c", Aliases = "sourceCollection"
+        [CommandLineOption(GroupId = "connection"
+            , Name = "c", Aliases = "sourceCollection"
             , MinOccurs = 1
             , Description = "Source Collection Url, e.g. http://localhost:8080/tfs/DefaultCollection")]
         public string SourceCollectionUrl { get; set; }
-        [CommandLineOption(Name = "p", Aliases = "sourceProject"
+        [CommandLineOption(GroupId = "connection"
+            , Name = "p", Aliases = "sourceProject"
             , MinOccurs = 1
             , Description = "Source Project Name")]
         public string SourceProjectName { get; set; }
-        [CommandLineOption(Name = "su", Aliases = "sourceUser"
+        [CommandLineOption(GroupId = "connection"
+            , Name = "su", Aliases = "sourceUser"
             , Description = "Username connecting to Source")]
         public string SourceUser { get; set; }
-        [CommandLineOption(Name = "sp", Aliases = "sourcePassword"
+        [CommandLineOption(GroupId = "connection"
+            , Name = "sp", Aliases = "sourcePassword"
             , Description = "Password for Source user")]
         public string SourcePassword { get; set; }
 
-        [CommandLineOption(Name = "d", Aliases = "destinationCollection targetCollection"
+        [CommandLineOption(GroupId = "connection"
+            , Name = "d", Aliases = "destinationCollection targetCollection"
             , MinOccurs = 1
             , Description = "Destination Collection Url, e.g. http://localhost:8080/tfs/DefaultCollection")]
         public string DestinationCollectionUrl { get; set; }
-        [CommandLineOption(Name = "q", Aliases = "destinationProject targetProject"
+        [CommandLineOption(GroupId = "connection"
+            , Name = "q", Aliases = "destinationProject targetProject"
             , MinOccurs =1
             , Description = "Destination Project Name")]
         public string DestinationProjectName { get; set; }
-        [CommandLineOption(Name = "du", Aliases = "destinationUser targetUser "
+        [CommandLineOption(GroupId = "connection"
+            , Name = "du", Aliases = "destinationUser targetUser "
             , Description = "Username connecting to Destination")]
         public string DestinationUser { get; set; }
-        [CommandLineOption(Name = "dp", Aliases = "destinationPassword targetPassword "
+        [CommandLineOption(GroupId = "connection"
+            , Name = "dp", Aliases = "destinationPassword targetPassword "
             , Description = "Password for Destination user")]
         public string DestinationPassword { get; set; }
 
-        [CommandLineOption(Name = "m", Aliases = "map mapping mappingFile"
+        [CommandLineOption(GroupId = "options"
+            , Name = "m", Aliases = "map mapping mappingFile"
             , Description = "Mapping file, e.g. MyMappingFile.xml")]
         public string MappingFile { get; set; }
-        [CommandLineOption(Name = "i", Aliases = "index indexFile"
+        [CommandLineOption(GroupId = "options"
+            , Name = "ix", Aliases = "idx index indexFile"
             , MinOccurs = 0 //HACK is mandatory if ...
             , Description = "Index file, e.g. MyIndex.xml")]
         public string IndexFile { get; set; }
 
-        [CommandLineOption(Name = "v", Aliases = "verbose"
+        [CommandLineOption(GroupId = "options"
+            , Name = "v", Aliases = "verbose"
             , BoolFunction = BoolFunction.TrueIfPresent
             , Description = "Prints detailed output")]
         public bool Verbose { get; set; }
 
-        [CommandLineOption(Name = "e", Aliases = "stopOnError"
+        [CommandLineOption(GroupId = "options"
+            , Name = "e", Aliases = "stopOnError"
             , BoolFunction = BoolFunction.TrueIfPresent
             , Description = "Stops if pipeline stage fails")]
         public bool StopPipelineOnFirstError { get; set; }
-        [CommandLineOption(Name = "t", Aliases = "test trial"
+        [CommandLineOption(GroupId = "options"
+            , Name = "t", Aliases = "test trial"
             , BoolFunction = BoolFunction.TrueIfPresent
             , Description = "Test and does not save changes to target")]
         public bool TestOnly { get; set; }
 
-        [CommandLineOption(Description = "Displays this help text")]
+        [CommandLineOption(GroupId = "options", Description = "Displays this help text")]
         public bool Help = false;
 
         // Advanced options
-        [CommandLineOption(BoolFunction = BoolFunction.TrueIfPresent
+        [CommandLineOption(GroupId = "advanced"
+            , BoolFunction = BoolFunction.TrueIfPresent
             , Description = "Disable Rule validation")]
         public bool BypassWorkItemValidation { get; set; }
 
-        [CommandLineOption(BoolFunction = BoolFunction.TrueIfPresent
+        [CommandLineOption(GroupId = "advanced"
+            , BoolFunction = BoolFunction.TrueIfPresent
             , Description = "Algorithm used to determine when a field is updatable.")]
         public bool UseHeuristicForFieldUpdatability { get; set; }
 
-        [CommandLineOption(BoolFunction = BoolFunction.TrueIfPresent
+        [CommandLineOption(GroupId = "advanced"
+            , BoolFunction = BoolFunction.TrueIfPresent
             , Description = "Use [WorkItem.Open] Method to make the WorkItem updatable.")]
         public bool DoNotOpenTargetWorkItem { get; set; }
 
-        [CommandLineOption(BoolFunction = BoolFunction.TrueIfPresent
+        [CommandLineOption(GroupId = "advanced"
+            , BoolFunction = BoolFunction.TrueIfPresent
             , Description = "Use [WorkItem.PartialOpen] Method to make the WorkItem updatable.")]
         public bool PartialOpenTargetWorkItem { get; set; }
 
-        [CommandLineOption(BoolFunction = BoolFunction.TrueIfPresent
+        [CommandLineOption(GroupId = "advanced"
+            , BoolFunction = BoolFunction.TrueIfPresent
             , Description = "WorkItems missing from the target are first added in the initial state specified by InitalStateOnDestination, then updated to reflect the state of the source.")]
         public bool CreateThenUpdate { get; set; }
 
