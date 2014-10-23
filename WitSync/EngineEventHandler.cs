@@ -341,7 +341,7 @@ namespace WitSync
 
         public void InternalError(Exception ex)
         {
-            this.Error("Internal error: {0}\r\n{1}", ex.Message, ex.StackTrace);
+            this.Error("Internal: {0}\r\n{1}", ex.Message, ex.StackTrace);
         }
 
         protected DateTimeOffset stageStart;
@@ -367,17 +367,18 @@ namespace WitSync
 
         public void PreparingStage(EngineBase stage)
         {
-            this.Info("Preparing stage {0}.", stage.Name);
+            this.Verbose("Preparing stage {0}.", stage.Name);
         }
 
         public void StagePrepared(EngineBase stage)
         {
-            this.Info("Stage {0} ready.", stage.Name);
+            this.Verbose("Stage {0} ready.", stage.Name);
         }
 
         public void StagePreparationError(EngineBase stage, Exception ex)
         {
-            this.Info("Stage {0} not ready, continuing with next stages; error was {1}", stage.Name, ex.Message);
+            this.Warning("Stage {0} not ready, continuing with next stages; error was {1}", stage.Name, ex.Message);
+            this.Verbose(ex.StackTrace);
         }
     }
 }
