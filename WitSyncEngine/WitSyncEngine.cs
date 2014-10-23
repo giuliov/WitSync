@@ -37,6 +37,9 @@ namespace WitSync
         public override int Prepare(bool testOnly)
         {
             mapping = MapGetter();
+            if (mapping == null)
+                // SetDefaults will fill this in
+                mapping = new ProjectMapping();
             return 0;
         }
 
@@ -82,7 +85,7 @@ namespace WitSync
             checker.Check(sourceResult, mapping, destResult);
             if (!checker.Passed)
                 // abort
-                return 2;
+                return checker.ErrorCount;
 
 
             // this needs also connection to target, better after query execution, so we have warm caches

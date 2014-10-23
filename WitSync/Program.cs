@@ -12,8 +12,8 @@ namespace WitSync
     class Program
     {
         /*
-         -a SyncWorkItems -c http://localhost:8080/tfs/WitSync -p "WitSyncSrc" -d http://localhost:8080/tfs/WitSync -q "WitSyncDest" -i Links.idx -v
-         -a SyncGloballists -c http://localhost:8080/tfs/WitSync -p "WitSyncSrc" -d http://localhost:8080/tfs/WitSync -q "WitSyncDest" -m "Sample Mappings\globallists.yml" -v
+         --Globallists --Areas --Iterations  --WorkItems --sourceCollection http://localhost:8080/tfs/WitSync --sourceProject "WitSyncSrc" --destinationCollection http://localhost:8080/tfs/WitSync --destinationProject "WitSyncDest" --indexFile test01.idx --mappingFile "Sample Mappings\test01.yml" --verbose --stopOnError --test
+         -Globallists -c http://localhost:8080/tfs/WitSync -p "WitSyncSrc" -d http://localhost:8080/tfs/WitSync -q "WitSyncDest" -m "Sample Mappings\globallists.yml" -v
          */
         static int Main(string[] args)
         {

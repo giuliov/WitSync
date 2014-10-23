@@ -24,13 +24,14 @@ namespace WitSync
             this.eventSink = eventSink;
         }
 
-        private bool passed = true;
-        internal bool Passed { get { return passed; } }
+        private int errorCount = 0;
+        internal bool Passed { get { return errorCount == 0; } }
+        internal int ErrorCount { get { return errorCount; } }
 
         // logging anything implies failure
         private void Log(string message, params object[] args)
         {
-            passed = false;
+            errorCount++;
             eventSink.MappingGenericValidationError(message, args);
         }
 
@@ -72,12 +73,12 @@ namespace WitSync
             else
             {
                 workItemMappings
-                    .Where(m => string.IsNullOrWhiteSpace(m.IDField.Destination))
+                    .Where(m => m.IDField==null || string.IsNullOrWhiteSpace(m.IDField.Destination))
                     .ToList()
                     .ForEach(t => Log("Invalid ID Field Destination on WorkItem type '{0}'."
                         , t.DestinationType));
                 workItemMappings
-                    .Where(m => string.IsNullOrWhiteSpace(m.IDField.Source))
+                    .Where(m => m.IDField == null || string.IsNullOrWhiteSpace(m.IDField.Source))
                     .ToList()
                     .ForEach(t => Log("Invalid ID Field Source on WorkItem type '{0}'."
                         , t.SourceType));
@@ -85,14 +86,17 @@ namespace WitSync
                 // check that all target types have an originating ID field
                 workItemMappings
                     .Where(m =>
-                        !string.IsNullOrWhiteSpace(m.IDField.Destination)
+                        m.IDField != null
+                        && !string.IsNullOrWhiteSpace(m.IDField.Destination)
                         && !allDestTypes[m.DestinationType].FieldDefinitions.Contains(m.IDField.Destination))
                     .ToList()
                     .ForEach(t => Log("Destination WorkItem type '{0}' has no '{1}' Field to host source ID."
                         , t.DestinationType, t.IDField.Destination));
                 // check that source ID field match
                 workItemMappings
-                    .Where(m => !string.IsNullOrWhiteSpace(m.IDField.Source)
+                    .Where(m => 
+                        m.IDField != null
+                        && !string.IsNullOrWhiteSpace(m.IDField.Source)
                         && !allSourceTypes[m.SourceType].FieldDefinitions.Contains(m.IDField.Source))
                     .ToList()
                     .ForEach(t => Log("Source WorkItem type '{0}' has no source '{1}' ID Field."
