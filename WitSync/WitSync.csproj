@@ -123,4 +123,5 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Import Project="..\build\SetVersion.targets" />
 </Project>
