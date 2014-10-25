@@ -195,13 +195,22 @@ namespace WitSync
                         }
                         else
                         {
-                            this.EventSink.InvalidRule(rule);
+                            //this.EventSink.InvalidRule(rule);
+                            this.EventSink.Trace("Copying source value to field '{0}'", targetFieldName);
                             // crossing fingers
                             toField.Value = fromField.Value;
                         }//if
                     } else {
-                        this.EventSink.Trace("Cannot assign field '{0}' to field '{1}'", fromField.Name, targetFieldName);
+                        this.EventSink.Trace("Cannot assign to field '{0}'", targetFieldName);
                     }//if
+                } else {
+                    // message according
+                    if (!fromField.IsValid)
+                        this.EventSink.Trace("Source field not valid");
+                    if (string.IsNullOrWhiteSpace(rule.Destination))
+                        this.EventSink.Trace("No copy rule");
+                    if (!target.Fields.Contains(targetFieldName))
+                        this.EventSink.Trace("Target field '{0}' does not exist", targetFieldName);
                 }//if has dest
             }//for fields
         }
@@ -258,6 +267,7 @@ namespace WitSync
 
             if (map.SyncAttachments && source.AttachedFileCount > 0)
             {
+                bool matchFound = false;
                 // see http://stackoverflow.com/questions/3507939/how-can-i-add-an-attachment-via-the-sdk-to-a-work-item-without-using-a-physical
                 foreach (Attachment sourceAttachment in source.Attachments)
                 {
@@ -266,17 +276,22 @@ namespace WitSync
                         if (targetAttachment.Name == sourceAttachment.Name
                             && targetAttachment.Length == targetAttachment.Length)
                         {
-                            goto nextAttachment;
+                            matchFound = true;
+                            break;
                         }
                     }
 
-                    // not found
-                    string tempFile = DownloadAttachment(sourceAttachment);
-                    Attachment newAttachment = new Attachment(tempFile, sourceAttachment.Comment);
-                    target.Attachments.Add(newAttachment);
-
-                nextAttachment:
-                    this.EventSink.Trace("Matching attachment found");
+                    if (matchFound)
+                    {
+                        this.EventSink.Trace("Found attachment '{0}' with same name and lenght: skipping.", sourceAttachment.Name);
+                    }
+                    else
+                    {
+                        // not found
+                        string tempFile = DownloadAttachment(sourceAttachment);
+                        Attachment newAttachment = new Attachment(tempFile, sourceAttachment.Comment);
+                        target.Attachments.Add(newAttachment);
+                    }
                 }//for
             }//if
         }
