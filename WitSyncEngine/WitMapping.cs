@@ -43,6 +43,8 @@ namespace WitSync
         public string Translate { get; set; }
         [XmlAttribute]
         public string Set { get; set; }
+        [XmlAttribute]
+        public string SetIfNull { get; set; }
 
         [YamlIgnore]
         public bool IsWildcard { get { return Source == "*"; } }
@@ -57,6 +59,8 @@ namespace WitSync
                 buf.AppendFormat(", Translate: {0}", Translate);
             if (!string.IsNullOrEmpty(Set))
                 buf.AppendFormat(", Set: {0}", Set);
+            if (!string.IsNullOrEmpty(SetIfNull))
+                buf.AppendFormat(", SetIfNull: {0}", SetIfNull);
 
             return buf.ToString();
         }
@@ -87,6 +91,7 @@ namespace WitSync
         {
             // default
             this.SyncAttachments = true;
+            this.DefaultRules = true;
         }
 
         [XmlAttribute]
@@ -101,6 +106,8 @@ namespace WitSync
         public FieldMap[] Fields { get; set; }
         [XmlAttribute("Attachments")]
         public bool SyncAttachments { get; set; }
+        [XmlAttribute("DefaultRules")]
+        public bool DefaultRules { get; set; }
 
         [XmlIgnore]
         [YamlIgnore]
@@ -341,6 +348,13 @@ namespace WitSync
                     if (m.Fields == null)
                     {
                         m.Fields = defaultFieldRules;
+                    }
+                    else if (m.DefaultRules)
+                    {
+                        var mixin = new List<FieldMap>();
+                        mixin.AddRange(m.Fields);
+                        mixin.AddRange(defaultFieldRules);
+                        m.Fields = mixin.ToArray();
                     }
                 });
             }

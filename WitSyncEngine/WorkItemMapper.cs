@@ -133,7 +133,7 @@ namespace WitSync
 
             foreach (Field fromField in source.Fields)
             {
-                Debug.WriteLine("Source field '{0}' has value '{1}'", fromField.Name, fromField.Value);
+                this.EventSink.Trace("Source field '{0}' has value '{1}'", fromField.Name, fromField.Value);
 
                 var rule = map.FindFieldRule(fromField.Name);
                 if (rule == null)
@@ -155,37 +155,30 @@ namespace WitSync
                     {
                         if (rule.IsWildcard)
                         {
+                            this.EventSink.Trace("Copying source value to field '{0}'", targetFieldName);
                             toField.Value = fromField.Value;
                         }
-                        else if (!string.IsNullOrWhiteSpace(rule.Set)) 
+                        else if (!string.IsNullOrWhiteSpace(rule.Set))
                         {
-                            // fixed value
-                            switch (toField.FieldDefinition.FieldType)
+                            this.EventSink.Trace("Setting field '{0}' to value '{1}'", targetFieldName, rule.Set);
+                            SetFieldWithConstant(toField, rule.Set);
+                        }
+                        else if (!string.IsNullOrWhiteSpace(rule.SetIfNull))
+                        {
+                            if (fromField.Value == null)
                             {
-                                // TODO source field is not needed
-                                // Parse always succeeds, as value is already validated by Checker
-                                case FieldType.Boolean:
-                                    toField.Value = bool.Parse(rule.Set);
-                                    break;
-                                case FieldType.DateTime:
-                                    toField.Value = DateTime.Parse(rule.Set);
-                                    break;
-                                case FieldType.Double:
-                                    toField.Value = double.Parse(rule.Set);
-                                    break;
-                                case FieldType.Guid:
-                                    toField.Value = Guid.Parse(rule.Set);
-                                    break;
-                                case FieldType.Integer:
-                                    toField.Value = int.Parse(rule.Set);
-                                    break;
-                                default:
-                                    toField.Value = rule.Set;
-                                    break;
-                            }//switch
+                                this.EventSink.Trace("Setting field '{0}' to value '{1}' because source is null", targetFieldName, rule.SetIfNull);
+                                SetFieldWithConstant(toField, rule.SetIfNull);
+                            }
+                            else
+                            {
+                                this.EventSink.Trace("Copying non-null source value to field '{0}'", targetFieldName);
+                                toField.Value = fromField.Value;
+                            }
                         }
                         else if (!string.IsNullOrWhiteSpace(rule.Translate))
                         {
+                            this.EventSink.Trace("Translating '{0}' via function '{1}'", targetFieldName, rule.Translate);
                             var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
                             // TODO optimize
                             var translatorMethod = functions.GetType().GetMethod(rule.Translate, flags);
@@ -206,6 +199,8 @@ namespace WitSync
                             // crossing fingers
                             toField.Value = fromField.Value;
                         }//if
+                    } else {
+                        this.EventSink.Trace("Cannot assign field '{0}' to field '{1}'", fromField.Name, targetFieldName);
                     }//if
                 }//if has dest
             }//for fields
@@ -227,6 +222,34 @@ namespace WitSync
                     return false;
                 return toField.Value != fromField.Value;
             }
+        }
+
+        private static void SetFieldWithConstant(Field toField, string constant)
+        {
+            // fixed value
+            switch (toField.FieldDefinition.FieldType)
+            {
+                // TODO source field is not needed
+                // Parse always succeeds, as value is already validated by Checker
+                case FieldType.Boolean:
+                    toField.Value = bool.Parse(constant);
+                    break;
+                case FieldType.DateTime:
+                    toField.Value = DateTime.Parse(constant);
+                    break;
+                case FieldType.Double:
+                    toField.Value = double.Parse(constant);
+                    break;
+                case FieldType.Guid:
+                    toField.Value = Guid.Parse(constant);
+                    break;
+                case FieldType.Integer:
+                    toField.Value = int.Parse(constant);
+                    break;
+                default:
+                    toField.Value = constant;
+                    break;
+            }//switch
         }
 
         private void SetAttachments(WorkItem source, WorkItemMap map, WorkItem target)
@@ -253,7 +276,7 @@ namespace WitSync
                     target.Attachments.Add(newAttachment);
 
                 nextAttachment:
-                    Debug.WriteLine("Matching attachement found");
+                    this.EventSink.Trace("Matching attachment found");
                 }//for
             }//if
         }
