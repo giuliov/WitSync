@@ -70,7 +70,10 @@ namespace WitSync
 
             eventSink.UpdatingGlobalListsOnDestination();
 
-            destWIStore.ImportGlobalLists(updateDoc.InnerXml);
+            if (!testOnly)
+            {
+                destWIStore.ImportGlobalLists(updateDoc.InnerXml);
+            }
 
             eventSink.GlobalListsUpdated();
 

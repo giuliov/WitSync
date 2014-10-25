@@ -38,10 +38,13 @@ namespace WitSync
             return 0;
         }
 
+        bool testMode = false;
+
         public override int Execute(bool testOnly)
         {
             bool areas = options.HasFlag(EngineOptions.Areas);
             bool iterations = options.HasFlag(EngineOptions.Iterations);
+            this.testMode = testOnly;
 
 
             var sourceWIStore = sourceConn.Collection.GetService<WorkItemStore>();
@@ -116,7 +119,9 @@ namespace WitSync
 
             var destNode = destCSS.GetNode(newNodeUri);
             var sourceNode = sourceCSS.GetNode(node.Uri.AbsoluteUri);
-            destCSS.SetIterationDates(destNode.Uri, sourceNode.StartDate, sourceNode.FinishDate);
+            if (!this.testMode) {
+                destCSS.SetIterationDates(destNode.Uri, sourceNode.StartDate, sourceNode.FinishDate);
+            }
         }
 
         private string CreateNodeIfMissing(Node node, NodeInfo rootNode)
@@ -131,13 +136,20 @@ namespace WitSync
                 if (!nodePathWithoutRoot.Contains("\\"))
                 {
                     // first level nodes
-                    destNodeUri = destCSS.CreateNode(nodePathWithoutRoot, rootNode.Uri);
+                    if (!this.testMode)
+                    {
+                        destNodeUri = destCSS.CreateNode(nodePathWithoutRoot, rootNode.Uri);
+                    }
                 }
                 else
                 {
                     int lastBackslash = nodePathWithoutRoot.LastIndexOf("\\");
                     NodeInfo parentNode = destCSS.GetNodeFromPath(rootNode.Path + "\\" + nodePathWithoutRoot.Substring(0, lastBackslash));
-                    destNodeUri = destCSS.CreateNode(nodePathWithoutRoot.Substring(lastBackslash + 1), parentNode.Uri);
+                    // TODO test mode!
+                    if (!this.testMode)
+                    {
+                        destNodeUri = destCSS.CreateNode(nodePathWithoutRoot.Substring(lastBackslash + 1), parentNode.Uri);
+                    }
                 }//if
             }
             else
