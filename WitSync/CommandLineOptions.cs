@@ -11,7 +11,7 @@ namespace WitSync
     [CommandLineManager(
         ApplicationName = "WitSync",
         Copyright = "Copyright (c) Giulio Vian",
-        Version = "0.5.0.0",
+//        Version = "0.5.0.0",
         EnabledOptionStyles = OptionStyles.Group | OptionStyles.Windows | OptionStyles.ShortUnix | OptionStyles.LongUnix)]
     [CommandLineOptionGroup("commands", Name = "Commands",
         Require = OptionGroupRequirement.AtLeastOne)]

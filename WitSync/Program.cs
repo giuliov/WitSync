@@ -33,8 +33,10 @@ namespace WitSync
             var options = new WitSyncCommandLineOptions();
 
             CommandLineParser parser = new CommandLineParser(options);
-            parser.Parse();
+            var fileVersion = System.Reflection.Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(System.Reflection.AssemblyFileVersionAttribute), false).FirstOrDefault() as System.Reflection.AssemblyFileVersionAttribute;
+            parser.UsageInfo.ApplicationVersion = fileVersion.Version;
             Console.WriteLine(parser.UsageInfo.GetHeaderAsString(lastColumn));
+            parser.Parse();
 
             if (options.Help)
             {
