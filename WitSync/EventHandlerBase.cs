@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WitSync
 {
-    class EventHandlerBase
+    class EventHandlerBase : IEngineTracing
     {
         [Flags]
         protected enum OutputFlags
@@ -15,6 +15,7 @@ namespace WitSync
             All = 0xff
         }
 
+        protected const ConsoleColor DebugColor = ConsoleColor.DarkGray;
         protected const ConsoleColor VerboseColor = ConsoleColor.DarkGray;
         protected const ConsoleColor InfoColor = ConsoleColor.Cyan;
         protected const ConsoleColor SuccessColor = ConsoleColor.Green;
@@ -120,6 +121,11 @@ namespace WitSync
         static public void GlobalVerbose(string format, params object[] args)
         {
             Out(VerboseColor, OutputFlags.All, "VERBOSE: ", format, args);
+        }
+
+        public void Trace(string format, params object[] args)
+        {
+            Out(DebugColor, OutputFlags.All, "DEBUG: ", format, args);
         }
     }
 }

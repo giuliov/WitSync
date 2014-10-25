@@ -6,7 +6,12 @@ using System.Text;
 
 namespace WitSync
 {
-    public interface IEngineEvents
+    public interface IEngineTracing
+    {
+        void Trace(string format, params object[] args);
+    }
+
+    public interface IEngineEvents : IEngineTracing
     {
         void ConnectingSource(TfsConnection sourceConn);
         void SourceConnected(TfsConnection sourceConn);
