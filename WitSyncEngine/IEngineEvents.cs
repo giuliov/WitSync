@@ -42,7 +42,7 @@ namespace WitSync
         void TargetMissingForLink(WorkItemLinkInfo queryLink, int parentId, int childId);
         void SyncFinished(int totalErrors);
         void InvalidRule(FieldMap rule);
-        void NoRuleFor(WorkItem source, string field);
+        void NoRuleFor(WorkItemType sourceType, string field);
         void SavingSkipped();
         void ValidationError(Field item);
         void BypassingRulesOnDestinationWorkItemStore(TfsConnection destConn);

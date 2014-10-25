@@ -314,15 +314,15 @@ namespace WitSync
             this.AreaMap = this.AreaMap ?? new AreaMap[] { new AreaMap() { SourcePath = "*", DestinationPath = "*" } };
             this.IterationMap = this.IterationMap ?? new IterationMap[] { new IterationMap() { SourcePath = "*", DestinationPath = "*" } };
             var defaultFieldRules = new FieldMap[] {
-                // HACK these names are OK for Scrum, but ...
-                new FieldMap() { Source = "Area ID", Destination = "" },
-                new FieldMap() { Source = "Area Path", Destination = "Area Path", Translate = "MapAreaPath"},
-                new FieldMap() { Source = "Iteration ID", Destination = "" },
-                new FieldMap() { Source = "Iteration Path", Destination = "Iteration Path", Translate = "MapIterationPath" },
-                new FieldMap() { Source = "Reason", Destination = "" },
-                new FieldMap() { Source = "State Change Date", Destination = "" },
-                new FieldMap() { Source = "Created Date", Destination = "" },
-                new FieldMap() { Source = "Changed Date", Destination = "" },
+                new FieldMap() { Source = "System.AreaId", Destination = "" },
+                new FieldMap() { Source = "System.AreaPath", Destination = "System.AreaPath", Translate = "MapAreaPath"},
+                new FieldMap() { Source = "System.IterationId", Destination = "" },
+                new FieldMap() { Source = "System.IterationPath", Destination = "System.IterationPath", Translate = "MapIterationPath" },
+                new FieldMap() { Source = "System.Reason", Destination = "" },
+                new FieldMap() { Source = "Microsoft.VSTS.Common.StateChangeDate", Destination = "" },
+                new FieldMap() { Source = "System.CreatedDate", Destination = "" },
+                new FieldMap() { Source = "System.ChangedDate", Destination = "" },
+                new FieldMap() { Source = "System.Rev", Destination = "" },
                 new FieldMap() { Source = "*", Destination = "*" }
             };
             var sourceWItypes = sourceWIStore.Projects[sourceConn.ProjectName].WorkItemTypes;

@@ -119,8 +119,23 @@ namespace WitSync
             return target;
         }
 
+        Dictionary<WorkItemMap, FieldCopier> copiers = new Dictionary<WorkItemMap, FieldCopier>();
+
+        private FieldCopier GetCopier(WorkItemType sourceType, WorkItemMap map, WorkItemType targetType)
+        {
+            if (copiers.ContainsKey(map))
+                return copiers[map];
+
+            var copier = new FieldCopier(this.Mapping, this.functions, this.UseEditableProperty, sourceType, map, targetType, this.EventSink);
+            //cache
+            copiers[map] = copier;
+            return copier;
+        }
+
         protected virtual void SetWorkItemFields(WorkItem source, WorkItemMap map, WorkItem target)
         {
+            var copier = GetCopier(source.Type, map, target.Type);
+
             if (this.OpenTargetWorkItem)
             {
                 // force load and edit mode
@@ -131,88 +146,7 @@ namespace WitSync
                 target.PartialOpen();
             }
 
-            foreach (Field fromField in source.Fields)
-            {
-                this.EventSink.Trace("Source field '{0}' has value '{1}'", fromField.Name, fromField.Value);
-
-                var rule = map.FindFieldRule(fromField.Name);
-                if (rule == null)
-                {
-                    // if no rule -> skip field
-                    this.EventSink.NoRuleFor(source, fromField.Name);
-                    continue;
-                }
-                string targetFieldName
-                    = rule.IsWildcard
-                    ? fromField.Name : rule.Destination;
-                // good source with destination?
-                if (fromField.IsValid
-                    && !string.IsNullOrWhiteSpace(rule.Destination)
-                    && target.Fields.Contains(targetFieldName))
-                {
-                    var toField = target.Fields[targetFieldName];
-                    if (CanAssign(fromField, toField))
-                    {
-                        if (rule.IsWildcard)
-                        {
-                            this.EventSink.Trace("Copying source value to field '{0}'", targetFieldName);
-                            toField.Value = fromField.Value;
-                        }
-                        else if (!string.IsNullOrWhiteSpace(rule.Set))
-                        {
-                            this.EventSink.Trace("Setting field '{0}' to value '{1}'", targetFieldName, rule.Set);
-                            SetFieldWithConstant(toField, rule.Set);
-                        }
-                        else if (!string.IsNullOrWhiteSpace(rule.SetIfNull))
-                        {
-                            if (fromField.Value == null)
-                            {
-                                this.EventSink.Trace("Setting field '{0}' to value '{1}' because source is null", targetFieldName, rule.SetIfNull);
-                                SetFieldWithConstant(toField, rule.SetIfNull);
-                            }
-                            else
-                            {
-                                this.EventSink.Trace("Copying non-null source value to field '{0}'", targetFieldName);
-                                toField.Value = fromField.Value;
-                            }
-                        }
-                        else if (!string.IsNullOrWhiteSpace(rule.Translate))
-                        {
-                            this.EventSink.Trace("Translating '{0}' via function '{1}'", targetFieldName, rule.Translate);
-                            var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
-                            // TODO optimize
-                            var translatorMethod = functions.GetType().GetMethod(rule.Translate, flags);
-                            if (translatorMethod == null)
-                            {
-                                this.EventSink.TranslatorFunctionNotFoundUsingDefault(rule);
-                                // default: no translation
-                                toField.Value = fromField.Value;
-                            }
-                            else
-                            {
-                                toField.Value = translatorMethod.Invoke(functions, new object[] { rule, map, this.Mapping, fromField.Value });
-                            }
-                        }
-                        else
-                        {
-                            //this.EventSink.InvalidRule(rule);
-                            this.EventSink.Trace("Copying source value to field '{0}'", targetFieldName);
-                            // crossing fingers
-                            toField.Value = fromField.Value;
-                        }//if
-                    } else {
-                        this.EventSink.Trace("Cannot assign to field '{0}'", targetFieldName);
-                    }//if
-                } else {
-                    // message according
-                    if (!fromField.IsValid)
-                        this.EventSink.Trace("Source field not valid");
-                    if (string.IsNullOrWhiteSpace(rule.Destination))
-                        this.EventSink.Trace("No copy rule");
-                    if (!target.Fields.Contains(targetFieldName))
-                        this.EventSink.Trace("Target field '{0}' does not exist", targetFieldName);
-                }//if has dest
-            }//for fields
+            copier.Copy(source, target, this.EventSink);
         }
 
         private bool CanAssign(Field fromField, Field toField)
@@ -231,34 +165,6 @@ namespace WitSync
                     return false;
                 return toField.Value != fromField.Value;
             }
-        }
-
-        private static void SetFieldWithConstant(Field toField, string constant)
-        {
-            // fixed value
-            switch (toField.FieldDefinition.FieldType)
-            {
-                // TODO source field is not needed
-                // Parse always succeeds, as value is already validated by Checker
-                case FieldType.Boolean:
-                    toField.Value = bool.Parse(constant);
-                    break;
-                case FieldType.DateTime:
-                    toField.Value = DateTime.Parse(constant);
-                    break;
-                case FieldType.Double:
-                    toField.Value = double.Parse(constant);
-                    break;
-                case FieldType.Guid:
-                    toField.Value = Guid.Parse(constant);
-                    break;
-                case FieldType.Integer:
-                    toField.Value = int.Parse(constant);
-                    break;
-                default:
-                    toField.Value = constant;
-                    break;
-            }//switch
         }
 
         private void SetAttachments(WorkItem source, WorkItemMap map, WorkItem target)

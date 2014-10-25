@@ -92,7 +92,7 @@ namespace WitSync
 
         public void SaveErrorInvalidField(WorkItem workItem, Field f)
         {
-            this.Verbose("Field '{0}' has invalid value '{1}'.", f.Name, f.Value);
+            this.Verbose("Field '{0}' has invalid value '{1}'.", f.ReferenceName, f.Value);
         }
 
         public void MakingNewWorkItem(WorkItem source)
@@ -196,9 +196,9 @@ namespace WitSync
             this.UniqueWarning("    Invalid rule '{0}': copying unaltered value.", rule);
         }
 
-        public void NoRuleFor(WorkItem source, string field)
+        public void NoRuleFor(WorkItemType sourceType, string field)
         {
-            this.UniqueWarning("    No rule for field '{0}\\{1}': skipping.", source.Type.Name, field);
+            this.UniqueWarning("    No rule for field '{0}\\{1}': skipping.", sourceType.Name, field);
         }
 
         public void SavingSkipped()
@@ -208,7 +208,7 @@ namespace WitSync
 
         public void ValidationError(Field item)
         {
-            this.Warning("    Value '{1}' is not valid for field {0} (Status {2}).", item.Name, item.Value, item.Status);
+            this.Warning("    Value '{1}' is not valid for field {0} (Status {2}).", item.ReferenceName, item.Value, item.Status);
         }
 
         public void BypassingRulesOnDestinationWorkItemStore(TfsConnection destConn)
