@@ -84,7 +84,7 @@ namespace WitSync
             var destRunner = new QueryRunner(destWIStore, destConn.ProjectName);
             eventSink.ExecutingDestinationQuery(mapping.DestinationQuery, destConn);
             var destResult = destRunner.RunQuery(mapping.DestinationQuery);
-            if (sourceResult == null)
+            if (destResult == null)
             {
                 eventSink.DestinationQueryNotFound(mapping.DestinationQuery);
                 return 4;
@@ -130,7 +130,6 @@ namespace WitSync
                 validWorkItems.AddRange(savedWorkItems);
             }//if
 
-            System.Threading.Thread.Sleep(10000);
             workItemMapper.CleanUp();
 
             var linkMapper = new LinkMapper(context);
@@ -245,7 +244,9 @@ namespace WitSync
                 foreach (var targetWI in existingTargetWorkItems)
                 {
                     var originatingFieldMap = mapping.FindIdFieldForTargetWorkItemType(targetWI.Type.Name);
-                    int originatingId = (int)targetWI.Fields[originatingFieldMap.Destination].Value;
+                    var v = targetWI.Fields[originatingFieldMap.Destination].Value;
+                    // could be that the destination exists, with no origin (e.g. manual intervention)
+                    int originatingId = (int) (v ?? 0);
                     index.Add(originatingId, targetWI);
                 }//for
             }//if
