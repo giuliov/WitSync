@@ -159,13 +159,33 @@ namespace WitSync
                 CopyTask copier;
                 if (tasks.TryGetValue(fromField.FieldDefinition, out copier))
                 {
-                    engineEvents.Trace("Source field {0} has value '{1}'", fromField.ReferenceName, fromField.Value);
+                    engineEvents.Trace("Source field {0} has value '{1}'"
+                        , fromField.ReferenceName
+                        , LimitToFirstLine(fromField.Value));
                     copier.CopyAction(fromField, target.Fields[copier.TargetFieldName]);
                 }
             }//for fields
             foreach (var task in unboundTasks)
             {
                 task.CopyAction(null, target.Fields[task.TargetFieldName]);
+            }
+        }
+
+        private object LimitToFirstLine(object obj)
+        {
+            const int limit = 60;
+            const string ellips = "....";
+
+            if (obj is string)
+            {
+                string value = obj.ToString();
+                if (value.Length < limit)
+                    return value;
+                return value.Substring(0, limit - ellips.Length) + ellips;
+            }
+            else
+            {
+                return obj;
             }
         }
 
