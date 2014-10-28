@@ -1,4 +1,5 @@
-﻿using Microsoft.TeamFoundation.WorkItemTracking.Client;
+﻿using Microsoft.TeamFoundation;
+using Microsoft.TeamFoundation.WorkItemTracking.Client;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,40 +21,85 @@ namespace WitSync
 
             foreach (var sourceWI in sourceWorkItems)
             {
-                foreach (WorkItemLink sourceLink in sourceWI.WorkItemLinks)
-                {
-                    WorkItemLink destinationLink = null;
-                    try
-                    {
-                        destinationLink = MapSingleLink(sourceLink, validWorkItems);
-                    }
-                    catch (Exception ex)
-                    {
-                        this.EventSink.ExceptionWhileMappingLink(ex, sourceLink);
-                    }
-                    if (destinationLink != null)
-                    {
-                        changedLinks.Add(destinationLink);
-                    }
-                }//for
+                MapWorkItemLinks(validWorkItems, changedLinks, sourceWI);
+                MapOtherLinks(sourceWI);
             }//for
 
             return changedLinks;
         }
 
-        private WorkItemLink MapSingleLink(WorkItemLink sourceLink, List<WorkItem> validWorkItems)
+        private void MapOtherLinks(WorkItem sourceWI)
+        {
+            var cloneWI = this.Index.GetWorkItemFromSourceId(sourceWI.Id);
+            foreach (Link link in sourceWI.Links)
+            {
+                if (link.BaseType == BaseLinkType.ExternalLink)
+                {
+                    // TODO these are meaningful only in the same Collection
+#if false
+                    var eLink = link as ExternalLink;
+                    // something interesting?
+                    RegisteredLinkType registeredType = sourceWI.Store.RegisteredLinkTypes[eLink.ArtifactLinkType];
+                    var cloneLink = new ExternalLink(registeredType, eLink.LinkedArtifactUri);
+                    cloneLink.Comment = eLink.Comment;
+                    cloneWI.Links.Add(cloneLink);
+#endif
+                }
+                else if (link.BaseType == BaseLinkType.RelatedLink)
+                {
+                    // TODO how they can be meaningful in different Collections?
+#if false
+                    var rLink = link as RelatedLink;
+                    var cloneLink = new RelatedLink(rLink.LinkTypeEnd, rLink.RelatedWorkItemId);
+                    cloneLink.Comment = rLink.Comment;
+                    cloneWI.Links.Add(cloneLink);
+#endif
+                }
+                else if (link.BaseType == BaseLinkType.Hyperlink)
+                {
+                    var hLink = link as Hyperlink;
+                    var cloneLink = new Hyperlink(hLink.Location);
+                    cloneLink.Comment = hLink.Comment;
+                    cloneWI.Links.Add(cloneLink);
+                }//if
+            }//for
+        }
+
+        private void MapWorkItemLinks(List<WorkItem> validWorkItems, List<WorkItemLink> changedLinks, WorkItem sourceWI)
+        {
+            foreach (WorkItemLink sourceLink in sourceWI.WorkItemLinks)
+            {
+                WorkItemLink destinationLink = null;
+                try
+                {
+                    destinationLink = MapSingleWorkItemLink(sourceLink, validWorkItems);
+                }
+                catch (Exception ex)
+                {
+                    this.EventSink.ExceptionWhileMappingLink(ex, sourceLink);
+                }
+                if (destinationLink != null)
+                {
+                    changedLinks.Add(destinationLink);
+                }
+            }//for
+        }
+
+        private WorkItemLink MapSingleWorkItemLink(WorkItemLink sourceLink, List<WorkItem> validWorkItems)
         {
             WorkItemLink destinationLink = null;
 
-            // BUG: wildcard rule may get Changest links also!!! How do you propagate???
+            // BUG: wildcard rule may get Changeset links also!!! How do you propagate???
             var rule = this.Mapping.FindLinkRule(sourceLink.LinkTypeEnd.Name);
             if (rule != null)
             {
-                this.EventSink.AnalyzingSourceLink(sourceLink);
-
                 // rule: do not map
                 if (string.IsNullOrWhiteSpace(rule.DestinationType))
+                {
                     return null;
+                }
+
+                this.EventSink.AnalyzingSourceLink(sourceLink);
 
                 // we must be sure that link.SourceId and link.TargetId have a link in destination project
                 int sourceIdOnDest = this.Index.GetIdFromSourceId(sourceLink.SourceId);
