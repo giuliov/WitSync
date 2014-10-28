@@ -60,6 +60,7 @@
   <ItemGroup>
     <Compile Include="EngineBase.cs" />
     <Compile Include="FieldCopier.cs" />
+    <Compile Include="GeneralConfig.cs" />
     <Compile Include="GlobalListMapping.cs" />
     <Compile Include="GlobalListsSyncEngine.cs" />
     <Compile Include="AreasAndIterationsSyncEngine.cs" />

@@ -13,7 +13,7 @@ namespace WitSync
     {
         /*
          --Globallists --Areas --Iterations  --WorkItems --sourceCollection http://localhost:8080/tfs/WitSync --sourceProject "WitSyncSrc" --destinationCollection http://localhost:8080/tfs/WitSync --destinationProject "WitSyncDest" --indexFile test01.idx --mappingFile "Sample Mappings\test01.yml" --verbose --stopOnError --test
-         -Globallists -c http://localhost:8080/tfs/WitSync -p "WitSyncSrc" -d http://localhost:8080/tfs/WitSync -q "WitSyncDest" -m "Sample Mappings\globallists.yml" -v
+         --Globallists -c http://localhost:8080/tfs/WitSync -p "WitSyncSrc" -d http://localhost:8080/tfs/WitSync -q "WitSyncDest" -m "Sample Mappings\globallists.yml" -v
          */
         static int Main(string[] args)
         {
@@ -50,6 +50,32 @@ namespace WitSync
                 return -1;
             }//if
 
+            SyncMapping map = null;
+            if (System.IO.File.Exists(options.MappingFile))
+            {
+                map = SyncMapping.LoadFrom(options.MappingFile);
+                // merge options (hand-made)
+                if (string.IsNullOrWhiteSpace(options.SourceCollectionUrl))
+                    options.SourceCollectionUrl = map.config.SourceConnection.CollectionUrl;
+                if (string.IsNullOrWhiteSpace(options.SourceProjectName))
+                    options.SourceProjectName = map.config.SourceConnection.ProjectName;
+                if (string.IsNullOrWhiteSpace(options.DestinationCollectionUrl))
+                    options.DestinationCollectionUrl = map.config.DestinationConnection.CollectionUrl;
+                if (string.IsNullOrWhiteSpace(options.DestinationProjectName))
+                    options.DestinationProjectName = map.config.DestinationConnection.ProjectName;
+                if (string.IsNullOrWhiteSpace(options.IndexFile))
+                    options.IndexFile = map.config.IndexFile;
+                if (options.Steps == 0)
+                {
+                    WitSyncCommandLineOptions.PipelineSteps steps = 0;
+                    foreach (var step in map.config.PipelineSteps)
+                    {
+                        steps |= (WitSyncCommandLineOptions.PipelineSteps)Enum.Parse(typeof(WitSyncCommandLineOptions.PipelineSteps), step, true);
+                    }//for
+                    options.Steps = steps;
+                }//if
+            }//if
+
             // command line parsing succeeded
             if (options.TestOnly)
                 Console.WriteLine("** TEST MODE: no data will be written on destination **");
@@ -71,38 +97,33 @@ namespace WitSync
             MakeConnection(options, out source, out dest);
 
             var pipeline = new SyncPipeline(source, dest, eventHandler);
-            SyncMapping map;
-            if (System.IO.File.Exists(options.MappingFile))
-            {
-                map = SyncMapping.LoadFrom(options.MappingFile);
-            }
-            else
+            if (!System.IO.File.Exists(options.MappingFile))
             {
                 eventHandler.MappingFileNotFoundAssumeDefaults(options.MappingFile);
                 map = new SyncMapping();
             }//if
             //TODO mapping validation
 
-            var stageBuilder = new Dictionary<WitSyncCommandLineOptions.Verbs,Func<EngineBase>>();
-            stageBuilder[WitSyncCommandLineOptions.Verbs.SyncGloballists] = () =>
+            var stageBuilder = new Dictionary<WitSyncCommandLineOptions.PipelineSteps,Func<EngineBase>>();
+            stageBuilder[WitSyncCommandLineOptions.PipelineSteps.Globallists] = () =>
             {
                 var engine = new GlobalListsSyncEngine(source, dest, eventHandler);
                 engine.MapGetter = () => { return map.globallists; };
                 return engine;
             };
-            stageBuilder[WitSyncCommandLineOptions.Verbs.SyncAreas] = () =>
+            stageBuilder[WitSyncCommandLineOptions.PipelineSteps.Areas] = () =>
             {
                 var engine = new AreasAndIterationsSyncEngine(source, dest, eventHandler);
                 engine.Options = AreasAndIterationsSyncEngine.EngineOptions.Areas;
                 return engine;
             };
-            stageBuilder[WitSyncCommandLineOptions.Verbs.SyncIterations] = () =>
+            stageBuilder[WitSyncCommandLineOptions.PipelineSteps.Iterations] = () =>
             {
                 var engine = new AreasAndIterationsSyncEngine(source, dest, eventHandler);
                 engine.Options = AreasAndIterationsSyncEngine.EngineOptions.Iterations;
                 return engine;
             };
-            stageBuilder[WitSyncCommandLineOptions.Verbs.SyncWorkItems] = () =>
+            stageBuilder[WitSyncCommandLineOptions.PipelineSteps.WorkItems] = () =>
             {
                 var engine = new WitSyncEngine(source, dest, eventHandler);
                 engine.MapGetter = () => {
@@ -120,9 +141,9 @@ namespace WitSync
                 return engine;
             };//lambda
 
-            foreach (WitSyncCommandLineOptions.Verbs stage in Enum.GetValues(typeof(WitSyncCommandLineOptions.Verbs)))
+            foreach (WitSyncCommandLineOptions.PipelineSteps stage in Enum.GetValues(typeof(WitSyncCommandLineOptions.PipelineSteps)))
             {
-                if ((options.Action & stage) == stage)
+                if ((options.Steps & stage) == stage)
                 {
                     pipeline.AddStage(stageBuilder[stage]);
                 }//if

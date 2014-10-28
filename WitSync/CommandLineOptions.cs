@@ -13,22 +13,20 @@ namespace WitSync
         Copyright = "Copyright (c) Giulio Vian",
 //        Version = "0.5.0.0",
         EnabledOptionStyles = OptionStyles.Group | OptionStyles.Windows | OptionStyles.ShortUnix | OptionStyles.LongUnix)]
-    [CommandLineOptionGroup("commands", Name = "Commands",
-        Require = OptionGroupRequirement.AtLeastOne)]
-    [CommandLineOptionGroup("connection", Name = "Connection",
-        Require = OptionGroupRequirement.AtLeastOne)]
+    [CommandLineOptionGroup("commands", Name = "Commands")]
+    [CommandLineOptionGroup("connection", Name = "Connection")]
     [CommandLineOptionGroup("options", Name = "Options")]
     [CommandLineOptionGroup("advanced", Name = "Advanced Options")]
     public class WitSyncCommandLineOptions
     {
         [Flags]
-        public enum Verbs
+        public enum PipelineSteps
         {
             // value order is important!
-            SyncGloballists = 1,
-            SyncAreas = 2,
-            SyncIterations = 4,
-            SyncWorkItems = 8
+            Globallists = 1,
+            Areas = 2,
+            Iterations = 4,
+            WorkItems = 8
         }
 
         public WitSyncCommandLineOptions()
@@ -53,33 +51,33 @@ namespace WitSync
             , Description = "Syncronize WorkItems")]
         public bool SyncWorkItems { get; set; }
 
-        public Verbs Action
+        private PipelineSteps steps = 0;
+        public PipelineSteps Steps
         {
             get
             {
-                Verbs result = 0;
+                PipelineSteps result = steps;
                 if (SyncGloballists)
-                    result |= Verbs.SyncGloballists;
+                    result |= PipelineSteps.Globallists;
                 if (SyncAreas)
-                    result |= Verbs.SyncAreas;
+                    result |= PipelineSteps.Areas;
                 if (SyncIterations)
-                    result |= Verbs.SyncIterations;
+                    result |= PipelineSteps.Iterations;
                 if (SyncWorkItems)
-                    result |= Verbs.SyncWorkItems;
+                    result |= PipelineSteps.WorkItems;
                 return result;
             }
+            set { steps = value; }
         }
 
         // options
 
         [CommandLineOption(GroupId = "connection"
             , Name = "c", Aliases = "sourceCollection"
-            , MinOccurs = 1
             , Description = "Source Collection Url, e.g. http://localhost:8080/tfs/DefaultCollection")]
         public string SourceCollectionUrl { get; set; }
         [CommandLineOption(GroupId = "connection"
             , Name = "p", Aliases = "sourceProject"
-            , MinOccurs = 1
             , Description = "Source Project Name")]
         public string SourceProjectName { get; set; }
         [CommandLineOption(GroupId = "connection"
@@ -93,12 +91,10 @@ namespace WitSync
 
         [CommandLineOption(GroupId = "connection"
             , Name = "d", Aliases = "destinationCollection targetCollection"
-            , MinOccurs = 1
             , Description = "Destination Collection Url, e.g. http://localhost:8080/tfs/DefaultCollection")]
         public string DestinationCollectionUrl { get; set; }
         [CommandLineOption(GroupId = "connection"
             , Name = "q", Aliases = "destinationProject targetProject"
-            , MinOccurs =1
             , Description = "Destination Project Name")]
         public string DestinationProjectName { get; set; }
         [CommandLineOption(GroupId = "connection"
@@ -191,7 +187,7 @@ namespace WitSync
         {
             var buf = new StringBuilder();
             buf.AppendLine();
-            buf.AppendFormat("  Action: {0}", this.Action);
+            buf.AppendFormat("  Action: {0}", this.Steps);
             buf.AppendLine();
             buf.AppendFormat("  Mapping file: {0}", this.MappingFile);
             buf.AppendLine();

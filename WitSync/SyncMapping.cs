@@ -8,6 +8,7 @@ namespace WitSync
 {
     class SyncMapping
     {
+        public GeneralConfig config { get; set; }
         public GlobalListMapping globallists { get; set; }
         public ProjectMapping workitems { get; set; }
 
@@ -38,6 +39,28 @@ namespace WitSync
         {
             var self = new SyncMapping()
             {
+                config = new GeneralConfig()
+                {
+                    SourceConnection = new GeneralConfig.ConnectionInfo()
+                    {
+                        CollectionUrl = "surl",
+                        ProjectName = "sprj",
+                        User = "susr",
+                        Password = "pwd"
+                    },
+                    DestinationConnection = new GeneralConfig.ConnectionInfo()
+                    {
+                        CollectionUrl = "surl",
+                        ProjectName = "sprj",
+                        User = "susr",
+                        Password = "pwd"
+                    },
+                    MappingFile = "map",
+                    PipelineSteps = new List<string>() { "step1", "step2" },
+                    StopPipelineOnFirstError = true,
+                    TestOnly = true,
+                    Logging = LoggingLevel.Diagnostic
+                },
                 globallists = new GlobalListMapping()
                 {
                     include = new List<string>() { "a", "b" },
