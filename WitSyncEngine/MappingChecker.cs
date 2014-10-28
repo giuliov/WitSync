@@ -225,8 +225,14 @@ namespace WitSync
             var allDestLinkTypes = this.destWIStore.WorkItemLinkTypes;
             foreach (var linkMap in mapping.LinkTypeMap)
             {
-                if (linkMap.IsWildcard && linkMap.DestinationType != "*")
-                    Log("Invalid Link wildcard rule.");
+                if (linkMap.IsWildcard)
+                {
+                    // * -> * === same name
+                    // * -> '' === not mapped
+                    if (linkMap.DestinationType != "*"
+                        && !string.IsNullOrWhiteSpace(linkMap.DestinationType))
+                        Log("Invalid Link wildcard rule.");
+                }
 
                 if (!linkMap.IsWildcard)
                 {
