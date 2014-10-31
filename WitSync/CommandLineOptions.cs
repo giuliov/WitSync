@@ -108,6 +108,7 @@ namespace WitSync
 
         [CommandLineOption(GroupId = "options"
             , Name = "m", Aliases = "map mapping mappingFile"
+            , MinOccurs = 1
             , Description = "Mapping file, e.g. MyMappingFile.xml")]
         public string MappingFile { get; set; }
         [CommandLineOption(GroupId = "options"
