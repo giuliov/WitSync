@@ -68,12 +68,9 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
-    <Content Include="Sample Mappings\globallists.yml">
+    <None Include="Sample Mappings\test00.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Sample Mappings\test01.yml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
     <None Include="WitSync.nuspec" />
   </ItemGroup>
   <ItemGroup>
@@ -81,36 +78,6 @@
       <Project>{8f408d81-b633-4129-876b-001a16ae5d83}</Project>
       <Name>WitSyncEngine</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Sample Mappings\Mapping_CMMI_2_Scrum_Index.xml">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Sample Mappings\Mapping_CMMI_2_Scrum_Index_flat.xml">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Sample Mappings\Mapping_Defaults.xml">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Sample Mappings\Mapping_Scrum_2_Scrum_Links.xml">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Sample Mappings\Mapping_Scrum_2_Scrum_Index.xml">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Sample Mappings\Mapping_Scrum_2_Scrum.xml">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Sample Mappings\Mapping_CMMI_2_Scrum.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <SubType>Designer</SubType>
-    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
