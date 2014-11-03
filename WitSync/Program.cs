@@ -74,6 +74,9 @@ namespace WitSync
                     }//for
                     options.Steps = steps;
                 }//if
+            } else {
+                Console.WriteLine("Mapping file '{0}' not found.", options.MappingFile);
+                return -2;
             }//if
 
             // command line parsing succeeded
