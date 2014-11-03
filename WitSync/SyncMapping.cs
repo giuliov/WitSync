@@ -80,7 +80,7 @@ namespace WitSync
                     WorkItemMappings = new WorkItemMap[] {
                         new WorkItemMap() {
                             SourceType = "srctype", DestinationType="desttype",
-                            SyncAttachments = true,
+                            Attachments = WorkItemMap.AttachmentMode.Sync,
                             IDField = new FieldMap() { Source="src", Destination="dst", Set="set", Translate="tran"},
                             StateList = new StateList() { InitialStateOnDestination="init",
                             States = new StateMap[] {

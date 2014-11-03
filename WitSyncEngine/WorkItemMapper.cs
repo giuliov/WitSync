@@ -167,43 +167,99 @@ namespace WitSync
             }
         }
 
+        class AttachmentComparer : IEqualityComparer<Attachment>
+        {
+            public bool Equals(Attachment x, Attachment y)
+            {
+
+                //Check whether the compared objects reference the same data.
+                if (Object.ReferenceEquals(x, y)) return true;
+
+                //Check whether any of the compared objects is null.
+                if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
+                    return false;
+
+                //Check whether the objects' properties are equal.
+                return x.Name == y.Name && x.Length == y.Length;
+            }
+
+            // If Equals() returns true for a pair of objects 
+            // then GetHashCode() must return the same value for these objects.
+            public int GetHashCode(Attachment a)
+            {
+                //Check whether the object is null
+                if (Object.ReferenceEquals(a, null)) return 0;
+
+                //Calculate the hash code for the object.
+                return a.GetHashCode();
+            }
+        }
+
+        class AttachmentEnumerable : IEnumerable<Attachment>
+        {
+            private AttachmentCollection underlyingCollection;
+
+            public AttachmentEnumerable(AttachmentCollection coll)
+            { underlyingCollection = coll; }
+
+            public IEnumerator<Attachment> GetEnumerator()
+            {
+                foreach (Attachment item in underlyingCollection)
+                {
+                    yield return item;
+                }
+            }
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+            {
+                return this.GetEnumerator();
+            }
+        }
+
         private void SetAttachments(WorkItem source, WorkItemMap map, WorkItem target)
         {
-            // TODO check SourceStore.MaxBulkUpdateBatchSize vs DestinationStore.MaxBulkUpdateBatchSize
+            if (map.Attachments == WorkItemMap.AttachmentMode.DoNotSync)
+                return;
 
-            if (map.SyncAttachments && source.AttachedFileCount > 0)
+            var srcColl = new AttachmentEnumerable(source.Attachments);
+            var dstColl = new AttachmentEnumerable(target.Attachments);
+            var comparer = new AttachmentComparer();
+
+            if ((map.Attachments & WorkItemMap.AttachmentMode.ClearTarget) == WorkItemMap.AttachmentMode.ClearTarget)
             {
-                bool matchFound = false;
-                // see http://stackoverflow.com/questions/3507939/how-can-i-add-an-attachment-via-the-sdk-to-a-work-item-without-using-a-physical
-                foreach (Attachment sourceAttachment in source.Attachments)
-                {
-                    foreach (Attachment targetAttachment in target.Attachments)
-                    {
-                        if (targetAttachment.Name == sourceAttachment.Name
-                            && targetAttachment.Length == targetAttachment.Length)
-                        {
-                            matchFound = true;
-                            break;
-                        }
-                    }
+                target.Attachments.Clear();
+            }
 
-                    if (matchFound)
-                    {
-                        this.EventSink.Trace("Found attachment '{0}' with same name and lenght: skipping.", sourceAttachment.Name);
-                    }
-                    else
-                    {
-                        // not found
-                        string tempFile = DownloadAttachment(sourceAttachment);
-                        Attachment newAttachment = new Attachment(tempFile, sourceAttachment.Comment);
-                        target.Attachments.Add(newAttachment);
-                    }
+            if ((map.Attachments & WorkItemMap.AttachmentMode.AddAndUpdate) == WorkItemMap.AttachmentMode.AddAndUpdate)
+            {
+                var onlyInSource = srcColl.Except(dstColl, comparer);
+
+                //add
+                foreach (var sourceAttachment in onlyInSource)
+                {
+                    // see http://stackoverflow.com/questions/3507939/how-can-i-add-an-attachment-via-the-sdk-to-a-work-item-without-using-a-physical
+                    string tempFile = DownloadAttachment(sourceAttachment);
+                    Attachment newAttachment = new Attachment(tempFile, sourceAttachment.Comment);
+                    // TODO check SourceStore.MaxBulkUpdateBatchSize vs DestinationStore.MaxBulkUpdateBatchSize
+                    target.Attachments.Add(newAttachment);
+                }//for
+            }//if
+
+            if ((map.Attachments & WorkItemMap.AttachmentMode.RemoveIfAbsent) == WorkItemMap.AttachmentMode.RemoveIfAbsent)
+            {
+                var onlyInTarget = dstColl.Except(srcColl, comparer);
+
+                // remove
+                foreach (var a in onlyInTarget)
+                {
+                    target.Attachments.Remove(a);
                 }//for
             }//if
         }
 
         private string DownloadAttachment(Attachment sourceAttachment)
         {
+            // TODO optimize using tip from http://www.timschaeps.com/team-foundation-service-downloading-attachments-from-work-items-through-the-api/
             var wc = new System.Net.WebClient();
             var cred = this.SourceConnection.Credential;
             if (cred != null

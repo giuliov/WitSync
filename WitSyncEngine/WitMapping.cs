@@ -90,8 +90,19 @@ namespace WitSync
         public WorkItemMap()
         {
             // default
-            this.SyncAttachments = true;
+            this.Attachments = AttachmentMode.Sync;
             this.DefaultRules = true;
+        }
+
+        [Flags]
+        public enum AttachmentMode
+        {
+            DoNotSync = 0,
+            AddAndUpdate = 1,
+            RemoveIfAbsent = 2,
+            ClearTarget = 4,
+            Sync = AddAndUpdate | RemoveIfAbsent,
+            FullSync = AddAndUpdate | ClearTarget
         }
 
         [XmlAttribute]
@@ -105,7 +116,7 @@ namespace WitSync
         [XmlElement("Field")]
         public FieldMap[] Fields { get; set; }
         [XmlAttribute("Attachments")]
-        public bool SyncAttachments { get; set; }
+        public AttachmentMode Attachments { get; set; }
         [XmlAttribute("DefaultRules")]
         public bool DefaultRules { get; set; }
 
@@ -335,7 +346,7 @@ namespace WitSync
                         {
                             SourceType = wit.Name,
                             DestinationType = wit.Name,
-                            SyncAttachments = true,
+                            Attachments = WorkItemMap.AttachmentMode.Sync,
                             Fields = defaultFieldRules
                         };
                 }));
