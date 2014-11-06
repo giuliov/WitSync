@@ -77,5 +77,10 @@ namespace WitSync
         void StagePrepared(EngineBase stage, int stageErrors);
         void StagePreparationError(EngineBase stage, Exception ex);
         void DumpMapping(ProjectMapping mapping);
+        void TraceRule(string msg, params object[] args);
+        void ExceptionWhileRemovingAttachment(Exception ex, Attachment a, WorkItem target);
+        void ExceptionWhileAddingAttachment(Exception ex, Attachment sourceAttachment, WorkItem source);
+        void ExceptionWhileCopyingField(Exception ex, Field fromField);
+        void ExceptionWhileActingOnField(Exception ex, string targetFieldName);
     }
 }

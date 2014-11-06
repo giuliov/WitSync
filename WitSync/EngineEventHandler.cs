@@ -285,14 +285,15 @@ namespace WitSync
 
         public void ExceptionWhileMappingWorkItem(Exception ex, WorkItem sourceWorkItem)
         {
-            this.Error("Error '{0}' while mapping workitem #{1} '{2}'"
-                , ex.Message, sourceWorkItem.Id, sourceWorkItem.Title);
+            this.Error("While mapping workitem #{2} '{3}': {0}\r\n{1}"
+                , ex.Message, ex.StackTrace
+                , sourceWorkItem.Id, sourceWorkItem.Title);
         }
 
         public void ExceptionWhileMappingLink(Exception ex, WorkItemLink sourceLink)
         {
-            this.Error("Error '{0}' while mapping link {1}->{2} (type {3})."
-                , ex.Message
+            this.Error("While link {2}->{3} (type {4}): {0}\r\n{1}"
+                , ex.Message, ex.StackTrace
                 , sourceLink.SourceId, sourceLink.TargetId, sourceLink.LinkTypeEnd.Name);
         }
 
@@ -441,6 +442,31 @@ namespace WitSync
         internal void LastMessage(int rc)
         {
             this.Info("Exiting with code {0}.", rc);
+        }
+
+        public void TraceRule(string msg, params object[] args)
+        {
+            base.Out(VerboseColor, OutputFlags.All, "RULE: ", msg, args);
+        }
+
+        public void ExceptionWhileRemovingAttachment(Exception ex, Attachment a, WorkItem target)
+        {
+            this.Error("While removing Attachment '{2}' from #{3}: {0}\r\n{1}", ex.Message, ex.StackTrace, a.Name, target.Id);
+        }
+
+        public void ExceptionWhileAddingAttachment(Exception ex, Attachment a, WorkItem source)
+        {
+            this.Error("While adding Attachment '{2}' from #{3}: {0}\r\n{1}", ex.Message, ex.StackTrace, a.Name, source.Id);
+        }
+        
+        public void ExceptionWhileCopyingField(Exception ex, Field fromField)
+        {
+            this.Error("While copying Field {1}: {0}", ex.Message, fromField.ReferenceName);
+        }
+
+        public void ExceptionWhileActingOnField(Exception ex, string targetFieldName)
+        {
+            this.Error("While acting on Field {1}: {0}}", ex.Message, targetFieldName);
         }
     }
 }

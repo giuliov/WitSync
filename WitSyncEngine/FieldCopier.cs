@@ -21,7 +21,7 @@ namespace WitSync
 
         public FieldCopier(ProjectMapping mapping, MapperFunctions functions, bool useEditableProperty, WorkItemType sourceType, WorkItemMap map, WorkItemType targetType, IEngineEvents engineEvents)
         {
-            engineEvents.Trace("Interpreting rules for mapping '{0}' workitems to '{1}'", sourceType.Name, targetType.Name);
+            engineEvents.TraceRule("Interpreting rules for mapping '{0}' workitems to '{1}'", sourceType.Name, targetType.Name);
 
             foreach (FieldDefinition fromField in sourceType.FieldDefinitions)
             {
@@ -37,12 +37,12 @@ namespace WitSync
                     ? fromField.ReferenceName : rule.Destination;
                 if (string.IsNullOrWhiteSpace(rule.Destination))
                 {
-                    engineEvents.Trace("RULE: Skip {0}", fromField.ReferenceName);
+                    engineEvents.TraceRule("Skip {0}", fromField.ReferenceName);
                     continue;
                 }
                 if (!targetType.FieldDefinitions.Contains(targetFieldName))
                 {
-                    engineEvents.Trace("RULE: Skip {0} (Target field {1} does not exist)", fromField.ReferenceName, targetFieldName);
+                    engineEvents.TraceRule("Skip {0} (Target field {1} does not exist)", fromField.ReferenceName, targetFieldName);
                     continue;
                 }
 
@@ -50,7 +50,7 @@ namespace WitSync
 
                 if (!IsAssignable(useEditableProperty, fromField, toField))
                 {
-                    engineEvents.Trace("RULE: Skip {0} (Not assignable to {1})", fromField.ReferenceName, targetFieldName);
+                    engineEvents.TraceRule("Skip {0} (Not assignable to {1})", fromField.ReferenceName, targetFieldName);
                     continue;
                 }//if
 
@@ -59,17 +59,17 @@ namespace WitSync
 
                 if (rule.IsWildcard)
                 {
-                    engineEvents.Trace("RULE: Copy {0} to {1} (Wildcard)", fromField.ReferenceName, targetFieldName);
+                    engineEvents.TraceRule("Copy {0} to {1} (Wildcard)", fromField.ReferenceName, targetFieldName);
                     copyAction = (src, dst) => { dst.Value = src.Value; };
                 }
                 else if (!string.IsNullOrWhiteSpace(rule.Set))
                 {
-                    engineEvents.Trace("RULE: Set {0} to value '{1}'", targetFieldName, rule.Set);
+                    engineEvents.TraceRule("Set {0} to value '{1}'", targetFieldName, rule.Set);
                     copyAction = (src, dst) => { SetFieldWithConstant(dst, rule.Set); };
                 }
                 else if (!string.IsNullOrWhiteSpace(rule.SetIfNull))
                 {
-                    engineEvents.Trace("RULE: Set {0} to value '{1}' when source is null", targetFieldName, rule.SetIfNull);
+                    engineEvents.TraceRule("Set {0} to value '{1}' when source is null", targetFieldName, rule.SetIfNull);
                     copyAction = (src, dst) =>
                     {
                         if (src.Value == null)
@@ -91,12 +91,12 @@ namespace WitSync
                     {
                         engineEvents.TranslatorFunctionNotFoundUsingDefault(rule);
                         // default: no translation
-                        engineEvents.Trace("RULE: Copy {0} to {1} (fallback)", fromField.ReferenceName, targetFieldName);
+                        engineEvents.TraceRule("Copy {0} to {1} (fallback)", fromField.ReferenceName, targetFieldName);
                         copyAction = (src, dst) => { dst.Value = src.Value; };
                     }
                     else
                     {
-                        engineEvents.Trace("RULE: Translate {0} via {1}", targetFieldName, rule.Translate);
+                        engineEvents.TraceRule("Translate {0} via {1}", targetFieldName, rule.Translate);
                         copyAction = (src, dst) =>
                         {
                             dst.Value = translatorMethod.Invoke(functions, new object[] { rule, map, mapping, src.Value });
@@ -106,7 +106,7 @@ namespace WitSync
                 else
                 {
                     //engineEvents.InvalidRule(rule);
-                    engineEvents.Trace("RULE: Copy {0} to {1} (Explicit)", fromField.ReferenceName, targetFieldName);
+                    engineEvents.TraceRule("Copy {0} to {1} (Explicit)", fromField.ReferenceName, targetFieldName);
                     // crossing fingers
                     copyAction = (src, dst) => { dst.Value = src.Value; };
                 }//if
@@ -125,7 +125,7 @@ namespace WitSync
             {
                 if (string.IsNullOrWhiteSpace(rule.Source))
                 {
-                    engineEvents.Trace("RULE: Set {0} to value '{1}'", rule.Destination, rule.Set);
+                    engineEvents.TraceRule("Set {0} to value '{1}'", rule.Destination, rule.Set);
                     unboundTasks.Add(new CopyTask()
                     {
                         SourceFieldName = string.Empty,
@@ -156,18 +156,32 @@ namespace WitSync
         {
             foreach (Field fromField in source.Fields)
             {
-                CopyTask copier;
-                if (tasks.TryGetValue(fromField.FieldDefinition, out copier))
+                try
                 {
-                    engineEvents.Trace("Source field {0} has value '{1}'"
-                        , fromField.ReferenceName
-                        , LimitToFirstLine(fromField.Value));
-                    copier.CopyAction(fromField, target.Fields[copier.TargetFieldName]);
+                    CopyTask copier;
+                    if (tasks.TryGetValue(fromField.FieldDefinition, out copier))
+                    {
+                        engineEvents.Trace("Source field {0} has value '{1}'"
+                            , fromField.ReferenceName
+                            , LimitToFirstLine(fromField.Value));
+                        copier.CopyAction(fromField, target.Fields[copier.TargetFieldName]);
+                    }
                 }
+                catch (Exception ex)
+                {
+                    engineEvents.ExceptionWhileCopyingField(ex, fromField);
+                }//try
             }//for fields
             foreach (var task in unboundTasks)
             {
-                task.CopyAction(null, target.Fields[task.TargetFieldName]);
+                try
+                {
+                    task.CopyAction(null, target.Fields[task.TargetFieldName]);
+                }
+                catch (Exception ex)
+                {
+                    engineEvents.ExceptionWhileActingOnField(ex, task.TargetFieldName);
+                }//try
             }
         }
 
