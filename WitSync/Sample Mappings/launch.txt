@@ -1,5 +1,0 @@
-﻿-a SyncWorkItems -c http://localhost:8080/tfs/DefaultCollection -p "Git Scrum" -d https://giuliov.visualstudio.com/DefaultCollection -du giuliov@msn.com -dp NnaHAMLs1t43iqmNsMKy -q "SyncTarget" -m "Sample Mappings\Mapping_Scrum_2_Scrum_Index.xml" -v -UseHeuristicForFieldUpdatability
-
--a SyncWorkItems -c http://localhost:8080/tfs/4D -p "SampleSource" -d https://giuliov.visualstudio.com/DefaultCollection -du giuliov@msn.com -dp NnaHAMLs1t43iqmNsMKy -q "SyncTarget" -m "Sample Mappings\Mapping_CMMI_2_Scrum_Index.xml" -v -i Mapping_Scrum_2_Scrum_Index.idx
-
--a SyncWorkItems -c http://localhost:8080/tfs/4D -p "SampleSource" -d https://giuliov.visualstudio.com/DefaultCollection -du giuliov@msn.com -dp NnaHAMLs1t43iqmNsMKy -q "SyncTarget" -m "Sample Mappings\Mapping_CMMI_2_Scrum_Index_flat.xml" -v -i Mapping_Scrum_2_Scrum_Index.idx
