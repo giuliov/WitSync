@@ -333,6 +333,7 @@ namespace WitSync
                 new FieldMap() { Source = "Microsoft.VSTS.Common.StateChangeDate", Destination = "" },
                 new FieldMap() { Source = "System.CreatedDate", Destination = "" },
                 new FieldMap() { Source = "System.ChangedDate", Destination = "" },
+                new FieldMap() { Source = "Microsoft.VSTS.Common.ActivatedDate", Destination = "" },
                 new FieldMap() { Source = "System.Rev", Destination = "" },
                 new FieldMap() { Source = "*", Destination = "*" }
             };
