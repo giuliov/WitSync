@@ -130,6 +130,8 @@ namespace WitSync
                 // uncommon path
                 eventSink.UsingThreePassSavingAlgorithm();
                 SaveWorkItems3Passes(mapping, index, testOnly, destWIStore, newWorkItems, updatedWorkItems, validWorkItems);
+                // multi-pass records the same WI object multiple times
+                validWorkItems = validWorkItems.DistinctBy(x => x.Id, null).ToList();
             }
             else
             {
