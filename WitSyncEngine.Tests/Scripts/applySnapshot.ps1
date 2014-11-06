@@ -1,4 +1,6 @@
-﻿. ./common.ps1
+﻿. $PSScriptRoot\common.ps1
+
+& $TfsServiceControl unquiesce
 
 # drop current and apply snapshot
 & $TfsConfig collection /detach /collectionName:WitSync
@@ -6,4 +8,4 @@ Invoke-Sqlcmd -Query "ALTER DATABASE [Tfs_WitSync] SET  SINGLE_USER WITH ROLLBAC
 cd $env:SystemDrive
 Copy-Item "$dataSavePath\Tfs_WitSync*" $sqlDataPath
 
-./restartCollection.ps1
+& "$PSScriptRoot\restartCollection.ps1"

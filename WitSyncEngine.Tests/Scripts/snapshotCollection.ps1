@@ -1,4 +1,4 @@
-﻿. ./common.ps1
+﻿. $PSScriptRoot\common.ps1
 
 # snapshot Collection
 & $TfsConfig collection /detach /collectionName:WitSync
@@ -6,4 +6,4 @@ Invoke-Sqlcmd -Query "ALTER DATABASE [Tfs_WitSync] SET SINGLE_USER WITH ROLLBACK
 cd $env:SystemDrive
 Copy-Item "$sqlDataPath\Tfs_WitSync*" "$dataSavePath"
 
-./restartCollection.ps1
+& "$PSScriptRoot\restartCollection.ps1"
