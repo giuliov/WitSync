@@ -172,25 +172,32 @@ namespace WitSync
             , Description = "WorkItems missing from the target are first added in the initial state specified by InitalStateOnDestination, then updated to reflect the state of the source.")]
         public bool CreateThenUpdate { get; set; }
 
+        private WitSyncEngine.EngineOptions? advancedOptions = null;
         public WitSyncEngine.EngineOptions AdvancedOptions
         {
             get
             {
-                WitSyncEngine.EngineOptions result = 0;
+                if (!advancedOptions.HasValue)
+                {
+                    WitSyncEngine.EngineOptions result = 0;
 
-                if (BypassWorkItemValidation)
-                    result |= WitSyncEngine.EngineOptions.BypassWorkItemStoreRules;
-                if (!UseHeuristicForFieldUpdatability)
-                    result |= WitSyncEngine.EngineOptions.UseEditableProperty;
-                if (!DoNotOpenTargetWorkItem)
-                    result |= WitSyncEngine.EngineOptions.OpenTargetWorkItem;
-                if (PartialOpenTargetWorkItem)
-                    result |= WitSyncEngine.EngineOptions.PartialOpenTargetWorkItem;
-                if (CreateThenUpdate)
-                    result |= WitSyncEngine.EngineOptions.CreateThenUpdate;    
+                    if (BypassWorkItemValidation)
+                        result |= WitSyncEngine.EngineOptions.BypassWorkItemStoreRules;
+                    if (!UseHeuristicForFieldUpdatability)
+                        result |= WitSyncEngine.EngineOptions.UseEditableProperty;
+                    if (!DoNotOpenTargetWorkItem)
+                        result |= WitSyncEngine.EngineOptions.OpenTargetWorkItem;
+                    if (PartialOpenTargetWorkItem)
+                        result |= WitSyncEngine.EngineOptions.PartialOpenTargetWorkItem;
+                    if (CreateThenUpdate)
+                        result |= WitSyncEngine.EngineOptions.CreateThenUpdate;
 
-                return result;
+                    advancedOptions = result;
+                }
+
+                return advancedOptions.Value;
             }
+            set { advancedOptions = value; }
         }
 
         public override string ToString()

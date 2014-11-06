@@ -79,7 +79,15 @@ namespace WitSync
                     }//for
                     options.Steps = steps;
                 }//if
-            } else {
+                WitSyncEngine.EngineOptions advanced = options.AdvancedOptions;
+                foreach (var oneOpt in map.config.AdvancedOptions)
+                {
+                    advanced |= (WitSyncEngine.EngineOptions)Enum.Parse(typeof(WitSyncEngine.EngineOptions), oneOpt, true);
+                }//for
+                options.AdvancedOptions = advanced;
+            }
+            else
+            {
                 Console.WriteLine("Mapping file '{0}' not found.", options.MappingFile);
                 return -2;
             }//if
