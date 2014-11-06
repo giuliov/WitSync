@@ -11,13 +11,22 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WitSync", "WitSync\WitSync.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9A96570A-3F5D-4257-A6F8-23218CAE28EC}"
 	ProjectSection(SolutionItems) = preProject
+		LICENSE.txt = LICENSE.txt
 		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{839A4A1F-2FBC-4C82-B3B2-660966A056F5}"
 	ProjectSection(SolutionItems) = preProject
 		docs\CommandLineOptions.md = docs\CommandLineOptions.md
+		docs\Introduction.md = docs\Introduction.md
 		docs\Mapping.md = docs\Mapping.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{3B935B27-CE33-400E-AE65-A3234D050F6B}"
+	ProjectSection(SolutionItems) = preProject
+		build\NuGet.exe = build\NuGet.exe
+		build\packageAndPublish.bat = build\packageAndPublish.bat
+		build\SetVersion.targets = build\SetVersion.targets
 	EndProjectSection
 EndProject
 Global
@@ -52,5 +61,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{839A4A1F-2FBC-4C82-B3B2-660966A056F5} = {9A96570A-3F5D-4257-A6F8-23218CAE28EC}
+		{3B935B27-CE33-400E-AE65-A3234D050F6B} = {9A96570A-3F5D-4257-A6F8-23218CAE28EC}
 	EndGlobalSection
 EndGlobal

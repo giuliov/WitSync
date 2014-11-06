@@ -1,77 +1,168 @@
-# Mapping file
+# Mapping file Reference
 
-Mapping file is not strictly required if you want a dumb sync.
+WitSync is controlled via a mapping file. The mapping file use the [YAML](http://www.yaml.org/) format to configure the WitSync pipeline. You can configure just a small subset of information, as WitSync assumes you want an hi-fidelity copy of the source.
 
-If you want fine control, you must writing the _Mapping_ file. It defines in detail the source and target mapping, 
-so it is a tedious work.
 
-## Sample mapping
+## Configuration
 
-```XML
-<Mapping>
-  <SourceQuery>Shared Queries\MySourceQuery</SourceQuery>
-  <DestinationQuery>Shared Queries\MyDestinationQuery</DestinationQuery>
-  <IndexFile>index.xml</IndexFile>
-  <AreaMap>
-    <!-- map any Area path to root node in target project -->
-    <Area SourcePath="*" DestinationPath=""/>
-  </AreaMap>
-  <IterationMap>	
-    <!-- same (relative) path -->
-    <Iteration SourcePath="*" DestinationPath="*"/>
-  </IterationMap>
-  <WorkItemMap SourceType="Feature" DestinationType="Feature" Attachments="true">
-    <!-- this is used instead of an index -->
-    <IDField Source="System.ID" Destination="Sample.OriginatingID"/>
-    <!-- InitalStateOnDestination is used by the CreateThenUpdate option -->
-    <States InitalStateOnDestination="New">
-      <State Source="Proposed" Destination="New"/>
-      <State Source="Active" Destination="In Progress"/>
-      <State Source="Resolved" Destination="Done"/>
-      <State Source="Closed" Destination="Removed"/>
-    </States>
-    <!-- not mapped (get value from rules or other fields) -->
-    <Field Source="Area ID" Destination=""/>
-    <Field Source="Iteration ID" Destination=""/>
-    <Field Source="Reason" Destination=""/>
-    <Field Source="State Change Date" Destination=""/>
-    <Field Source="Created Date" Destination=""/>
-    <Field Source="Changed Date" Destination=""/>
-    <!-- built-in functions (need modifying tool sources to  add/change functions) -->
-    <Field Source="State" Destination="State" Translate="MapState" />
-    <Field Source="Area Path" Destination="Area Path" Translate="MapAreaPath"/>
-    <Field Source="Iteration Path" Destination="Iteration Path" Translate="MapIterationPath"/>
-    <!-- explicit mapping -->
-    <Field Source="Title" Destination="Title"/>
-    <Field Source="Description" Destination="Description"/>
-    <Field Source="Assigned To" Destination="Assigned To"/>
-    <!-- optional wildcard mapping -->
-    <Field Source="*" Destination="*"/>
-  </WorkItemMap>
-  <!-- add more work item type mappings -->
-</Mapping>
+```YAML
+config:
+  sourceConnection:
+    collectionUrl: url_to_source_collection
+    projectName: source_team_project_name
+    user: user_connecting_to_source_specify_the_domain_when_required
+    password: '***'
+  destinationConnection:
+    collectionUrl: url_to_target_collection
+    projectName: destination_team_project_name
+    user: user_connecting_to_target_specify_the_domain_when_required
+    password: '***'
+  pipelineSteps:
+  - globallists
+  - areas
+  - iterations
+  - workitems
+  indexFile: relative_or_absolute_path_to_index_file
+  changeLogFile: relative_or_absolute_path_to_changelog_file
+  logFile: relative_or_absolute_path_to_log_file
+  logging: Diagnostic
+  stopPipelineOnFirstError: boolean
+  testOnly: boolean
+  advancedOptions:
+  - CreateThenUpdate
+  - UseHeuristicForFieldUpdatability
+  - BypassWorkItemStoreRules
+  - UseEditableProperty
+  - OpenTargetWorkItem
+  - PartialOpenTargetWorkItem
 ```
 
+These parameters can also be set on the command line, the latter wins.
 
-## Index file
+### Trial mode
+This is the single most important configuration value. When `testOnly` has value `true`, no data is written on the target TFS Project. 
 
-WitSync uses the work item ID field (`System.Id`) to uniquely identify the wrok items to syncronize. There are two ways to relate work items on the destination  project with the source:
+
+### Connections
+This section configures the connection to source and target TFS.
+
+```YAML
+config:
+  sourceConnection:
+    collectionUrl: url_to_source_collection
+    projectName: source_team_project_name
+    user: user_connecting_to_source_specify_the_domain_when_required
+    password: '***'
+  destinationConnection:
+    collectionUrl: url_to_target_collection
+    projectName: destination_team_project_name
+    user: user_connecting_to_target_specify_the_domain_when_required
+    password: '***'
+```
+
+The users are optional, WitSync will use the running user is not specified.
+
+### Logging
+This section controls the logging level and the log file.
+
+```YAML
+config:
+  logFile: relative_or_absolute_path_to_log_file
+  logging: Diagnostic
+```
+Note that WitSync always appends to the log file.
+
+Level can be:
+
+ - Normal
+ - Verbose
+ - Diagnostic
+
+### ChangeLog
+This file is overwritten at each run. It records the list of changed objects in [CSV](http://en.wikipedia.org/wiki/Comma-separated_values) format.
+The columns are:
+
+| Column     | Description                                |
+|------------|--------------------------------------------|
+| Source     | Stage that made the change                 |
+| SourceId   | ID of source object                        |
+| TargetId   | ID of destination object                   |
+| ChangeType | Type of change (e.g. Add, Update, Delete)  |
+
+The ChangeLog file is useful to create reports or make a complex workflow composed by multiple scripts and tools.
+Only successful saves write records in the Change Log.  
+
+### Pipeline
+
+This section defines the synchronization pipeline.
+```YAML
+config:
+  pipelineSteps:
+  - globallists
+  - areas
+  - iterations
+  - workitems
+```
+Order is fixed.
+
+| _Stage_     | _Description_
+|-------------|--------------------------------
+| globallists |  Syncronize GlobalLists data
+| areas       |  Syncronize Areas (see documentation for limits)
+| iterations  |  Syncronize Iterations (see documentation for limits)
+| workitems   |  Syncronize WorkItems
+
+The `stopPipelineOnFirstError` controls if the pipeline will continue after an error.
+
+
+### Index file
+
+WitSync uses the work item ID field (`System.Id`) to uniquely identify work items to syncronize. There are two ways to relate work items on the destination  project with the source:
     - using a field to holds the source ID, useful when the ID is meaningful to users (like a bug number)
     - using an external file to track mapping, useful when replicating a project on a different TFS collection or instance
 
 When you specify an _Index_ file
-```XML
-<IndexFile>relative_or_absolute_path_to_file</IndexFile>
+
+```YAML
+config:
+  indexFile: relative_or_absolute_path_to_file
 ```
 you get the maximum freedom in mapping work item schemas. WitSync looks up the Index file to know if a work item has a correspondent on the destination project; if not found, a new work item is created. On a match, the existing work item on the target project is updated.
 You can specify the file on the command line, and this takes precedence and the element in the mapping file is optional.
 
 Make sure to properly backup this file, otherwise the tool will re-create new workitems instead of updating the existing  workitems.
 
+### Advanced Options for WorkItems stage
+
+| _Option_                               | _Description_
+|----------------------------------------|--------------------------------
+   --BypassWorkItemValidation            |  Disable Rule validation
+   --CreateThenUpdate                    |  WorkItems missing from the target are first added in the initial state specified
+                                         |  by InitalStateOnDestination, then updated to reflect the state of the source.
+   --DoNotOpenTargetWorkItem             |  Use [WorkItem.Open](http://msdn.microsoft.com/en-us/library/microsoft.teamfoundation.workitemtracking.client.workitem.open.aspx) Method to make the WorkItem updatable.
+   --PartialOpenTargetWorkItem           |  Use [WorkItem.PartialOpen] Method to make the WorkItem updatable.
+   --UseHeuristicForFieldUpdatability    |  Algorithm used to determine when a field is updatable. By default the tool checks the [Field.IsEditable](http://msdn.microsoft.com/en-us/library/microsoft.teamfoundation.workitemtracking.client.field.iseditable.aspx) Property.
+
+
+## Global lists
+
+You can use the `include` clause, the `exclude` clause or both.
+
+### Include
+
+In this case only listed GlobalLists are copied to the destination.
+
+### Exclude
+
+All GlobalLists are copied to the destination, except for those listed in the `exclude` clause.
+
+### Both
+Should not be used. WitSync will copy only the GlobalLists listed in `include` clause and not present in the `exclude` list. 
+
 
 ## Source query
 
-The tool should present itself as an account able to get the result from the source query. The source query can be expressed in [WIQL](http://msdn.microsoft.com/en-us/library/bb130306.aspx) or be the name of an existing query (Shared queries are preferred).
+The tool should present itself as an account able to get the result from the source query. The source query can be expressed in [WIQL](http://msdn.microsoft.com/en-us/library/bb130306.aspx) or be the name of an existing query.
 
 If you want to replicate all workitems, you can use a generic query like this
 
@@ -83,8 +174,8 @@ If you want to replicate all workitems, you can use a generic query like this
     SELECT [System.Id], [System.WorkItemType], [System.Title], [System.AssignedTo], [System.State], [System.Tags]
     FROM WorkItems
     WHERE [System.TeamProject] = @project
-    and [System.WorkItemType] &lt;&gt; ''
-    and [System.State] &lt;&gt; ''
+    and [System.WorkItemType] <> ''
+    and [System.State] <> ''
   </Wiql>
 </WorkItemQuery>
 ```
@@ -98,7 +189,7 @@ This is also the default if you do not specify the source query: all kind of Wor
 
 On the target, the tool must be able to run `Shared Queries\MyDestinationQuery` and to write (Contribute access) in the project. On the first run, the target query must give an empty result; on subsequent runs, it must returns previously synced workitems.
 
-This way, tool’s work is optimized by not scanning all workitems in the target project.
+This way, toolâ€™s work is optimized by not scanning all workitems in the target project.
 
 If you need to replicate all workitems, use a generic query like this
 
@@ -122,31 +213,49 @@ If you do not specify a destination query, by default all kind of Work Items are
 
 ## Area and Iteration mapping
 
-You have some ways of mapping Area/Iteration paths: one is specific, an Area/Iteration path is mapped exactly to a literal path on target.
-```XML
-<Area SourcePath="Src\Area 1" DestinationPath="Dest\Area 2"/>
+You can specify one or more rule to map Area/Iteration paths.
+
+The simplest rule is **specific**, an Area/Iteration path is mapped exactly to a literal path on target.
+```YAML
+workitems:
+  areaMap:
+  - sourcePath: Src\Area 1
+    destinationPath: Dest\Area 2
 ```
 You can use the `SyncAreasAndIterations` option to replicate the paths on the destination.
 
-Another option is to use the source wildcard rule: all source paths are mapped to a specific target path.
-```XML
-<Iteration SourcePath="*" DestinationPath="Dest\Sprint 3"/>
+Another option is to use the **source wildcard** rule: all source paths are mapped to a specific target path.
+```YAML
+workitems:
+  iterationMap:
+  - sourcePath: '*'
+    destinationPath: Dest\Sprint 3
 ```
 Useful in partial-replica scenarios, where you are transferring specific data subsets.
+**Note**: YAML requires the quotes around the asterisk symbol.
 
-If the destination is empty, it is mapped to the root node, so
-```XML
-<Iteration SourcePath="*" DestinationPath=""/>
+If the destination is empty, it is mapped to the **root** node, so
+```YAML
+workitems:
+  iterationMap:
+  - sourcePath: '*'
+    destinationPath: ''
 ```
 is equivalent to
-```XML
-<Iteration SourcePath="*" DestinationPath="Dest"/>
+```YAML
+workitems:
+  iterationMap:
+  - sourcePath: '*'
+    destinationPath: Dest
 ```
-This is the default if you do not specify an Area / Iteration mapping.
+This is the default if you do not specify any Area / Iteration mapping.
 
-The last option uses the destination wildcard rule: source paths are mapped to equivalent target paths, that is identical except for the root node.
-```XML
-<Area SourcePath="*" DestinationPath="*"/>
+The last option uses the **destination wildcard** rule: source paths are mapped to equivalent target paths, that is identical except for the root node.
+```YAML
+workitems:
+  areaMap:
+  - sourcePath: '*'
+    destinationPath: '*'
 ```
 
 As you see, the rules have the same syntax and meaning for both Areas and Iterations.
@@ -157,88 +266,176 @@ As you see, the rules have the same syntax and meaning for both Areas and Iterat
 A mapping file usually contains some work item mappings.
 
 The syntax is
-```XML
-  <WorkItemMap SourceType="source_work_item_type" DestinationType="destination_work_item_type" Attachments="boolean">
-    <!-- IDField is optional -->
-    <IDField Source="System.ID" Destination="field_reference_name_on_destination"/>
-    <!-- State table is optional -->
-    <States InitalStateOnDestination="optional_name_of_state_on_destination_work_item_type">
-    </States>
-    <!-- list of Field mapping rules -->
-    <Field />
-  </WorkItemMap>
+```YAML
+workitems:
+  workItemMappings:
+  - sourceType: source_work_item_type
+    destinationType: destination_work_item_type
+    iDField: # optional
+      source: System.ID
+      destination: field_reference_name_on_destination
+    stateList: # State table is optional
+      states:
+      - source: srcstate1
+        destination: deststate1
+      - source: srcstate2
+        destination: deststate2
+    fields:
+      # list of Field mapping rules
+    attachments: Sync
+    defaultRules: true
 ```
 
-Note that the work item type can be different, e.g. mapping Bugs to Issues.
+Note that you can map different work item types, e.g. _Bugs_ to _Issues_, or _Product Backlog Items_ to _User Stories_.
 
-To avoid syncing attachments, set Attachments to `false`.
+To avoid syncing attachments, set Attachments to `DoNotSync`.
 
-If you do not specify any Work Item mapping, Work Items maps to the same type on the destination, assuming the same set of States and Fields.
+If you do not specify any Work Item mapping, Work Items maps to the same type on the destination, assuming the same set of States and Fields. This is done via the rules included by default. If you want to exclude the default rules, set `defaultRules` to `true`.
 
 ### ID
 WitSync uses the work item ID field (`System.Id`) to uniquely identify them. There are two ways to relate work items on the destination  project:
     - using a field to holds the source ID, useful when the ID is meaningful to users (like a bug number)
     - using an external file to track mapping, useful when replicating a project on a different TFS collection or instance
 
-The field in the target work item type that holds the source ID must be an integer. If not using the `IDField`, you must specify an _Index_ file and take care of it: make sure to properly backup it, otherwise the tool will re-create new workitems instead of updating the existing  workitems.
+```YAML
+workitems:
+  workItemMappings:
+    iDField: # optional
+      source: System.ID
+      destination: field_reference_name_on_destination
+```
+
+The field in the target work item type that holds the source ID must be an integer. If not using the `iDField`, you must specify an _Index_ file and take care of it: make sure to properly backup it, otherwise the tool will re-create new workitems instead of updating the existing  workitems.
 
 ### States
 State mapping table is optional; when missing the target work item type must have at least the same states of the source.
-The `InitalStateOnDestination` is used by the `CreateThenUpdate` option (see [Advanced options](./CommandLineOptions.md)).
 
-```XML
-<State Source="Proposed" Destination="New"/>
+```YAML
+workitems:
+  workItemMappings:
+    stateList: # State table is optional
+      states:
+      - source: Proposed
+        destination: New
 ```
 
 ## Field mapping
 
 Field mapping rules specify which fields of the source work item type are copied over the target. Only the writable fields are updated.
 
-Use field names (e.g. Title), reference names do not work (e.g. System.Title).
+Use reference names (e.g. `System.Title`), not field names (e.g. `Title`).
 
-Field mapping rules can have 5 forms.
+Field mapping rules have many forms, described below.
 
 ### Explicit field mapping
 Both source and destination specify a field.
-```XML
-<Field Source="Description" Destination="Description"/>
+```YAML
+workitems:
+  workItemMappings:
+    fields:
+    - source: System.Description
+      destination: System.Description
+```
+### Explicit field mapping with Default
+Both source and destination specify a field plus a default value to use when source value is empty.
+```YAML
+workitems:
+  workItemMappings:
+    fields:
+    - source: System.Description
+      destination: System.Description
+      setIfNull: Description missing
 ```
 
 ### Unmapped fields
 The field is not mapped, useful for computed fields like "Area ID" whose value is derived from "Area Path".
 
 Source has a name while destination is empty.
-```XML
-<Field Source="Area ID" Destination=""/>
+```YAML
+workitems:
+  workItemMappings:
+    fields:
+    - source: System.AreaId
+      destination: 
 ```
-
+Normally this rule is not needed, as WitSync checks at run-time if a field is writable.
+  
 ### Fixed value
 Destination field takes literal value.
-```XML
-<Field Source="Blocked" Destination="Blocked" Set="Yes" />
+```YAML
+workitems:
+  workItemMappings:
+    fields:
+    - destination: Microsoft.VSTS.Common.Severity
+      set: '3 - Medium'
 ```
 
 ### Wildcard rule
-Fields that exists on destination are copied. Should appear only once.
-```XML
-<Field Source="*" Destination="*"/>
+Fields that exists on destination are copied. Must appear only once and last in the list.
+```YAML
+workitems:
+  workItemMappings:
+    fields:
+    - source: '*'
+      destination: '*'
 ```
 This is the default Rule if no Field rule is present.
 
+### Wildcard unmap rule
+Any field with no explicit rule before is skipped.
+Source is wildcard while destination is empty.
+As the other wildcard rule, should appear only once and last in the list.
+
+```YAML
+workitems:
+  workItemMappings:
+    fields:
+    - source: '*'
+      destination: 
+```
+
 ### Translation functions
 Source values are converted via some built-in function.
-```XML
-<Field Source="State" Destination="State" Translate="MapState" />
-<Field Source="Area Path" Destination="Area Path" Translate="MapAreaPath"/>
-<Field Source="Iteration Path" Destination="Iteration Path" Translate="MapIterationPath"/>
+```YAML
+workitems:
+  workItemMappings:
+    fields:
+    - source: System.State
+      destination: System.State
+      translate: MapState
+    - source: System.AreaPath
+      destination: System.AreaPath
+      translate: MapAreaPath
+    - source: System.IterationPath
+      destination: System.IterationPath
+      translate: MapIterationPath
 ```
 The only available functions are:
 
-|Function         | Description                                                             |
-|-----------------|-------------------------------------------------------------------------|
-|MapState         | Use State mapping                                                       |
-|MapAreaPath      | Use Area mapping to convert source Area Path values to target           |
-|MapIterationPath | Use Iteration mapping to convert source Iteration Path values to target |
+|Function         | Description                                                          |
+|-----------------|----------------------------------------------------------------------|
+|MapState         | Use `stateList` to do the mapping                                    |
+|MapAreaPath      | Use `areaMap` to convert source Area Path values to target           |
+|MapIterationPath | Use `iterationMap` to convert source Iteration Path values to target |
+
+
+## Attachments
+You can specify the mode to sync Work Item Attachments.
+
+```YAML
+workitems:
+  workItemMappings:
+    attachments: mode
+```
+
+| Sync Mode       | Description                                                                 |
+|-----------------|-----------------------------------------------------------------------------|
+|DoNotSync        | WitSync will not copy attachments                                           |
+|AddAndUpdate     | Attachments missing on the destination or with different lengths are copied |
+|RemoveIfAbsent   | Attachments present on target but missing in source are removed             |
+|ClearTarget      | All destination attachments are removed before copying                      |
+|Sync             | Combines AddAndUpdate & RemoveIfAbsent (default)                            |
+|FullSync         | Combines AddAndUpdate & ClearTarget                                         |
 
 
 ## Link Type mapping
@@ -246,14 +443,106 @@ The only available functions are:
 A mapping file can specify Link Type mappings.
 
 The syntax is
-```XML
-  <LinkTypeMap>
-    <LinkType SourceType="source_work_item_type" DestinationType="destination_work_item_type" />
-    <!-- wildcard rule -->
-    <LinkType SourceType="*" DestinationType="*" />
-  </LinkTypeMap>
+```YAML
+workitems:
+  linkTypeMap:
+  - sourceType: source_work_item_type
+    destinationType: destination_work_item_type
+  - sourceType: '*'
+    destinationType: '*'
 ```
 
-Note that the work item type can be different, e.g. mapping Bugs to Issues.
+Note that the link type can be different, e.g. mapping `Child` to `Custom`.
 
 If you do not specify any Link Type mapping, WitSync will use the type on the destination with identical name.
+
+**Caveat**: External and Related links are not syncronized.
+
+
+## Sample content
+
+This is an example of a full blown mapping file.
+
+```YAML
+config:
+  sourceConnection:
+    collectionUrl: http://localhost:8080/tfs/DefaultCollection
+    projectName: yourSourceProject
+    user: sourceUser
+    password: '***'
+  destinationConnection:
+    collectionUrl: http://localhost:8080/tfs/DefaultCollection
+    projectName: yourTargetProject
+    user: targetUser
+    password: '***'
+  pipelineSteps:
+  - globallists
+  - workitems
+  mappingFile: yourMap.yml
+  indexFile: index.xml
+  changeLogFile: changes.csv
+  logFile: log.txt
+  logging: Diagnostic
+  stopPipelineOnFirstError: true
+  testOnly: true
+  advancedOptions:
+  - CreateThenUpdate
+  - UseHeuristicForFieldUpdatability
+globallists:
+  include:
+  - incl1
+  - incl2
+  exclude:
+  - excl3
+  - excl4
+workitems:
+  sourceQuery: Shared Queries\MySourceQuery
+  destinationQuery: Shared Queries\MyDestinationQuery
+  indexFile: index.xml
+  areaMap:
+  - sourcePath: srcArea1
+    destinationPath: dstArea1
+  - sourcePath: srcArea2
+    destinationPath: dstArea2
+  iterationMap:
+  - sourcePath: src
+    destinationPath: dst
+  - sourcePath: '*'
+    destinationPath: 
+  workItemMappings:
+  - sourceType: srctype
+    destinationType: desttype
+    iDField:
+      source: srcID
+      destination: dstID
+    stateList:
+      states:
+      - source: srcstate1
+        destination: deststate1
+      - source: srcstate2
+        destination: deststate2
+    fields:
+    - source: src1
+      destination: dst1
+    - source: src2
+      destination: dst2
+      translate: tranFunc2
+    - destination: dst3
+      set: val3
+    - source: src4
+      destination: dst4
+      setIfNull: set4
+    - source: '*'
+      destination: '*'
+    - source: '*'
+      destination: 
+    attachments: Sync
+    defaultRules: true
+  linkTypeMap:
+  - sourceType: srclnk1
+    destinationType: dstlnk1
+  - sourceType: srclnk2
+    destinationType: dstlnk2
+  - sourceType: '*'
+    destinationType: '*'
+```

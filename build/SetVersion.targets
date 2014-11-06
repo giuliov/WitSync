@@ -25,6 +25,7 @@
 
             DateTime referenceDate = new DateTime(2000, 12, 31);// millennium start
             DateTime now = DateTime.Now;
+            // unable to distinguish two builds in a 10 sec interval... someone cares?
             string version = string.Format("{0}.{1}.{2}.{3:00}{4:00}{5:0}",
                 MajorVersion, MinorVersion,
                 (short)(now - referenceDate).TotalDays,
