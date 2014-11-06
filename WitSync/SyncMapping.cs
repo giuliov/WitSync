@@ -43,19 +43,19 @@ namespace WitSync
                 {
                     SourceConnection = new GeneralConfig.ConnectionInfo()
                     {
-                        CollectionUrl = "surl",
-                        ProjectName = "sprj",
-                        User = "susr",
-                        Password = "pwd"
+                        CollectionUrl = "http://localhost:8080/tfs/DefaultCollection",
+                        ProjectName = "yourSourceProject",
+                        User = "sourceUser",
+                        Password = "***"
                     },
                     DestinationConnection = new GeneralConfig.ConnectionInfo()
                     {
-                        CollectionUrl = "surl",
-                        ProjectName = "sprj",
-                        User = "susr",
-                        Password = "pwd"
+                        CollectionUrl = "http://localhost:8080/tfs/DefaultCollection",
+                        ProjectName = "yourTargetProject",
+                        User = "targetUser",
+                        Password = "***"
                     },
-                    MappingFile = "map.yml",
+                    MappingFile = "yourMap.yml",
                     PipelineSteps = new List<string>() { "step1", "step2" },
                     StopPipelineOnFirstError = true,
                     TestOnly = true,
@@ -67,8 +67,8 @@ namespace WitSync
                 },
                 globallists = new GlobalListMapping()
                 {
-                    include = new List<string>() { "a", "b" },
-                    exclude = new List<string>() { "a", "b" }
+                    include = new List<string>() { "incl1", "incl2" },
+                    exclude = new List<string>() { "excl3", "excl4" }
                 },
                 workitems = new ProjectMapping()
                 {
@@ -76,28 +76,37 @@ namespace WitSync
                     DestinationQuery = "dest query",
                     IndexFile = "index",
                     AreaMap = new AreaMap[] {
-                        new AreaMap() { SourcePath = "src", DestinationPath = "dst" }
+                        new AreaMap() { SourcePath = "srcArea1", DestinationPath = "dstArea1" },
+                        new AreaMap() { SourcePath = "srcArea2", DestinationPath = "dstArea2" }
                     },
                     IterationMap = new IterationMap[] {
-                        new IterationMap() { SourcePath = "src", DestinationPath = "dst" }
+                        new IterationMap() { SourcePath = "src", DestinationPath = "dst" },
+                        new IterationMap() { SourcePath = "*", DestinationPath = "" }
                     },
                     WorkItemMappings = new WorkItemMap[] {
                         new WorkItemMap() {
                             SourceType = "srctype", DestinationType="desttype",
                             Attachments = WorkItemMap.AttachmentMode.Sync,
-                            IDField = new FieldMap() { Source="src", Destination="dst", Set="set", Translate="tran"},
+                            IDField = new FieldMap() { Source="srcID", Destination="dstID" },
                             StateList = new StateList() {
                             States = new StateMap[] {
-                                new StateMap() { Source="srcstate", Destination="deststate"}
+                                new StateMap() { Source="srcstate1", Destination="deststate1"},
+                                new StateMap() { Source="srcstate2", Destination="deststate2"}
                             }},
                             Fields = new FieldMap[] {
-                                new FieldMap() { Source="src1", Destination="dst1", Set="set1", Translate="tran1"},
-                                new FieldMap() { Source="src2", Destination="dst2", Set="set2", Translate="tran2"}
+                                new FieldMap() { Source="src1", Destination="dst1"},
+                                new FieldMap() { Source="src2", Destination="dst2", Translate="tranFunc2"},
+                                new FieldMap() { Destination="dst3", Set="val3" },
+                                new FieldMap() { Source="src4", Destination="dst4", SetIfNull="set4"},
+                                new FieldMap() { Source="*", Destination="*"},
+                                new FieldMap() { Source="*", Destination=""},
                             }
                         }
                     },
                     LinkTypeMap = new LinkTypeMap[] { 
-                        new LinkTypeMap() {SourceType="srclnk", DestinationType="dstlnk" }
+                        new LinkTypeMap() {SourceType="srclnk1", DestinationType="dstlnk1" },
+                        new LinkTypeMap() {SourceType="srclnk2", DestinationType="dstlnk2" },
+                        new LinkTypeMap() {SourceType="*", DestinationType="*" }
                     }
                 }
             };

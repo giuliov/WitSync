@@ -17,6 +17,13 @@ namespace WitSync
          */
         static int Main(string[] args)
         {
+            // option to generate sample file
+            if (string.Compare(args[0], "generate", true) == 0)
+            {
+                SyncMapping.Generate().SaveTo("sample.yml");
+                return 1;
+            }//if
+
             int lastColumn;
 
             // nice output formatting
@@ -95,9 +102,6 @@ namespace WitSync
             // command line parsing succeeded
             if (options.TestOnly)
                 Console.WriteLine("** TEST MODE: no data will be written on destination **");
-
-            // TODO add an option to generate sample file
-            // SyncMapping.Generate().SaveTo("generated.yaml");
 
             // with user's need in hand, build the pipeline
             var eventHandler = new EngineEventHandler(options.Verbose, options.LogFile);
