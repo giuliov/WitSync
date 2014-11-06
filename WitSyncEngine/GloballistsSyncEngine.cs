@@ -9,6 +9,13 @@ using System.Xml;
 namespace WitSync
 {
 
+    internal class GlobalListChangeEntry : ChangeEntry
+    {
+        internal GlobalListChangeEntry(string name)
+            : base("GlobalList", name, name, "AddOrUpdate")
+        { }
+    }
+
     public class GlobalListsSyncEngine : EngineBase
     {
         public GlobalListsSyncEngine(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
@@ -73,6 +80,11 @@ namespace WitSync
             if (!testOnly)
             {
                 destWIStore.ImportGlobalLists(updateDoc.InnerXml);
+                foreach (var glSourceElement in updateList)
+                {
+                    string glName = glSourceElement.Attributes["name"].Value.ToString();
+                    this.ChangeLog.AddEntry(new GlobalListChangeEntry(glName));
+                }//for
             }
 
             eventSink.GlobalListsUpdated();

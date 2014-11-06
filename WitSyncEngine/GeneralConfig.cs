@@ -29,9 +29,12 @@ namespace WitSync
 
         public string MappingFile { get; set; }
         public string IndexFile { get; set; }
+        public string ChangeLogFile { get; set; }
+        public string LogFile { get; set; }
 
         public LoggingLevel Logging { get; set; }
         public bool StopPipelineOnFirstError { get; set; }
         public bool TestOnly { get; set; }
+        public List<string> AdvancedOptions { get; set; }
     }
 }

@@ -9,8 +9,8 @@ namespace WitSync
 {
     class EngineEventHandler : EventHandlerBase, IEngineEvents
     {
-        public EngineEventHandler(bool verbose)
-            : base(verbose)
+        public EngineEventHandler(bool verbose, string logFile)
+            : base(verbose, logFile)
         {
         }
 
@@ -414,6 +414,33 @@ namespace WitSync
 
             this.Verbose("Dumping Mapping");
             base.RawOut(VerboseColor, OutputFlags.All,output.ToString());
+        }
+
+        internal void SavingChangeLogToFile(string filename)
+        {
+            this.Info("Saving Changelog to '{0}'.", filename);
+        }
+
+        internal void SavedChangeLog(int numRecords)
+        {
+            this.Info("{0} record(s) saved.", numRecords);
+        }
+
+        internal void DumpOptions(WitSyncCommandLineOptions options)
+        {
+            this.Verbose(options.ToString());
+        }
+
+        internal void FirstMessage(string logHeader)
+        {
+            // empty line
+            base.RawOut(InfoColor, OutputFlags.Debug, string.Empty);
+            base.RawOut(InfoColor, OutputFlags.Debug, logHeader);
+        }
+
+        internal void LastMessage(int rc)
+        {
+            this.Info("Exiting with code {0}.", rc);
         }
     }
 }

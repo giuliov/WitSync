@@ -116,12 +116,21 @@ namespace WitSync
             , MinOccurs = 0 //HACK is mandatory if ...
             , Description = "Index file, e.g. MyIndex.xml")]
         public string IndexFile { get; set; }
+        [CommandLineOption(GroupId = "options"
+            , Name = "cl", Aliases = "chg changes changeLogFile"
+            , Description = "ChangeLog file, e.g. ChangeLog.csv")]
+        public string ChangeLogFile { get; set; }
 
         [CommandLineOption(GroupId = "options"
             , Name = "v", Aliases = "verbose"
             , BoolFunction = BoolFunction.TrueIfPresent
             , Description = "Prints detailed output")]
         public bool Verbose { get; set; }
+        [CommandLineOption(GroupId = "options"
+            , Name = "l", Aliases = "log logFile"
+            , BoolFunction = BoolFunction.TrueIfPresent
+            , Description = "Write complete log to file")]
+        public string LogFile { get; set; }
 
         [CommandLineOption(GroupId = "options"
             , Name = "e", Aliases = "stopOnError"
@@ -193,6 +202,10 @@ namespace WitSync
             buf.AppendFormat("  Mapping file: {0}", this.MappingFile);
             buf.AppendLine();
             buf.AppendFormat("  Index file: {0}", this.IndexFile);
+            buf.AppendLine();
+            buf.AppendFormat("  ChangeLog file: {0}", this.ChangeLogFile);
+            buf.AppendLine();
+            buf.AppendFormat("  Log file: {0}", this.LogFile);
             buf.AppendLine();
             buf.AppendFormat("  Advanced options: {0}", this.AdvancedOptions);
             buf.AppendLine();

@@ -10,11 +10,12 @@
   destinationConnection:
     collectionUrl: http://localhost:8080/tfs/WitSync
     projectName:   WitSyncDest
-  indexFile:    test00-index.xml
-  logging:      Verbose
+  indexFile:     test00-index.xml
+  changeLogFile: changes00.csv
+  logFile:       log00.txt
+  logging:       Verbose
 globallists:
   include:
   - SampleGL
-#workitems:
-#    sourceQuery: SELECT [System.Id], [System.Title] FROM WorkItems WHERE [System.Id]=88106 AND [System.TeamProject] = 'City' AND [System.WorkItemType] = 'Bug' AND [System.Tags] Contains 'GDO' ORDER BY [System.Id]
-#  destinationQuery: SELECT [System.Id], [System.Title] FROM WorkItems WHERE [System.TeamProject] = 'Urbanshield' AND [System.WorkItemType] = 'Bug' AND [Custom.DefectIDonSDO] <> ''
+workitems:
+  #defaults

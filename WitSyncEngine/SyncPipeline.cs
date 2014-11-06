@@ -31,6 +31,9 @@ namespace WitSync
         protected TfsConnection destConn;
         protected IEngineEvents eventSink;
         protected int syncErrors = 0;
+        protected ChangeLog changeLog = new ChangeLog();
+
+        public ChangeLog ChangeLog { get { return changeLog; } }
 
         public int Execute(bool stopPipelineOnFirstError, bool testOnly)
         {
@@ -114,6 +117,8 @@ namespace WitSync
                         eventSink.StageError(stage, ex);
                         syncErrors++;
                     }
+                } finally {
+                    this.changeLog.Append(stage.ChangeLog);
                 }//try
             }//for
         }

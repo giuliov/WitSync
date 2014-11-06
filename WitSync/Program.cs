@@ -35,7 +35,8 @@ namespace WitSync
             CommandLineParser parser = new CommandLineParser(options);
             var fileVersion = System.Reflection.Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(System.Reflection.AssemblyFileVersionAttribute), false).FirstOrDefault() as System.Reflection.AssemblyFileVersionAttribute;
             parser.UsageInfo.ApplicationVersion = fileVersion.Version;
-            Console.WriteLine(parser.UsageInfo.GetHeaderAsString(lastColumn));
+            string logHeader = parser.UsageInfo.GetHeaderAsString(lastColumn);
+            Console.WriteLine(logHeader);
             parser.Parse();
 
             if (options.Help)
@@ -65,6 +66,10 @@ namespace WitSync
                     options.DestinationProjectName = map.config.DestinationConnection.ProjectName;
                 if (string.IsNullOrWhiteSpace(options.IndexFile))
                     options.IndexFile = map.config.IndexFile;
+                if (string.IsNullOrWhiteSpace(options.ChangeLogFile))
+                    options.ChangeLogFile = map.config.ChangeLogFile;
+                if (string.IsNullOrWhiteSpace(options.LogFile))
+                    options.LogFile = map.config.LogFile;
                 if (options.Steps == 0)
                 {
                     WitSyncCommandLineOptions.PipelineSteps steps = 0;
@@ -83,18 +88,14 @@ namespace WitSync
             if (options.TestOnly)
                 Console.WriteLine("** TEST MODE: no data will be written on destination **");
 
-            if (options.Verbose)
-            {
-                EventHandlerBase.GlobalVerbose(options.ToString());
-            }//if
-
-            // TODO use an option to generate sample file
+            // TODO add an option to generate sample file
             // SyncMapping.Generate().SaveTo("generated.yaml");
-            //var x = SyncMapping.LoadFrom("generated.yaml");
-            //var x = SyncMapping.LoadFrom("Sample Mappings\\test01.yml");
 
             // with user's need in hand, build the pipeline
-            var eventHandler = new EngineEventHandler(options.Verbose);
+            var eventHandler = new EngineEventHandler(options.Verbose, options.LogFile);
+            eventHandler.FirstMessage(logHeader);
+            eventHandler.DumpOptions(options);
+
             TfsConnection source;
             TfsConnection dest;
             MakeConnection(options, out source, out dest);
@@ -152,7 +153,25 @@ namespace WitSync
                 }//if
             }//for
 
-            return pipeline.Execute(options.StopPipelineOnFirstError, options.TestOnly);
+            int rc = pipeline.Execute(options.StopPipelineOnFirstError, options.TestOnly);
+
+            if (!string.IsNullOrWhiteSpace(options.ChangeLogFile))
+            {
+                eventHandler.SavingChangeLogToFile(options.ChangeLogFile);
+                using (System.IO.StreamWriter file = new System.IO.StreamWriter(options.ChangeLogFile))
+                {
+                    //CSV header
+                    file.WriteLine("Source,SourceId,TargetId,ChangeType");
+                    foreach (var entry in pipeline.ChangeLog.GetEntries())
+                    {
+                        file.WriteLine("{0},{1},{2},{3}", entry.Source, entry.SourceId, entry.TargetId, entry.ChangeType);
+                    }//for
+                }//using
+                eventHandler.SavedChangeLog(pipeline.ChangeLog.Count);
+            }//if
+
+            eventHandler.LastMessage(rc);
+            return rc;
         }
 
         private static void MakeConnection(WitSyncCommandLineOptions options, out TfsConnection source, out TfsConnection dest)

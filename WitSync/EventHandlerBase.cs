@@ -23,10 +23,12 @@ namespace WitSync
         protected const ConsoleColor ErrorColor = ConsoleColor.Red;
 
         private bool verbose;
+        private string logFile;
 
-        public EventHandlerBase(bool verbose)
+        public EventHandlerBase(bool verbose, string logFile)
         {
             this.verbose = verbose;
+            this.logFile = logFile;
         }
 
         protected void Verbose(string format, params object[] args)
@@ -92,14 +94,14 @@ namespace WitSync
             OutCore(color, outFlags, string.Empty, message);
         }
 
-        static protected void Out(ConsoleColor color, OutputFlags outFlags, string prefix, string format, object[] args)
+        protected void Out(ConsoleColor color, OutputFlags outFlags, string prefix, string format, object[] args)
         {
             string message = args != null ? string.Format(format, args: args) : format;
 
             OutCore(color, outFlags, prefix, message);
         }
 
-        static protected void OutCore(ConsoleColor color, OutputFlags outFlags, string prefix, string message)
+        protected void OutCore(ConsoleColor color, OutputFlags outFlags, string prefix, string message)
         {
             if ((outFlags & OutputFlags.Debug) == OutputFlags.Debug)
             {
@@ -115,12 +117,15 @@ namespace WitSync
                 Console.WriteLine(message);
                 Console.ForegroundColor = save;
             }
-        }
 
-        //HACK
-        static public void GlobalVerbose(string format, params object[] args)
-        {
-            Out(VerboseColor, OutputFlags.All, "VERBOSE: ", format, args);
+            if (!string.IsNullOrWhiteSpace(this.logFile))
+            {
+                using (var file = System.IO.File.AppendText(this.logFile))
+                {
+                    file.Write(prefix);
+                    file.WriteLine(message);
+                }//using
+            }
         }
 
         public void Trace(string format, params object[] args)

@@ -58,6 +58,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChangeLog.cs" />
     <Compile Include="EngineBase.cs" />
     <Compile Include="FieldCopier.cs" />
     <Compile Include="GeneralConfig.cs" />

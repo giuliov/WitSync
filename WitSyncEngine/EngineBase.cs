@@ -7,12 +7,14 @@ using OptionsBase = System.Int32;
 
 namespace WitSync
 {
+    // represent a phase in the pipeline
     abstract public class EngineBase
     {
         protected TfsConnection sourceConn;
         protected TfsConnection destConn;
         protected IEngineEvents eventSink;
         protected int saveErrors = 0;
+        private ChangeLog changeLog = new ChangeLog();
 
         public EngineBase(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
         {
@@ -23,6 +25,8 @@ namespace WitSync
 
         abstract public int Prepare(bool testOnly);
         abstract public int Execute(bool testOnly);
+
+        public ChangeLog ChangeLog { get { return changeLog; } }
 
         public virtual string Name { get { return this.GetType().Name.Replace("SyncEngine",""); } }
     }

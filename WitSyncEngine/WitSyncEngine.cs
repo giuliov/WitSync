@@ -9,6 +9,15 @@ using System.Threading.Tasks;
 
 namespace WitSync
 {
+    internal class WorkItemChangeEntry : ChangeEntry
+    {
+        internal enum Change { New, Update }
+
+        internal WorkItemChangeEntry(int source, int target, Change change)
+            : base("WorkItem",source.ToString(), target.ToString(), change.ToString())
+            {}
+    }
+
     public class WitSyncEngine : EngineBase
     {
         [Flags]
@@ -183,9 +192,16 @@ namespace WitSync
             // some succeded: their Ids could be changed, so refresh index
             if (!testOnly)
             {
-                // FIX should not include failedWorkItems
                 UpdateIndex(index, validWorkItems, mapping);
-            }
+                foreach (var item in validWorkItems)
+                {
+                    this.ChangeLog.AddEntry(
+                        new WorkItemChangeEntry(
+                            item.Id,
+                            index.GetSourceIdFromTargetId(item.Id),
+                            item.IsNew ? WorkItemChangeEntry.Change.New : WorkItemChangeEntry.Change.Update));
+                }//for
+            }//if
 
             return validWorkItems.ToList();
         }
@@ -200,6 +216,7 @@ namespace WitSync
             {
                 var errors = destWIStore.BatchSave(changedWorkItems.ToArray(), SaveFlags.MergeAll);
                 ExamineSaveErrors(errors);
+                // TODO any chance we must add anything to the ChangeLog ???
             }//if
         }
 

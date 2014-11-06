@@ -7,6 +7,28 @@ using System.Text;
 
 namespace WitSync
 {
+    internal class NodeChangeEntry : ChangeEntry
+    {
+        internal enum Change { Add }
+
+        protected NodeChangeEntry(string source, string sourcePath, string targetPath, Change change)
+            : base("AreasOrIteration", sourcePath, targetPath, change.ToString())
+        { }
+    }
+
+    internal class AreaChangeEntry : NodeChangeEntry
+    {
+        internal AreaChangeEntry(string sourcePath, string targetPath, Change change)
+            : base("Area", sourcePath, targetPath, change)
+        { }
+    }
+
+    internal class IterationChangeEntry : NodeChangeEntry
+    {
+        internal IterationChangeEntry(string sourcePath, string targetPath, Change change)
+            : base("Iteration", sourcePath, targetPath, change)
+        { }
+    }
 
     public class AreasAndIterationsSyncEngine : EngineBase
     {
@@ -139,6 +161,14 @@ namespace WitSync
                     if (!this.testMode)
                     {
                         destNodeUri = destCSS.CreateNode(nodePathWithoutRoot, rootNode.Uri);
+                        if (node.IsAreaNode)
+                        {
+                            this.ChangeLog.AddEntry(new AreaChangeEntry(node.Name, destNodeUri, NodeChangeEntry.Change.Add));
+                        }
+                        else if (node.IsIterationNode)
+                        {
+                            this.ChangeLog.AddEntry(new IterationChangeEntry(node.Name, destNodeUri, NodeChangeEntry.Change.Add));
+                        }
                     }
                 }
                 else
@@ -149,6 +179,14 @@ namespace WitSync
                     if (!this.testMode)
                     {
                         destNodeUri = destCSS.CreateNode(nodePathWithoutRoot.Substring(lastBackslash + 1), parentNode.Uri);
+                        if (node.IsAreaNode)
+                        {
+                            this.ChangeLog.AddEntry(new AreaChangeEntry(node.Name, destNodeUri, NodeChangeEntry.Change.Add));
+                        }
+                        else if (node.IsIterationNode)
+                        {
+                            this.ChangeLog.AddEntry(new IterationChangeEntry(node.Name, destNodeUri, NodeChangeEntry.Change.Add));
+                        }
                     }
                 }//if
             }
