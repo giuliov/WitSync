@@ -158,7 +158,7 @@ namespace WitSync
             newWorkItems.ForEach(w =>
             {
                 realStates.Add(w, w.State);
-                w.State = mapping.FindWorkItemTypeMapping(w.Type.Name).StateList.InitialStateOnDestination;
+                w.State = GetInitialState(w);
             });
             validWorkItems.AddRange(SaveWorkItems(mapping, index, destWIStore, newWorkItems, testOnly));
 
@@ -173,6 +173,20 @@ namespace WitSync
             eventSink.SaveThirdPassSavingUpdatedWorkItems(updatedWorkItems);
             // existing WI do not need tricks
             validWorkItems.AddRange(SaveWorkItems(mapping, index, destWIStore, updatedWorkItems, testOnly));
+        }
+
+        Dictionary<WorkItemType, string> initialStates = new Dictionary<WorkItemType, string>();
+
+        private string GetInitialState(WorkItem w)
+        {
+            var t = w.Type;
+            string state;
+            if (!initialStates.TryGetValue(t, out state))
+            {
+                state = t.NewWorkItem().State;
+                initialStates.Add(t, state);
+            }
+            return state;
         }
 
         private List<WorkItem> SaveWorkItems(ProjectMapping mapping, WitMappingIndex index, WorkItemStore destWIStore, List<WorkItem> changedWorkItems, bool testOnly)

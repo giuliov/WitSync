@@ -55,11 +55,15 @@ namespace WitSync
                         User = "susr",
                         Password = "pwd"
                     },
-                    MappingFile = "map",
+                    MappingFile = "map.yml",
                     PipelineSteps = new List<string>() { "step1", "step2" },
                     StopPipelineOnFirstError = true,
                     TestOnly = true,
-                    Logging = LoggingLevel.Diagnostic
+                    Logging = LoggingLevel.Diagnostic,
+                    IndexFile = "index.xml",
+                    ChangeLogFile = "changes.csv",
+                    LogFile = "log.txt",
+                    AdvancedOptions = new List<string>() { "opt1", "opt2" },
                 },
                 globallists = new GlobalListMapping()
                 {
@@ -82,7 +86,7 @@ namespace WitSync
                             SourceType = "srctype", DestinationType="desttype",
                             Attachments = WorkItemMap.AttachmentMode.Sync,
                             IDField = new FieldMap() { Source="src", Destination="dst", Set="set", Translate="tran"},
-                            StateList = new StateList() { InitialStateOnDestination="init",
+                            StateList = new StateList() {
                             States = new StateMap[] {
                                 new StateMap() { Source="srcstate", Destination="deststate"}
                             }},

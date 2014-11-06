@@ -17,8 +17,6 @@ namespace WitSync
     [XmlType("States")]
     public class StateList
     {
-        [XmlAttribute("InitialStateOnDestination")]
-        public string InitialStateOnDestination { get; set; }
         [XmlElement("State")]
         public StateMap[] States { get; set; }
     }
