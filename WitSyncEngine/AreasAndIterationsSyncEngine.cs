@@ -7,19 +7,37 @@ using System.Text;
 
 namespace WitSync
 {
-
-    public class AreasAndIterationsSyncEngine
+    internal class NodeChangeEntry : ChangeEntry
     {
-        protected TfsConnection sourceConn;
-        protected TfsConnection destConn;
-        protected IEngineEvents eventSink;
-        protected int saveErrors = 0;
+        internal enum Change { Add }
 
-        public AreasAndIterationsSyncEngine(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
+        protected NodeChangeEntry(string source, string sourcePath, string targetPath, Change change)
+            : base("AreasOrIteration", sourcePath, targetPath, change.ToString())
+        { }
+    }
+
+    internal class AreaChangeEntry : NodeChangeEntry
+    {
+        internal AreaChangeEntry(string sourcePath, string targetPath, Change change)
+            : base("Area", sourcePath, targetPath, change)
+        { }
+    }
+
+    internal class IterationChangeEntry : NodeChangeEntry
+    {
+        internal IterationChangeEntry(string sourcePath, string targetPath, Change change)
+            : base("Iteration", sourcePath, targetPath, change)
+        { }
+    }
+
+    public class AreasAndIterationsSyncEngine : EngineBase
+    {
+        [Flags]
+        public enum EngineOptions
         {
-            this.sourceConn = source;
-            this.destConn = dest;
-            this.eventSink = eventHandler;
+            TestOnly = 0x1,
+            Areas = 0x2,
+            Iterations = 0x4,
         }
 
         NodeInfo rootAreaNode = null;
@@ -27,20 +45,37 @@ namespace WitSync
         ICommonStructureService4 sourceCSS = null;
         ICommonStructureService4 destCSS = null;
 
-        public int Sync(bool testOnly)
+        public AreasAndIterationsSyncEngine(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
+            : base(source, dest, eventHandler)
         {
-            eventSink.ConnectingSource(sourceConn);
-            sourceConn.Connect();
-            eventSink.SourceConnected(sourceConn);
-            eventSink.ConnectingDestination(destConn);
-            destConn.Connect();
-            eventSink.DestinationConnected(destConn);
+            //no-op
+        }
+
+        public EngineOptions Options { set { this.options =value;}}
+
+        protected EngineOptions options;
+
+        public override int Prepare(bool testOnly)
+        {
+            return 0;
+        }
+
+        bool testMode = false;
+
+        public override int Execute(bool testOnly)
+        {
+            bool areas = options.HasFlag(EngineOptions.Areas);
+            bool iterations = options.HasFlag(EngineOptions.Iterations);
+            this.testMode = testOnly;
+
 
             var sourceWIStore = sourceConn.Collection.GetService<WorkItemStore>();
             var destWIStore = destConn.Collection.GetService<WorkItemStore>();
 
             var sourceProject = sourceWIStore.Projects[sourceConn.ProjectName];
             var destProject = destWIStore.Projects[destConn.ProjectName];
+
+            eventSink.ReadingAreaAndIterationInfoFromSource();
 
             sourceCSS = sourceConn.Collection.GetService<ICommonStructureService4>();
             destCSS = destConn.Collection.GetService<ICommonStructureService4>();
@@ -56,13 +91,21 @@ namespace WitSync
                 }
             }
 
-            // TODO: how do you manage a node moved????
-            SyncNodes(sourceProject.AreaRootNodes);
-            SyncNodes(sourceProject.IterationRootNodes);
+            if (areas)
+            {
+                eventSink.SyncingAreas();
+                SyncNodes(sourceProject.AreaRootNodes);
+            }
+            if (iterations)
+            {
+                eventSink.SyncingIterations();
+                SyncNodes(sourceProject.IterationRootNodes);
+            }
 
             return saveErrors;
         }
 
+        // TODO: how do you manage a node that moved????
         private void SyncNodes(NodeCollection nodes)
         {
             foreach (Node node in nodes)
@@ -98,7 +141,9 @@ namespace WitSync
 
             var destNode = destCSS.GetNode(newNodeUri);
             var sourceNode = sourceCSS.GetNode(node.Uri.AbsoluteUri);
-            destCSS.SetIterationDates(destNode.Uri, sourceNode.StartDate, sourceNode.FinishDate);
+            if (!this.testMode) {
+                destCSS.SetIterationDates(destNode.Uri, sourceNode.StartDate, sourceNode.FinishDate);
+            }
         }
 
         private string CreateNodeIfMissing(Node node, NodeInfo rootNode)
@@ -113,13 +158,36 @@ namespace WitSync
                 if (!nodePathWithoutRoot.Contains("\\"))
                 {
                     // first level nodes
-                    destNodeUri = destCSS.CreateNode(nodePathWithoutRoot, rootNode.Uri);
+                    if (!this.testMode)
+                    {
+                        destNodeUri = destCSS.CreateNode(nodePathWithoutRoot, rootNode.Uri);
+                        if (node.IsAreaNode)
+                        {
+                            this.ChangeLog.AddEntry(new AreaChangeEntry(node.Name, destNodeUri, NodeChangeEntry.Change.Add));
+                        }
+                        else if (node.IsIterationNode)
+                        {
+                            this.ChangeLog.AddEntry(new IterationChangeEntry(node.Name, destNodeUri, NodeChangeEntry.Change.Add));
+                        }
+                    }
                 }
                 else
                 {
                     int lastBackslash = nodePathWithoutRoot.LastIndexOf("\\");
                     NodeInfo parentNode = destCSS.GetNodeFromPath(rootNode.Path + "\\" + nodePathWithoutRoot.Substring(0, lastBackslash));
-                    destNodeUri = destCSS.CreateNode(nodePathWithoutRoot.Substring(lastBackslash + 1), parentNode.Uri);
+                    // TODO test mode!
+                    if (!this.testMode)
+                    {
+                        destNodeUri = destCSS.CreateNode(nodePathWithoutRoot.Substring(lastBackslash + 1), parentNode.Uri);
+                        if (node.IsAreaNode)
+                        {
+                            this.ChangeLog.AddEntry(new AreaChangeEntry(node.Name, destNodeUri, NodeChangeEntry.Change.Add));
+                        }
+                        else if (node.IsIterationNode)
+                        {
+                            this.ChangeLog.AddEntry(new IterationChangeEntry(node.Name, destNodeUri, NodeChangeEntry.Change.Add));
+                        }
+                    }
                 }//if
             }
             else

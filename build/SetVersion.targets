@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+  ideas from http://mcasamento.blogspot.it/2012/09/auto-increment-build-number-msbuild-4.html
+  and https://github.com/mikefourie/MSBuildExtensionPack
+  -->
+  <UsingTask
+    TaskName="SetVersion"
+    TaskFactory="CodeTaskFactory"
+    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" >
+    <ParameterGroup>
+      <FileName ParameterType="System.String" Required="true" />
+      <MajorVersion ParameterType="System.Int32" Required="true" />
+      <MinorVersion ParameterType="System.Int32" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <!--<Reference Include=""/>-->
+      <Using Namespace="System"/>
+      <Using Namespace="System.IO"/>
+      <Using Namespace="System.Text.RegularExpressions"/>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+            string SearchPattern = @"AssemblyFileVersion.*\(.*"".*"".*\)";
+            string ReplaceFormat = @"AssemblyFileVersion(""{0}"")";
+
+            DateTime referenceDate = new DateTime(2000, 12, 31);// millennium start
+            DateTime now = DateTime.Now;
+            // unable to distinguish two builds in a 10 sec interval... someone cares?
+            string version = string.Format("{0}.{1}.{2}.{3:00}{4:00}{5:0}",
+                MajorVersion, MinorVersion,
+                (short)(now - referenceDate).TotalDays,
+                now.Hour, now.Minute, (int)(now.Second / 10));
+
+            string entireFile = File.ReadAllText(FileName);
+            Regex regexExpression = new Regex(SearchPattern, RegexOptions.Compiled);
+            string replacement = string.Format(ReplaceFormat, version);
+            string result = regexExpression.Replace(entireFile, replacement);
+            File.WriteAllText(FileName, result);
+            
+            return true;
+  ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="SetFileVersion" BeforeTargets="BeforeBuild">
+    <SetVersion FileName="Properties\AssemblyInfo.cs" MajorVersion="0" MinorVersion="5" />
+  </Target>
+
+</Project>

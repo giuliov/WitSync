@@ -53,17 +53,27 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="YamlDotNet">
+      <HintPath>..\packages\YamlDotNet.3.3.0\lib\net35\YamlDotNet.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChangeLog.cs" />
+    <Compile Include="EngineBase.cs" />
+    <Compile Include="FieldCopier.cs" />
+    <Compile Include="GeneralConfig.cs" />
+    <Compile Include="GlobalListMapping.cs" />
+    <Compile Include="GlobalListsSyncEngine.cs" />
     <Compile Include="AreasAndIterationsSyncEngine.cs" />
     <Compile Include="CollectionExtensions.cs" />
-    <Compile Include="Engine.cs" />
+    <Compile Include="WitMapping.cs" />
+    <Compile Include="SyncPipeline.cs" />
+    <Compile Include="WitSyncEngine.cs" />
     <Compile Include="IEngineEvents.cs" />
     <Compile Include="LinkMapper.cs" />
     <Compile Include="WorkItemMapper.cs" />
     <Compile Include="MapperFunctions.cs" />
     <Compile Include="MappingChecker.cs" />
-    <Compile Include="ProjectMapping.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryRunner.cs" />
     <Compile Include="SyncContext.cs" />
@@ -76,6 +86,9 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -84,4 +97,5 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Import Project="..\build\SetVersion.targets" />
 </Project>

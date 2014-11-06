@@ -172,5 +172,10 @@ namespace WitSync
                 this.TargetIndex.Add(newTargetId, updatedWorkItem);
             }
         }
+
+        internal int GetSourceIdFromTargetId(int targetId)
+        {
+            return this.BackwardIndex[targetId];
+        }
     }
 }

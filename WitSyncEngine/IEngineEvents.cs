@@ -6,7 +6,12 @@ using System.Text;
 
 namespace WitSync
 {
-    public interface IEngineEvents
+    public interface IEngineTracing
+    {
+        void Trace(string format, params object[] args);
+    }
+
+    public interface IEngineEvents : IEngineTracing
     {
         void ConnectingSource(TfsConnection sourceConn);
         void SourceConnected(TfsConnection sourceConn);
@@ -37,7 +42,7 @@ namespace WitSync
         void TargetMissingForLink(WorkItemLinkInfo queryLink, int parentId, int childId);
         void SyncFinished(int totalErrors);
         void InvalidRule(FieldMap rule);
-        void NoRuleFor(WorkItem source, string field);
+        void NoRuleFor(WorkItemType sourceType, string field);
         void SavingSkipped();
         void ValidationError(Field item);
         void BypassingRulesOnDestinationWorkItemStore(TfsConnection destConn);
@@ -55,5 +60,27 @@ namespace WitSync
         void ExceptionWhileMappingLink(Exception ex, WorkItemLink sourceLink);
         void ExceptionWhileMappingWorkItem(Exception ex, WorkItem sourceWorkItem);
         void DumpOptions(WitSyncEngine.EngineOptions options);
+        void ReadingGlobalListsFromSource();
+        void GlobalListQueuedForUpdate(string glName);
+        void UpdatingGlobalListsOnDestination();
+        void SelectingGlobalLists();
+        void BuildingGlobalListUpdateMessage();
+        void GlobalListsUpdated();
+        void SyncingIterations();
+        void SyncingAreas();
+        void ReadingAreaAndIterationInfoFromSource();
+        void InternalError(Exception ex);
+        void ExecutingStage(EngineBase stage);
+        void StageCompleted(EngineBase stage, int stageErrors);
+        void StageError(EngineBase stage, Exception ex);
+        void PreparingStage(EngineBase stage);
+        void StagePrepared(EngineBase stage, int stageErrors);
+        void StagePreparationError(EngineBase stage, Exception ex);
+        void DumpMapping(ProjectMapping mapping);
+        void TraceRule(string msg, params object[] args);
+        void ExceptionWhileRemovingAttachment(Exception ex, Attachment a, WorkItem target);
+        void ExceptionWhileAddingAttachment(Exception ex, Attachment sourceAttachment, WorkItem source);
+        void ExceptionWhileCopyingField(Exception ex, Field fromField);
+        void ExceptionWhileActingOnField(Exception ex, string targetFieldName);
     }
 }

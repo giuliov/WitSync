@@ -9,13 +9,17 @@ using System.Threading.Tasks;
 
 namespace WitSync
 {
-    public class WitSyncEngine
+    internal class WorkItemChangeEntry : ChangeEntry
     {
-        protected TfsConnection sourceConn;
-        protected TfsConnection destConn;
-        protected IEngineEvents eventSink;
-        protected int saveErrors = 0;
+        internal enum Change { New, Update }
 
+        internal WorkItemChangeEntry(int source, int target, Change change)
+            : base("WorkItem",source.ToString(), target.ToString(), change.ToString())
+            {}
+    }
+
+    public class WitSyncEngine : EngineBase
+    {
         [Flags]
         public enum EngineOptions
         {
@@ -28,28 +32,29 @@ namespace WitSync
         }
 
         public WitSyncEngine(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
+            : base(source, dest, eventHandler)
         {
-            sourceConn = source;
-            destConn = dest;
-            eventSink = eventHandler;
+            //no-op
         }
 
-        public int Sync(ProjectMapping mapping, bool testOnly, EngineOptions options)
+        public Func<ProjectMapping> MapGetter { get; set; }
+        public EngineOptions Options { set { this.options = value; } }
+
+        protected ProjectMapping mapping;
+        protected EngineOptions options;
+
+        protected WorkItemStore sourceWIStore;
+        protected WorkItemStore destWIStore;
+        internal ProjectMappingChecker checker;
+
+        public override int Prepare(bool testOnly)
         {
-            eventSink.DumpOptions(options);
+            mapping = MapGetter();
+            if (mapping == null)
+                // SetDefaults will fill this in
+                mapping = new ProjectMapping();
 
-            saveErrors = 0;
-            testOnly |= options.HasFlag(EngineOptions.TestOnly);
-
-            eventSink.ConnectingSource(sourceConn);
-            sourceConn.Connect();
-            eventSink.SourceConnected(sourceConn);
-            eventSink.ConnectingDestination(destConn);
-            destConn.Connect();
-            eventSink.DestinationConnected(destConn);
-
-            var sourceWIStore = sourceConn.Collection.GetService<WorkItemStore>();
-            WorkItemStore destWIStore = null;
+            sourceWIStore = sourceConn.Collection.GetService<WorkItemStore>();
             if (options.HasFlag(EngineOptions.BypassWorkItemStoreRules))
             {
                 eventSink.BypassingRulesOnDestinationWorkItemStore(destConn);
@@ -63,6 +68,19 @@ namespace WitSync
 
             mapping.SetDefaults(sourceConn, sourceWIStore, destConn, destWIStore);
 
+            eventSink.DumpMapping(mapping);
+
+            checker = new ProjectMappingChecker(sourceWIStore, sourceConn.ProjectName, destWIStore, destConn.ProjectName, eventSink);
+            checker.AgnosticCheck(mapping);
+            if (!checker.Passed)
+                // abort
+                return checker.ErrorCount;
+
+            return 0;
+        }
+
+        public override int Execute(bool testOnly)
+        {
             var sourceRunner = new QueryRunner(sourceWIStore, sourceConn.ProjectName);
             eventSink.ExecutingSourceQuery(mapping.SourceQuery, sourceConn);
             var sourceResult = sourceRunner.RunQuery(mapping.SourceQuery);
@@ -75,18 +93,17 @@ namespace WitSync
             var destRunner = new QueryRunner(destWIStore, destConn.ProjectName);
             eventSink.ExecutingDestinationQuery(mapping.DestinationQuery, destConn);
             var destResult = destRunner.RunQuery(mapping.DestinationQuery);
-            if (sourceResult == null)
+            if (destResult == null)
             {
                 eventSink.DestinationQueryNotFound(mapping.DestinationQuery);
                 return 4;
             }
 
             // use query data for more thorough checks
-            var checker = new ProjectMappingChecker(sourceWIStore, sourceConn.ProjectName, destWIStore, destConn.ProjectName, eventSink);
             checker.Check(sourceResult, mapping, destResult);
             if (!checker.Passed)
                 // abort
-                return 2;
+                return checker.ErrorCount;
 
 
             // this needs also connection to target, better after query execution, so we have warm caches
@@ -100,7 +117,6 @@ namespace WitSync
             workItemMapper.OpenTargetWorkItem = options.HasFlag(EngineOptions.OpenTargetWorkItem);
             workItemMapper.PartialOpenTargetWorkItem = options.HasFlag(EngineOptions.PartialOpenTargetWorkItem);
 
-            eventSink.SyncStarted();
             List<WorkItem> newWorkItems;
             List<WorkItem> updatedWorkItems;
             workItemMapper.MapWorkItems(sourceResult, destResult, out newWorkItems, out updatedWorkItems);
@@ -114,6 +130,8 @@ namespace WitSync
                 // uncommon path
                 eventSink.UsingThreePassSavingAlgorithm();
                 SaveWorkItems3Passes(mapping, index, testOnly, destWIStore, newWorkItems, updatedWorkItems, validWorkItems);
+                // multi-pass records the same WI object multiple times
+                validWorkItems = validWorkItems.DistinctBy(x => x.Id, null).ToList();
             }
             else
             {
@@ -131,7 +149,6 @@ namespace WitSync
             eventSink.SavingLinks(changedLinks, validWorkItems);
             SaveLinks(mapping, index, destWIStore, validWorkItems, testOnly);
 
-            eventSink.SyncFinished(saveErrors);
             return saveErrors;
         }
 
@@ -143,7 +160,7 @@ namespace WitSync
             newWorkItems.ForEach(w =>
             {
                 realStates.Add(w, w.State);
-                w.State = mapping.FindWorkItemTypeMapping(w.Type.Name).StateList.InitialStateOnDestination;
+                w.State = GetInitialState(w);
             });
             validWorkItems.AddRange(SaveWorkItems(mapping, index, destWIStore, newWorkItems, testOnly));
 
@@ -158,6 +175,20 @@ namespace WitSync
             eventSink.SaveThirdPassSavingUpdatedWorkItems(updatedWorkItems);
             // existing WI do not need tricks
             validWorkItems.AddRange(SaveWorkItems(mapping, index, destWIStore, updatedWorkItems, testOnly));
+        }
+
+        Dictionary<WorkItemType, string> initialStates = new Dictionary<WorkItemType, string>();
+
+        private string GetInitialState(WorkItem w)
+        {
+            var t = w.Type;
+            string state;
+            if (!initialStates.TryGetValue(t, out state))
+            {
+                state = t.NewWorkItem().State;
+                initialStates.Add(t, state);
+            }
+            return state;
         }
 
         private List<WorkItem> SaveWorkItems(ProjectMapping mapping, WitMappingIndex index, WorkItemStore destWIStore, List<WorkItem> changedWorkItems, bool testOnly)
@@ -177,9 +208,16 @@ namespace WitSync
             // some succeded: their Ids could be changed, so refresh index
             if (!testOnly)
             {
-                // FIX should not include failedWorkItems
                 UpdateIndex(index, validWorkItems, mapping);
-            }
+                foreach (var item in validWorkItems)
+                {
+                    this.ChangeLog.AddEntry(
+                        new WorkItemChangeEntry(
+                            item.Id,
+                            index.GetSourceIdFromTargetId(item.Id),
+                            item.IsNew ? WorkItemChangeEntry.Change.New : WorkItemChangeEntry.Change.Update));
+                }//for
+            }//if
 
             return validWorkItems.ToList();
         }
@@ -194,6 +232,7 @@ namespace WitSync
             {
                 var errors = destWIStore.BatchSave(changedWorkItems.ToArray(), SaveFlags.MergeAll);
                 ExamineSaveErrors(errors);
+                // TODO any chance we must add anything to the ChangeLog ???
             }//if
         }
 
@@ -238,7 +277,9 @@ namespace WitSync
                 foreach (var targetWI in existingTargetWorkItems)
                 {
                     var originatingFieldMap = mapping.FindIdFieldForTargetWorkItemType(targetWI.Type.Name);
-                    int originatingId = (int)targetWI.Fields[originatingFieldMap.Destination].Value;
+                    var v = targetWI.Fields[originatingFieldMap.Destination].Value;
+                    // could be that the destination exists, with no origin (e.g. manual intervention)
+                    int originatingId = (int) (v ?? 0);
                     index.Add(originatingId, targetWI);
                 }//for
             }//if

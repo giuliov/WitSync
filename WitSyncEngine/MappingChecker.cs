@@ -24,27 +24,23 @@ namespace WitSync
             this.eventSink = eventSink;
         }
 
-        private bool passed = true;
-        internal bool Passed { get { return passed; } }
+        private int errorCount = 0;
+        internal bool Passed { get { return errorCount == 0; } }
+        internal int ErrorCount { get { return errorCount; } }
 
         // logging anything implies failure
         private void Log(string message, params object[] args)
         {
-            passed = false;
+            errorCount++;
             eventSink.MappingGenericValidationError(message, args);
         }
 
         internal void Check(QueryResult sourceResult, ProjectMapping mapping, QueryResult destResult)
         {
-            if (mapping.HasIndex && System.IO.File.Exists(mapping.IndexFile))
-            {
-                //TODO check indexFile is valid
-            }//if
+            var workItemMappings = mapping.WorkItemMappings.ToList();
 
             var sourceWorkItems = sourceResult.WorkItems.Values.ToList();
             var destWorkItems = destResult.WorkItems.Values.ToList();
-
-            var workItemMappings = mapping.WorkItemMappings.ToList();
 
             var sourceTypeNames = sourceWorkItems.ConvertAll(wi => wi.Type.Name).Distinct();
             var mappedSourceTypeNames = workItemMappings.ConvertAll(m => m.SourceType);
@@ -56,6 +52,16 @@ namespace WitSync
             var mappedDestTypeNames = workItemMappings.ConvertAll(m => m.DestinationType);
             destTypeNames.Except(mappedDestTypeNames).ToList().ForEach(
                 t => Log("Missing mapping for destination type {0}", t));
+        }
+
+        internal void AgnosticCheck(ProjectMapping mapping)
+        {
+            if (mapping.HasIndex && System.IO.File.Exists(mapping.IndexFile))
+            {
+                //TODO check indexFile is valid
+            }//if
+
+            var workItemMappings = mapping.WorkItemMappings.ToList();
 
             var allSourceTypes = this.sourceWIStore.Projects[this.sourceProjectName].WorkItemTypes;
             var allDestTypes = this.destWIStore.Projects[this.destProjectName].WorkItemTypes;
@@ -71,15 +77,32 @@ namespace WitSync
             }
             else
             {
+                workItemMappings
+                    .Where(m => m.IDField==null || string.IsNullOrWhiteSpace(m.IDField.Destination))
+                    .ToList()
+                    .ForEach(t => Log("Invalid ID Field Destination on WorkItem type '{0}'."
+                        , t.DestinationType));
+                workItemMappings
+                    .Where(m => m.IDField == null || string.IsNullOrWhiteSpace(m.IDField.Source))
+                    .ToList()
+                    .ForEach(t => Log("Invalid ID Field Source on WorkItem type '{0}'."
+                        , t.SourceType));
+
                 // check that all target types have an originating ID field
                 workItemMappings
-                    .Where(m => !allDestTypes[m.DestinationType].FieldDefinitions.Contains(m.IDField.Destination))
+                    .Where(m =>
+                        m.IDField != null
+                        && !string.IsNullOrWhiteSpace(m.IDField.Destination)
+                        && !allDestTypes[m.DestinationType].FieldDefinitions.Contains(m.IDField.Destination))
                     .ToList()
                     .ForEach(t => Log("Destination WorkItem type '{0}' has no '{1}' Field to host source ID."
                         , t.DestinationType, t.IDField.Destination));
                 // check that source ID field match
                 workItemMappings
-                    .Where(m => !allSourceTypes[m.SourceType].FieldDefinitions.Contains(m.IDField.Source))
+                    .Where(m => 
+                        m.IDField != null
+                        && !string.IsNullOrWhiteSpace(m.IDField.Source)
+                        && !allSourceTypes[m.SourceType].FieldDefinitions.Contains(m.IDField.Source))
                     .ToList()
                     .ForEach(t => Log("Source WorkItem type '{0}' has no source '{1}' ID Field."
                         , t.SourceType, t.IDField.Source));
@@ -202,8 +225,14 @@ namespace WitSync
             var allDestLinkTypes = this.destWIStore.WorkItemLinkTypes;
             foreach (var linkMap in mapping.LinkTypeMap)
             {
-                if (linkMap.IsWildcard && linkMap.DestinationType != "*")
-                    Log("Invalid Link wildcard rule.");
+                if (linkMap.IsWildcard)
+                {
+                    // * -> * === same name
+                    // * -> '' === not mapped
+                    if (linkMap.DestinationType != "*"
+                        && !string.IsNullOrWhiteSpace(linkMap.DestinationType))
+                        Log("Invalid Link wildcard rule.");
+                }
 
                 if (!linkMap.IsWildcard)
                 {

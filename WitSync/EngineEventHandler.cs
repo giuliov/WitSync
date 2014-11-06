@@ -9,8 +9,8 @@ namespace WitSync
 {
     class EngineEventHandler : EventHandlerBase, IEngineEvents
     {
-        public EngineEventHandler(bool verbose)
-            : base(verbose)
+        public EngineEventHandler(bool verbose, string logFile)
+            : base(verbose, logFile)
         {
         }
 
@@ -66,7 +66,14 @@ namespace WitSync
         public void SyncFinished(int errors)
         {
             var elapsed = DateTimeOffset.UtcNow - syncStart;
-            this.Info("Syncronization completed in {0} with {1} error(s).", elapsed, errors);
+            if (errors != 0)
+            {
+                base.RawOut(ErrorColor, OutputFlags.All, "Syncronization completed in {0:d'.'hh':'mm':'ss} with {1} error(s).", elapsed, errors);
+            }
+            else
+            {
+                base.RawOut(SuccessColor, OutputFlags.All, "Syncronization completed in {0:d'.'hh':'mm':'ss} with no errors.", elapsed);
+            }
         }
 
         public void SavingWorkItems(List<WorkItem> newWorkItems, List<WorkItem> updatedWorkItems)
@@ -85,7 +92,7 @@ namespace WitSync
 
         public void SaveErrorInvalidField(WorkItem workItem, Field f)
         {
-            this.Verbose("Field '{0}' has invalid value '{1}'.", f.Name, f.Value);
+            this.Verbose("Field '{0}' has invalid value '{1}'.", f.ReferenceName, f.Value);
         }
 
         public void MakingNewWorkItem(WorkItem source)
@@ -189,9 +196,9 @@ namespace WitSync
             this.UniqueWarning("    Invalid rule '{0}': copying unaltered value.", rule);
         }
 
-        public void NoRuleFor(WorkItem source, string field)
+        public void NoRuleFor(WorkItemType sourceType, string field)
         {
-            this.UniqueWarning("    No rule for field '{0}\\{1}': skipping.", source.Type.Name, field);
+            this.UniqueWarning("    No rule for field '{0}\\{1}': skipping.", sourceType.Name, field);
         }
 
         public void SavingSkipped()
@@ -201,7 +208,7 @@ namespace WitSync
 
         public void ValidationError(Field item)
         {
-            this.Warning("    Value '{1}' is not valid for field {0} (Status {2}).", item.Name, item.Value, item.Status);
+            this.Warning("    Value '{1}' is not valid for field {0} (Status {2}).", item.ReferenceName, item.Value, item.Status);
         }
 
         public void BypassingRulesOnDestinationWorkItemStore(TfsConnection destConn)
@@ -278,20 +285,188 @@ namespace WitSync
 
         public void ExceptionWhileMappingWorkItem(Exception ex, WorkItem sourceWorkItem)
         {
-            this.Error("Error '{0}' while mapping workitem #{1} '{2}'"
-                , ex.Message, sourceWorkItem.Id, sourceWorkItem.Title);
+            this.Error("While mapping workitem #{2} '{3}': {0}\r\n{1}"
+                , ex.Message, ex.StackTrace
+                , sourceWorkItem.Id, sourceWorkItem.Title);
         }
 
         public void ExceptionWhileMappingLink(Exception ex, WorkItemLink sourceLink)
         {
-            this.Error("Error '{0}' while mapping link {1}->{2} (type {3})."
-                , ex.Message
+            this.Error("While link {2}->{3} (type {4}): {0}\r\n{1}"
+                , ex.Message, ex.StackTrace
                 , sourceLink.SourceId, sourceLink.TargetId, sourceLink.LinkTypeEnd.Name);
         }
 
         public void DumpOptions(WitSyncEngine.EngineOptions options)
         {
             this.Verbose("Active options: {0}", options);
+        }
+
+        public void ReadingGlobalListsFromSource()
+        {
+            this.Info("Reading GlobalLists from source Collection.");
+        }
+
+        public void SelectingGlobalLists()
+        {
+            this.Verbose("Selecting GlobalLists to sync.");
+        }
+
+        public void GlobalListQueuedForUpdate(string glName)
+        {
+            this.Verbose("GlobalList {0} queued for sync", glName);
+        }
+
+        public void BuildingGlobalListUpdateMessage()
+        {
+            this.Verbose("Building GlobalList update message.");
+        }
+
+        public void UpdatingGlobalListsOnDestination()
+        {
+            this.Info("Updating GlobalList(s) on destination Collection.");
+        }
+
+        public void GlobalListsUpdated()
+        {
+            this.Info("GlobalList(s) updated on destination Collection.");
+        }
+
+        public void ReadingAreaAndIterationInfoFromSource()
+        {
+            this.Info("Reading Area and Iteration configuration from source Collection.");
+        }
+
+        public void SyncingAreas()
+        {
+            this.Info("Adding Iteration(s) on destination Collection.");
+        }
+
+        public void SyncingIterations()
+        {
+            this.Info("Adding Area(s) on destination Collection.");
+        }
+
+        public void InternalError(Exception ex)
+        {
+            this.Error("Internal: {0}\r\n{1}", ex.Message, ex.StackTrace);
+        }
+
+        protected DateTimeOffset stageStart;
+
+        public void ExecutingStage(EngineBase stage)
+        {
+            stageStart = DateTimeOffset.UtcNow;
+            this.Info("Stage {0} started.", stage.Name);
+        }
+
+        public void StageCompleted(EngineBase stage, int stageErrors)
+        {
+            var elapsed = DateTimeOffset.UtcNow - stageStart;
+            if (stageErrors > 0)
+            {
+                base.RawOut(WarningColor, OutputFlags.All, "Stage {0} completed in {1:d'.'hh':'mm':'ss} with {2} error(s).", stage.Name, elapsed, stageErrors);
+            }
+            else
+            {
+                base.RawOut(SuccessColor, OutputFlags.All, "Stage {0} successfully completed in {1:d'.'hh':'mm':'ss}.", stage.Name, elapsed);
+            }
+        }
+
+        public void StageError(EngineBase stage, Exception ex)
+        {
+            var elapsed = DateTimeOffset.UtcNow - stageStart;
+            this.Warning("Stage {0} failed at {1:d'.'hh':'mm':'ss}, continuing with next stages; error was {1}", stage.Name, ex.Message);
+            this.Verbose(ex.StackTrace);
+        }
+
+        public void PreparingStage(EngineBase stage)
+        {
+            this.Verbose("Preparing stage {0}.", stage.Name);
+        }
+
+        public void StagePrepared(EngineBase stage, int stageErrors)
+        {
+            if (stageErrors > 0)
+            {
+                this.Warning("Stage {0} failed with {1} error(s).", stage.Name, stageErrors);
+            }
+            else
+            {
+                this.Verbose("Stage {0} ready.", stage.Name);
+            }
+        }
+
+        public void StagePreparationError(EngineBase stage, Exception ex)
+        {
+            this.Warning("Stage {0} not ready, continuing with next stages; error was {1}", stage.Name, ex.Message);
+            this.Verbose(ex.StackTrace);
+        }
+
+        public void DumpMapping(ProjectMapping mapping)
+        {
+            var output = new System.IO.StringWriter();
+            output.WriteLine();
+            output.WriteLine("# mapping dump start #");
+            var serializer = new YamlDotNet.Serialization.Serializer(YamlDotNet.Serialization.SerializationOptions.EmitDefaults, new YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention());
+            serializer.Serialize(output, mapping);
+            output.WriteLine("# mapping dump  end  #");
+            output.Flush();
+
+            this.Verbose("Dumping Mapping");
+            base.RawOut(VerboseColor, OutputFlags.All,output.ToString());
+        }
+
+        internal void SavingChangeLogToFile(string filename)
+        {
+            this.Info("Saving Changelog to '{0}'.", filename);
+        }
+
+        internal void SavedChangeLog(int numRecords)
+        {
+            this.Info("{0} record(s) saved.", numRecords);
+        }
+
+        internal void DumpOptions(WitSyncCommandLineOptions options)
+        {
+            this.Verbose(options.ToString());
+        }
+
+        internal void FirstMessage(string logHeader)
+        {
+            // empty line
+            base.RawOut(InfoColor, OutputFlags.Debug, string.Empty);
+            base.RawOut(InfoColor, OutputFlags.Debug, logHeader);
+        }
+
+        internal void LastMessage(int rc)
+        {
+            this.Info("Exiting with code {0}.", rc);
+        }
+
+        public void TraceRule(string msg, params object[] args)
+        {
+            base.Out(VerboseColor, OutputFlags.All, "RULE: ", msg, args);
+        }
+
+        public void ExceptionWhileRemovingAttachment(Exception ex, Attachment a, WorkItem target)
+        {
+            this.Error("While removing Attachment '{2}' from #{3}: {0}\r\n{1}", ex.Message, ex.StackTrace, a.Name, target.Id);
+        }
+
+        public void ExceptionWhileAddingAttachment(Exception ex, Attachment a, WorkItem source)
+        {
+            this.Error("While adding Attachment '{2}' from #{3}: {0}\r\n{1}", ex.Message, ex.StackTrace, a.Name, source.Id);
+        }
+        
+        public void ExceptionWhileCopyingField(Exception ex, Field fromField)
+        {
+            this.Error("While copying Field {1}: {0}", ex.Message, fromField.ReferenceName);
+        }
+
+        public void ExceptionWhileActingOnField(Exception ex, string targetFieldName)
+        {
+            this.Error("While acting on Field {1}: {0}}", ex.Message, targetFieldName);
         }
     }
 }

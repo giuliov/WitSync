@@ -119,8 +119,23 @@ namespace WitSync
             return target;
         }
 
+        Dictionary<WorkItemMap, FieldCopier> copiers = new Dictionary<WorkItemMap, FieldCopier>();
+
+        private FieldCopier GetCopier(WorkItemType sourceType, WorkItemMap map, WorkItemType targetType)
+        {
+            if (copiers.ContainsKey(map))
+                return copiers[map];
+
+            var copier = new FieldCopier(this.Mapping, this.functions, this.UseEditableProperty, sourceType, map, targetType, this.EventSink);
+            //cache
+            copiers[map] = copier;
+            return copier;
+        }
+
         protected virtual void SetWorkItemFields(WorkItem source, WorkItemMap map, WorkItem target)
         {
+            var copier = GetCopier(source.Type, map, target.Type);
+
             if (this.OpenTargetWorkItem)
             {
                 // force load and edit mode
@@ -131,84 +146,7 @@ namespace WitSync
                 target.PartialOpen();
             }
 
-            foreach (Field fromField in source.Fields)
-            {
-                Debug.WriteLine("Source field '{0}' has value '{1}'", fromField.Name, fromField.Value);
-
-                var rule = map.FindFieldRule(fromField.Name);
-                if (rule == null)
-                {
-                    // if no rule -> skip field
-                    this.EventSink.NoRuleFor(source, fromField.Name);
-                    continue;
-                }
-                string targetFieldName
-                    = rule.IsWildcard
-                    ? fromField.Name : rule.Destination;
-                // good source with destination?
-                if (fromField.IsValid
-                    && !string.IsNullOrWhiteSpace(rule.Destination)
-                    && target.Fields.Contains(targetFieldName))
-                {
-                    var toField = target.Fields[targetFieldName];
-                    if (CanAssign(fromField, toField))
-                    {
-                        if (rule.IsWildcard)
-                        {
-                            toField.Value = fromField.Value;
-                        }
-                        else if (!string.IsNullOrWhiteSpace(rule.Set)) 
-                        {
-                            // fixed value
-                            switch (toField.FieldDefinition.FieldType)
-                            {
-                                // TODO source field is not needed
-                                // Parse always succeeds, as value is already validated by Checker
-                                case FieldType.Boolean:
-                                    toField.Value = bool.Parse(rule.Set);
-                                    break;
-                                case FieldType.DateTime:
-                                    toField.Value = DateTime.Parse(rule.Set);
-                                    break;
-                                case FieldType.Double:
-                                    toField.Value = double.Parse(rule.Set);
-                                    break;
-                                case FieldType.Guid:
-                                    toField.Value = Guid.Parse(rule.Set);
-                                    break;
-                                case FieldType.Integer:
-                                    toField.Value = int.Parse(rule.Set);
-                                    break;
-                                default:
-                                    toField.Value = rule.Set;
-                                    break;
-                            }//switch
-                        }
-                        else if (!string.IsNullOrWhiteSpace(rule.Translate))
-                        {
-                            var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
-                            // TODO optimize
-                            var translatorMethod = functions.GetType().GetMethod(rule.Translate, flags);
-                            if (translatorMethod == null)
-                            {
-                                this.EventSink.TranslatorFunctionNotFoundUsingDefault(rule);
-                                // default: no translation
-                                toField.Value = fromField.Value;
-                            }
-                            else
-                            {
-                                toField.Value = translatorMethod.Invoke(functions, new object[] { rule, map, this.Mapping, fromField.Value });
-                            }
-                        }
-                        else
-                        {
-                            this.EventSink.InvalidRule(rule);
-                            // crossing fingers
-                            toField.Value = fromField.Value;
-                        }//if
-                    }//if
-                }//if has dest
-            }//for fields
+            copier.Copy(source, target, this.EventSink);
         }
 
         private bool CanAssign(Field fromField, Field toField)
@@ -229,37 +167,120 @@ namespace WitSync
             }
         }
 
+        class AttachmentComparer : IEqualityComparer<Attachment>
+        {
+            public bool Equals(Attachment x, Attachment y)
+            {
+
+                //Check whether the compared objects reference the same data.
+                if (Object.ReferenceEquals(x, y)) return true;
+
+                //Check whether any of the compared objects is null.
+                if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
+                    return false;
+
+                //Check whether the objects' properties are equal.
+                return x.Name == y.Name && x.Length == y.Length;
+            }
+
+            // If Equals() returns true for a pair of objects 
+            // then GetHashCode() must return the same value for these objects.
+            public int GetHashCode(Attachment a)
+            {
+                //Check whether the object is null
+                if (Object.ReferenceEquals(a, null)) return 0;
+
+                //Calculate the hash code for the object. 
+                // (bless StackOverflow)
+                // http://stackoverflow.com/questions/263400/what-is-the-best-algorithm-for-an-overridden-system-object-gethashcode
+                unchecked // Overflow is fine, just wrap
+                {
+                    int hash = 17;
+                    // Suitable nullity checks etc, of course :)
+                    hash = hash * 23 + a.Name.GetHashCode();
+                    hash = hash * 23 + a.Length.GetHashCode();
+                    return hash;
+                }
+            }
+        }
+
+        class AttachmentEnumerable : IEnumerable<Attachment>
+        {
+            private AttachmentCollection underlyingCollection;
+
+            public AttachmentEnumerable(AttachmentCollection coll)
+            { underlyingCollection = coll; }
+
+            public IEnumerator<Attachment> GetEnumerator()
+            {
+                foreach (Attachment item in underlyingCollection)
+                {
+                    yield return item;
+                }
+            }
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+            {
+                return this.GetEnumerator();
+            }
+        }
+
         private void SetAttachments(WorkItem source, WorkItemMap map, WorkItem target)
         {
-            // TODO check SourceStore.MaxBulkUpdateBatchSize vs DestinationStore.MaxBulkUpdateBatchSize
+            if (map.Attachments == WorkItemMap.AttachmentMode.DoNotSync)
+                return;
 
-            if (map.SyncAttachments && source.AttachedFileCount > 0)
-            {
-                // see http://stackoverflow.com/questions/3507939/how-can-i-add-an-attachment-via-the-sdk-to-a-work-item-without-using-a-physical
-                foreach (Attachment sourceAttachment in source.Attachments)
+                var srcColl = new AttachmentEnumerable(source.Attachments);
+                var dstColl = new AttachmentEnumerable(target.Attachments);
+                var comparer = new AttachmentComparer();
+
+                if ((map.Attachments & WorkItemMap.AttachmentMode.ClearTarget) == WorkItemMap.AttachmentMode.ClearTarget)
                 {
-                    foreach (Attachment targetAttachment in target.Attachments)
+                    target.Attachments.Clear();
+                } else if ((map.Attachments & WorkItemMap.AttachmentMode.RemoveIfAbsent) == WorkItemMap.AttachmentMode.RemoveIfAbsent)
+                {
+                    var onlyInTarget = dstColl.Except(srcColl, comparer).ToList();
+
+                    // remove
+                    foreach (var a in onlyInTarget)
                     {
-                        if (targetAttachment.Name == sourceAttachment.Name
-                            && targetAttachment.Length == targetAttachment.Length)
+                        try
                         {
-                            goto nextAttachment;
+                            target.Attachments.Remove(a);
                         }
-                    }
+                        catch (Exception ex)
+                        {
+                            this.EventSink.ExceptionWhileRemovingAttachment(ex, a, target);
+                        }//try
+                    }//for
+                }//if
 
-                    // not found
-                    string tempFile = DownloadAttachment(sourceAttachment);
-                    Attachment newAttachment = new Attachment(tempFile, sourceAttachment.Comment);
-                    target.Attachments.Add(newAttachment);
+                if ((map.Attachments & WorkItemMap.AttachmentMode.AddAndUpdate) == WorkItemMap.AttachmentMode.AddAndUpdate)
+                {
+                    var onlyInSource = srcColl.Except(dstColl, comparer).ToList();
 
-                nextAttachment:
-                    Debug.WriteLine("Matching attachement found");
-                }//for
-            }//if
+                    //add
+                    foreach (var sourceAttachment in onlyInSource)
+                    {
+                        try
+                        {
+                            // see http://stackoverflow.com/questions/3507939/how-can-i-add-an-attachment-via-the-sdk-to-a-work-item-without-using-a-physical
+                            string tempFile = DownloadAttachment(sourceAttachment);
+                            Attachment newAttachment = new Attachment(tempFile, sourceAttachment.Comment);
+                            // TODO check SourceStore.MaxBulkUpdateBatchSize vs DestinationStore.MaxBulkUpdateBatchSize
+                            target.Attachments.Add(newAttachment);
+                        }
+                        catch (Exception ex)
+                        {
+                            this.EventSink.ExceptionWhileAddingAttachment(ex, sourceAttachment, source);
+                        }//try
+                    }//for
+                }//if
         }
 
         private string DownloadAttachment(Attachment sourceAttachment)
         {
+            // TODO optimize using tip from http://www.timschaeps.com/team-foundation-service-downloading-attachments-from-work-items-through-the-api/
             var wc = new System.Net.WebClient();
             var cred = this.SourceConnection.Credential;
             if (cred != null

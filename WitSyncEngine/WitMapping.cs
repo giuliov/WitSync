@@ -9,39 +9,42 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace WitSync
 {
     [XmlType("States")]
     public class StateList
     {
-        [XmlAttribute("InitialStateOnDestination")]
-        public string InitialStateOnDestination;
         [XmlElement("State")]
-        public StateMap[] States;
+        public StateMap[] States { get; set; }
     }
 
     [XmlType("State")]
     public class StateMap
     {
         [XmlAttribute]
-        public string Source;
+        public string Source { get; set; }
         [XmlAttribute]
-        public string Destination;
+        public string Destination { get; set; }
     }
 
     [XmlType]
     public class FieldMap
     {
         [XmlAttribute]
-        public string Source;
+        public string Source { get; set; }
         [XmlAttribute]
-        public string Destination;
+        public string Destination { get; set; }
         [XmlAttribute]
-        public string Translate;
+        public string Translate { get; set; }
         [XmlAttribute]
-        public string Set;
+        public string Set { get; set; }
+        [XmlAttribute]
+        public string SetIfNull { get; set; }
 
+        [YamlIgnore]
         public bool IsWildcard { get { return Source == "*"; } }
 
         public override string ToString()
@@ -54,6 +57,8 @@ namespace WitSync
                 buf.AppendFormat(", Translate: {0}", Translate);
             if (!string.IsNullOrEmpty(Set))
                 buf.AppendFormat(", Set: {0}", Set);
+            if (!string.IsNullOrEmpty(SetIfNull))
+                buf.AppendFormat(", SetIfNull: {0}", SetIfNull);
 
             return buf.ToString();
         }
@@ -63,37 +68,58 @@ namespace WitSync
     public class AreaMap
     {
         [XmlAttribute]
-        public string SourcePath;
+        public string SourcePath { get; set; }
         [XmlAttribute]
-        public string DestinationPath;
+        public string DestinationPath { get; set; }
     }
 
     [XmlType("Iteration")]
     public class IterationMap
     {
         [XmlAttribute]
-        public string SourcePath;
+        public string SourcePath { get; set; }
         [XmlAttribute]
-        public string DestinationPath;
+        public string DestinationPath { get; set; }
     }
 
     [XmlType]
     public class WorkItemMap
     {
+        public WorkItemMap()
+        {
+            // default
+            this.Attachments = AttachmentMode.Sync;
+            this.DefaultRules = true;
+        }
+
+        [Flags]
+        public enum AttachmentMode
+        {
+            DoNotSync = 0,
+            AddAndUpdate = 1,
+            RemoveIfAbsent = 2,
+            ClearTarget = 4,
+            Sync = AddAndUpdate | RemoveIfAbsent,
+            FullSync = AddAndUpdate | ClearTarget
+        }
+
         [XmlAttribute]
-        public string SourceType;
+        public string SourceType { get; set; }
         [XmlAttribute]
-        public string DestinationType;
+        public string DestinationType { get; set; }
         [XmlElement]
-        public FieldMap IDField;
+        public FieldMap IDField { get; set; }
         [XmlElement("States")]
-        public StateList StateList;
+        public StateList StateList { get; set; }
         [XmlElement("Field")]
-        public FieldMap[] Fields;
+        public FieldMap[] Fields { get; set; }
         [XmlAttribute("Attachments")]
-        public bool SyncAttachments;
+        public AttachmentMode Attachments { get; set; }
+        [XmlAttribute("DefaultRules")]
+        public bool DefaultRules { get; set; }
 
         [XmlIgnore]
+        [YamlIgnore]
         public IEnumerable<FieldMap> AllFields
         {
             get
@@ -128,10 +154,11 @@ namespace WitSync
     public class LinkTypeMap
     {
         [XmlAttribute]
-        public string SourceType;
+        public string SourceType { get; set; }
         [XmlAttribute]
-        public string DestinationType;
+        public string DestinationType { get; set; }
 
+        [YamlIgnore]
         public bool IsWildcard { get { return SourceType == "*"; } }
     }
 
@@ -139,19 +166,19 @@ namespace WitSync
     public class ProjectMapping : MappingBase
     {
         [XmlElement]
-        public string SourceQuery;
+        public string SourceQuery { get; set; }
         [XmlElement]
-        public string DestinationQuery;
+        public string DestinationQuery { get; set; }
         [XmlElement]
-        public string IndexFile;
+        public string IndexFile { get; set; }
         [XmlArray]
-        public AreaMap[] AreaMap;
+        public AreaMap[] AreaMap { get; set; }
         [XmlArray]
-        public IterationMap[] IterationMap;
+        public IterationMap[] IterationMap { get; set; }
         [XmlElement("WorkItemMap")]
-        public WorkItemMap[] WorkItemMappings;
+        public WorkItemMap[] WorkItemMappings { get; set; }
         [XmlArray]
-        public LinkTypeMap[] LinkTypeMap;
+        public LinkTypeMap[] LinkTypeMap { get; set; }
 
         public bool HasIndex { get { return !string.IsNullOrWhiteSpace(this.IndexFile); } }
 
@@ -198,14 +225,13 @@ namespace WitSync
 
         public static ProjectMapping LoadFrom(string path)
         {
-            var serializer = new XmlSerializer(typeof(ProjectMapping));
-            using (var reader = new StreamReader(path))
-            {
-                var mapping = (ProjectMapping)serializer.Deserialize(reader);
-                reader.BaseStream.Seek(0, SeekOrigin.Begin);
-                mapping.Validate(reader.BaseStream, "Mapping.xsd");
-                return mapping;
-            }
+            var input = new StreamReader(path);
+
+            var deserializer = new Deserializer(namingConvention: new CamelCaseNamingConvention());
+
+            var mapping = deserializer.Deserialize<ProjectMapping>(input);
+
+            return mapping;
         }
 
         public void RebuildMappingIndexes()
@@ -224,9 +250,11 @@ namespace WitSync
 
         // Validation Error Count
         [XmlIgnore]
+        [YamlIgnore]
         public int ErrorsCount { get { return ErrorMessage.Count; } }
         // Validation Error Message
         [XmlIgnore]
+        [YamlIgnore]
         public List<string> ErrorMessage = new List<string>();
 
         public void ValidationHandler(object sender, ValidationEventArgs args)
@@ -294,31 +322,51 @@ namespace WitSync
             this.DestinationQuery = this.DestinationQuery ?? string.Format("SELECT id FROM workitems WHERE [Team Project]='{0}'", destConn.ProjectName);
             this.AreaMap = this.AreaMap ?? new AreaMap[] { new AreaMap() { SourcePath = "*", DestinationPath = "*" } };
             this.IterationMap = this.IterationMap ?? new IterationMap[] { new IterationMap() { SourcePath = "*", DestinationPath = "*" } };
+            var defaultFieldRules = new FieldMap[] {
+                new FieldMap() { Source = "System.AreaId", Destination = "" },
+                new FieldMap() { Source = "System.AreaPath", Destination = "System.AreaPath", Translate = "MapAreaPath"},
+                new FieldMap() { Source = "System.IterationId", Destination = "" },
+                new FieldMap() { Source = "System.IterationPath", Destination = "System.IterationPath", Translate = "MapIterationPath" },
+                new FieldMap() { Source = "System.Reason", Destination = "" },
+                new FieldMap() { Source = "Microsoft.VSTS.Common.StateChangeDate", Destination = "" },
+                new FieldMap() { Source = "System.CreatedDate", Destination = "" },
+                new FieldMap() { Source = "System.ChangedDate", Destination = "" },
+                new FieldMap() { Source = "Microsoft.VSTS.Common.ActivatedDate", Destination = "" },
+                new FieldMap() { Source = "System.Rev", Destination = "" },
+                new FieldMap() { Source = "*", Destination = "*" }
+            };
+            var sourceWItypes = sourceWIStore.Projects[sourceConn.ProjectName].WorkItemTypes;
             if (this.WorkItemMappings == null)
             {
                 var mappings = new List<WorkItemMap>();
-                foreach (WorkItemType wit in sourceWIStore.Projects[sourceConn.ProjectName].WorkItemTypes)
+                mappings.AddRange(sourceWItypes.ConvertAll(wit =>
                 {
-                    mappings.Add(new WorkItemMap()
-                    {
-                        SourceType = wit.Name,
-                        DestinationType = wit.Name,
-                        SyncAttachments = true,
-                        Fields = new FieldMap[] {
-                            // HACK these names are OK for Scrum, but ...
-                            new FieldMap() { Source = "Area ID", Destination = "" },
-                            new FieldMap() { Source = "Area Path", Destination = "Area Path", Translate = "MapAreaPath"},
-                            new FieldMap() { Source = "Iteration ID", Destination = "" },
-                            new FieldMap() { Source = "Iteration Path", Destination = "Iteration Path", Translate = "MapIterationPath" },
-                            new FieldMap() { Source = "Reason", Destination = "" },
-                            new FieldMap() { Source = "State Change Date", Destination = "" },
-                            new FieldMap() { Source = "Created Date", Destination = "" },
-                            new FieldMap() { Source = "Changed Date", Destination = "" },
-                            new FieldMap() { Source = "*", Destination = "*" }
-                        }
-                    });
-                }//for
+                    return new WorkItemMap()
+                        {
+                            SourceType = wit.Name,
+                            DestinationType = wit.Name,
+                            Attachments = WorkItemMap.AttachmentMode.Sync,
+                            Fields = defaultFieldRules
+                        };
+                }));
                 this.WorkItemMappings = mappings.ToArray();
+            }
+            else
+            {
+                this.WorkItemMappings.ForEach(m =>
+                {
+                    if (m.Fields == null)
+                    {
+                        m.Fields = defaultFieldRules;
+                    }
+                    else if (m.DefaultRules)
+                    {
+                        var mixin = new List<FieldMap>();
+                        mixin.AddRange(m.Fields);
+                        mixin.AddRange(defaultFieldRules);
+                        m.Fields = mixin.ToArray();
+                    }
+                });
             }
             this.LinkTypeMap = this.LinkTypeMap ?? new LinkTypeMap[] { new LinkTypeMap() { SourceType = "*", DestinationType = "*" } };
         }

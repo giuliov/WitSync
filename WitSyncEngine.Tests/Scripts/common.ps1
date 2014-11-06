@@ -19,6 +19,7 @@ if (-not (Test-Path $witAdmin)) {
 # where is TfsConfig ?
 $tfsPath = Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\TeamFoundationServer\$version.0 -Name InstallPath
 $TfsConfig = Join-Path $tfsPath.InstallPath -ChildPath 'Tools\TfsConfig.exe'
+$TfsServiceControl = Join-Path $tfsPath.InstallPath -ChildPath 'Tools\TfsServiceControl.exe'
 
 $sqlDataPath = 'C:\Program Files\Microsoft SQL Server\MSSQL11.SQLEXPRESS\MSSQL\DATA'
 $dataSavePath = "$env:USERPROFILE\Source\Repos\SharedTools-GlobalIT\WitSync\WitSyncEngine.Tests\Database"
