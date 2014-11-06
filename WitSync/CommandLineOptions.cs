@@ -13,10 +13,10 @@ namespace WitSync
         Copyright = "Copyright (c) Giulio Vian",
 //        Version = "0.5.0.0",
         EnabledOptionStyles = OptionStyles.Group | OptionStyles.Windows | OptionStyles.ShortUnix | OptionStyles.LongUnix)]
-    [CommandLineOptionGroup("commands", Name = "Commands")]
+    [CommandLineOptionGroup("stages", Name = "Stages")]
     [CommandLineOptionGroup("connection", Name = "Connection")]
     [CommandLineOptionGroup("options", Name = "Options")]
-    [CommandLineOptionGroup("advanced", Name = "Advanced Options")]
+    [CommandLineOptionGroup("advancedWI", Name = "Advanced options for WorkItems stage")]
     public class WitSyncCommandLineOptions
     {
         [Flags]
@@ -33,21 +33,21 @@ namespace WitSync
         {
         }
 
-        // commands
-        [CommandLineOption(GroupId = "commands"
-            , Name="g", Aliases="gl globallists"
+        // stages
+        [CommandLineOption(GroupId = "stages"
+            , Name = "globallists", Aliases = "globallist"
             , Description = "Syncronize GlobalLists data (use mapping file to filter)")]
         public bool SyncGloballists { get; set; }
-        [CommandLineOption(GroupId = "commands"
-            , Name = "a", Aliases = "area areas"
+        [CommandLineOption(GroupId = "stages"
+            , Name = "areas", Aliases = "area"
             , Description = "Syncronize Areas (see documentation for limits)")]
         public bool SyncAreas { get; set; }
-        [CommandLineOption(GroupId = "commands"
-            , Name = "i", Aliases = "iteration iterations"
+        [CommandLineOption(GroupId = "stages"
+            , Name = "iterations", Aliases = "iteration"
             , Description = "Syncronize Iterations (see documentation for limits)")]
         public bool SyncIterations { get; set; }
-        [CommandLineOption(GroupId = "commands"
-            , Name = "w", Aliases = "wi workitem workitems"
+        [CommandLineOption(GroupId = "stages"
+            , Name = "workitems", Aliases = "wi workitem"
             , Description = "Syncronize WorkItems")]
         public bool SyncWorkItems { get; set; }
 
@@ -109,15 +109,15 @@ namespace WitSync
         [CommandLineOption(GroupId = "options"
             , Name = "m", Aliases = "map mapping mappingFile"
             , MinOccurs = 1
-            , Description = "Mapping file, e.g. MyMappingFile.xml")]
+            , Description = "Mapping file, e.g. MyMappingFile.yml")]
         public string MappingFile { get; set; }
         [CommandLineOption(GroupId = "options"
-            , Name = "ix", Aliases = "idx index indexFile"
+            , Name = "i", Aliases = "index indexFile"
             , MinOccurs = 0 //HACK is mandatory if ...
             , Description = "Index file, e.g. MyIndex.xml")]
         public string IndexFile { get; set; }
         [CommandLineOption(GroupId = "options"
-            , Name = "cl", Aliases = "chg changes changeLogFile"
+            , Name = "cl", Aliases = "changes changeLogFile"
             , Description = "ChangeLog file, e.g. ChangeLog.csv")]
         public string ChangeLogFile { get; set; }
 
@@ -147,27 +147,27 @@ namespace WitSync
         public bool Help = false;
 
         // Advanced options
-        [CommandLineOption(GroupId = "advanced"
+        [CommandLineOption(GroupId = "advancedWI"
             , BoolFunction = BoolFunction.TrueIfPresent
             , Description = "Disable Rule validation")]
         public bool BypassWorkItemValidation { get; set; }
 
-        [CommandLineOption(GroupId = "advanced"
+        [CommandLineOption(GroupId = "advancedWI"
             , BoolFunction = BoolFunction.TrueIfPresent
             , Description = "Algorithm used to determine when a field is updatable.")]
         public bool UseHeuristicForFieldUpdatability { get; set; }
 
-        [CommandLineOption(GroupId = "advanced"
+        [CommandLineOption(GroupId = "advancedWI"
             , BoolFunction = BoolFunction.TrueIfPresent
             , Description = "Use [WorkItem.Open] Method to make the WorkItem updatable.")]
         public bool DoNotOpenTargetWorkItem { get; set; }
 
-        [CommandLineOption(GroupId = "advanced"
+        [CommandLineOption(GroupId = "advancedWI"
             , BoolFunction = BoolFunction.TrueIfPresent
             , Description = "Use [WorkItem.PartialOpen] Method to make the WorkItem updatable.")]
         public bool PartialOpenTargetWorkItem { get; set; }
 
-        [CommandLineOption(GroupId = "advanced"
+        [CommandLineOption(GroupId = "advancedWI"
             , BoolFunction = BoolFunction.TrueIfPresent
             , Description = "WorkItems missing from the target are first added in the initial state specified by InitalStateOnDestination, then updated to reflect the state of the source.")]
         public bool CreateThenUpdate { get; set; }
