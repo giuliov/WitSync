@@ -60,26 +60,26 @@
   <ItemGroup>
     <Compile Include="ChangeLog.cs" />
     <Compile Include="EngineBase.cs" />
-    <Compile Include="FieldCopier.cs" />
+    <Compile Include="WorkItems\FieldCopier.cs" />
     <Compile Include="GeneralConfig.cs" />
-    <Compile Include="GlobalListMapping.cs" />
-    <Compile Include="GlobalListsSyncEngine.cs" />
-    <Compile Include="AreasAndIterationsSyncEngine.cs" />
+    <Compile Include="GlobalLists\GlobalListMapping.cs" />
+    <Compile Include="GlobalLists\GlobalListsSyncEngine.cs" />
+    <Compile Include="AreaIterations\AreasAndIterationsSyncEngine.cs" />
     <Compile Include="CollectionExtensions.cs" />
-    <Compile Include="WitMapping.cs" />
+    <Compile Include="WorkItems\WitMapping.cs" />
     <Compile Include="SyncPipeline.cs" />
-    <Compile Include="WitSyncEngine.cs" />
+    <Compile Include="WorkItems\WitSyncEngine.cs" />
     <Compile Include="IEngineEvents.cs" />
-    <Compile Include="LinkMapper.cs" />
-    <Compile Include="WorkItemMapper.cs" />
-    <Compile Include="MapperFunctions.cs" />
+    <Compile Include="WorkItems\LinkMapper.cs" />
+    <Compile Include="WorkItems\WorkItemMapper.cs" />
+    <Compile Include="WorkItems\MapperFunctions.cs" />
     <Compile Include="MappingChecker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="QueryRunner.cs" />
+    <Compile Include="WorkItems\QueryRunner.cs" />
     <Compile Include="SyncContext.cs" />
     <Compile Include="TfsConnection.cs" />
-    <Compile Include="WitMappingIndex.cs" />
-    <Compile Include="WorkItemNode.cs" />
+    <Compile Include="WorkItems\WitMappingIndex.cs" />
+    <Compile Include="WorkItems\WorkItemNode.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Mapping.xsd">
