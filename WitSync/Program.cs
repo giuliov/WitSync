@@ -18,7 +18,8 @@ namespace WitSync
         static int Main(string[] args)
         {
             // option to generate sample file
-            if (string.Compare(args[0], "generate", true) == 0)
+            if (args.Length > 0
+                && string.Compare(args[0], "generate", true) == 0)
             {
                 SyncMapping.Generate().SaveTo("sample.yml");
                 return 1;
