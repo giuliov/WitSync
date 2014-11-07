@@ -156,6 +156,8 @@ $RECYCLE.BIN/
 .DS_Store
 *.mdf
 *.ldf
-xcopy/
+
+### Specific for this project ###
 packages/
 *.nupkg
+distr/
