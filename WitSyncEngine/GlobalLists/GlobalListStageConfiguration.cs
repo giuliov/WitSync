@@ -9,15 +9,15 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace WitSync
 {
-    public class GlobalListMapping : MappingBase
+    public class GlobalListStageConfiguration : StageConfiguration
     {
-        public static GlobalListMapping LoadFrom(string path)
+        public static GlobalListStageConfiguration LoadFrom(string path)
         {
             var input = new StreamReader(path);
 
             var deserializer = new Deserializer(namingConvention: new CamelCaseNamingConvention());
 
-            var mapping = deserializer.Deserialize<GlobalListMapping>(input);
+            var mapping = deserializer.Deserialize<GlobalListStageConfiguration>(input);
             if (mapping.exclude == null && mapping.include == null)
                 throw new IndexOutOfRangeException("At least one of exclude/include must be present.");
             return mapping;

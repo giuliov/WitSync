@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace WitSync
 {
-    public class MappingBase { }
+    public abstract class StageConfiguration { }
 
     public class SyncPipeline
     {
@@ -18,11 +18,11 @@ namespace WitSync
             eventSink = eventHandler;
         }
 
-        List<Func<EngineBase>> stageBuilders = new List<Func<EngineBase>>();
-        List<EngineBase> preparedStages = new List<EngineBase>();
+        List<Func<PipelineStage>> stageBuilders = new List<Func<PipelineStage>>();
+        List<PipelineStage> preparedStages = new List<PipelineStage>();
 
         public void AddStage<TEngine>(Func<TEngine> engineBuilder)
-            where TEngine : EngineBase
+            where TEngine : PipelineStage
         {
             stageBuilders.Add(engineBuilder);
         }

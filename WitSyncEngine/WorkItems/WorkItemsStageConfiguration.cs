@@ -163,7 +163,7 @@ namespace WitSync
     }
 
     [XmlRoot("Mapping")]
-    public class ProjectMapping : MappingBase
+    public class WorkItemsStageConfiguration : StageConfiguration
     {
         [XmlElement]
         public string SourceQuery { get; set; }
@@ -223,13 +223,13 @@ namespace WitSync
         }
 
 
-        public static ProjectMapping LoadFrom(string path)
+        public static WorkItemsStageConfiguration LoadFrom(string path)
         {
             var input = new StreamReader(path);
 
             var deserializer = new Deserializer(namingConvention: new CamelCaseNamingConvention());
 
-            var mapping = deserializer.Deserialize<ProjectMapping>(input);
+            var mapping = deserializer.Deserialize<WorkItemsStageConfiguration>(input);
 
             return mapping;
         }
@@ -241,7 +241,7 @@ namespace WitSync
 
         public void SaveTo(string path)
         {
-            var serializer = new XmlSerializer(typeof(ProjectMapping));
+            var serializer = new XmlSerializer(typeof(WorkItemsStageConfiguration));
             using (var writer = new StreamWriter(path))
             {
                 serializer.Serialize(writer, this);
@@ -292,7 +292,7 @@ namespace WitSync
         public static void GenerateSampleMappingFile(string path)
         {
             //TODO (very poor now)
-            var mapping = new ProjectMapping()
+            var mapping = new WorkItemsStageConfiguration()
             {
                 SourceQuery = "sq",
                 DestinationQuery = "dq",

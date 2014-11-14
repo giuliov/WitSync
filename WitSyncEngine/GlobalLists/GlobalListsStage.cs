@@ -16,17 +16,17 @@ namespace WitSync
         { }
     }
 
-    public class GlobalListsSyncEngine : EngineBase
+    public class GlobalListsStage : PipelineStage
     {
-        public GlobalListsSyncEngine(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
+        public GlobalListsStage(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
             : base(source, dest, eventHandler)
         {
             //no-op
         }
 
-        public Func<GlobalListMapping> MapGetter { get; set; }
+        public Func<GlobalListStageConfiguration> MapGetter { get; set; }
 
-        protected GlobalListMapping mapping;
+        protected GlobalListStageConfiguration mapping;
 
         public override int Prepare(bool testOnly)
         {

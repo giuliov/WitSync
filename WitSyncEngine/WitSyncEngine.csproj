@@ -58,22 +58,23 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AreaIterations\AreasAndIterationsStageConfiguration.cs" />
     <Compile Include="ChangeLog.cs" />
-    <Compile Include="EngineBase.cs" />
+    <Compile Include="PipelineStage.cs" />
     <Compile Include="WorkItems\FieldCopier.cs" />
-    <Compile Include="GeneralConfig.cs" />
-    <Compile Include="GlobalLists\GlobalListMapping.cs" />
-    <Compile Include="GlobalLists\GlobalListsSyncEngine.cs" />
-    <Compile Include="AreaIterations\AreasAndIterationsSyncEngine.cs" />
+    <Compile Include="PipelineConfiguration.cs" />
+    <Compile Include="GlobalLists\GlobalListStageConfiguration.cs" />
+    <Compile Include="GlobalLists\GlobalListsStage.cs" />
+    <Compile Include="AreaIterations\AreasAndIterationsStage.cs" />
     <Compile Include="CollectionExtensions.cs" />
-    <Compile Include="WorkItems\WitMapping.cs" />
+    <Compile Include="WorkItems\WorkItemsStageConfiguration.cs" />
     <Compile Include="SyncPipeline.cs" />
-    <Compile Include="WorkItems\WorkItemsSyncEngine.cs" />
+    <Compile Include="WorkItems\WorkItemsStage.cs" />
     <Compile Include="IEngineEvents.cs" />
     <Compile Include="WorkItems\LinkMapper.cs" />
     <Compile Include="WorkItems\WorkItemMapper.cs" />
     <Compile Include="WorkItems\MapperFunctions.cs" />
-    <Compile Include="WorkItems\MappingChecker.cs" />
+    <Compile Include="WorkItems\WorkItemsStageConfigurationChecker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WorkItems\QueryRunner.cs" />
     <Compile Include="SyncContext.cs" />

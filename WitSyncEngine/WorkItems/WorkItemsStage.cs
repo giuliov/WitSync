@@ -27,7 +27,7 @@ namespace WitSync
 
     
 
-    public class WorkItemsSyncEngine : EngineBase
+    public class WorkItemsStage : PipelineStage
     {
         [Flags]
         public enum EngineOptions
@@ -40,28 +40,28 @@ namespace WitSync
             CreateThenUpdate = 0x20,
         }
 
-        public WorkItemsSyncEngine(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
+        public WorkItemsStage(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
             : base(source, dest, eventHandler)
         {
             //no-op
         }
 
-        public Func<ProjectMapping> MapGetter { get; set; }
+        public Func<WorkItemsStageConfiguration> MapGetter { get; set; }
         public EngineOptions Options { set { this.options = value; } }
 
-        protected ProjectMapping mapping;
+        protected WorkItemsStageConfiguration mapping;
         protected EngineOptions options;
 
         protected WorkItemStore sourceWIStore;
         protected WorkItemStore destWIStore;
-        internal ProjectMappingChecker checker;
+        internal WorkItemsStageConfigurationChecker checker;
 
         public override int Prepare(bool testOnly)
         {
             mapping = MapGetter();
             if (mapping == null)
                 // SetDefaults will fill this in
-                mapping = new ProjectMapping();
+                mapping = new WorkItemsStageConfiguration();
 
             sourceWIStore = sourceConn.Collection.GetService<WorkItemStore>();
             if (options.HasFlag(EngineOptions.BypassWorkItemStoreRules))
@@ -79,7 +79,7 @@ namespace WitSync
 
             eventSink.DumpMapping(mapping);
 
-            checker = new ProjectMappingChecker(sourceWIStore, sourceConn.ProjectName, destWIStore, destConn.ProjectName, eventSink);
+            checker = new WorkItemsStageConfigurationChecker(sourceWIStore, sourceConn.ProjectName, destWIStore, destConn.ProjectName, eventSink);
             checker.AgnosticCheck(mapping);
             if (!checker.Passed)
                 // abort
@@ -161,7 +161,7 @@ namespace WitSync
             return saveErrors;
         }
 
-        private void SaveWorkItems3Passes(ProjectMapping mapping, WitMappingIndex index, bool testOnly, WorkItemStore destWIStore, List<WorkItem> newWorkItems, List<WorkItem> updatedWorkItems, List<WorkItem> validWorkItems)
+        private void SaveWorkItems3Passes(WorkItemsStageConfiguration mapping, WitMappingIndex index, bool testOnly, WorkItemStore destWIStore, List<WorkItem> newWorkItems, List<WorkItem> updatedWorkItems, List<WorkItem> validWorkItems)
         {
             eventSink.SaveFirstPassSavingNewWorkItems(newWorkItems);
             //HACK: force all new workitems to the Initial state
@@ -200,7 +200,7 @@ namespace WitSync
             return state;
         }
 
-        private List<WorkItem> SaveWorkItems(ProjectMapping mapping, WitMappingIndex index, WorkItemStore destWIStore, List<WorkItem> changedWorkItems, bool testOnly)
+        private List<WorkItem> SaveWorkItems(WorkItemsStageConfiguration mapping, WitMappingIndex index, WorkItemStore destWIStore, List<WorkItem> changedWorkItems, bool testOnly)
         {
             var failedWorkItems = new List<WorkItem>();
             if (testOnly)
@@ -231,7 +231,7 @@ namespace WitSync
             return validWorkItems.ToList();
         }
 
-        private void SaveLinks(ProjectMapping mapping, WitMappingIndex index, WorkItemStore destWIStore, IEnumerable<WorkItem> changedWorkItems, bool testOnly)
+        private void SaveLinks(WorkItemsStageConfiguration mapping, WitMappingIndex index, WorkItemStore destWIStore, IEnumerable<WorkItem> changedWorkItems, bool testOnly)
         {
             if (testOnly)
             {
@@ -273,7 +273,7 @@ namespace WitSync
             return failedWorkItems;
         }
 
-        private WitMappingIndex BuildIndex(WorkItemStore destWIStore, IEnumerable<WorkItem> existingTargetWorkItems, ProjectMapping mapping)
+        private WitMappingIndex BuildIndex(WorkItemStore destWIStore, IEnumerable<WorkItem> existingTargetWorkItems, WorkItemsStageConfiguration mapping)
         {
             var index = new WitMappingIndex();
             if (mapping.HasIndex)
@@ -304,7 +304,7 @@ namespace WitSync
             return index;
         }
 
-        private void UpdateIndex(WitMappingIndex index, IEnumerable<WorkItem> updatedWorkItems, ProjectMapping mapping)
+        private void UpdateIndex(WitMappingIndex index, IEnumerable<WorkItem> updatedWorkItems, WorkItemsStageConfiguration mapping)
         {
             if (mapping.HasIndex)
             {

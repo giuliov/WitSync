@@ -1,23 +1,23 @@
-﻿config:
-  pipelineSteps:
-    - globallists
-    - areas
-    - iterations
-    - workitems
-  sourceConnection:
-    collectionUrl: http://localhost:8080/tfs/WitSync
-    projectName:   WitSyncSrc
-  destinationConnection:
-    collectionUrl: http://localhost:8080/tfs/WitSync
-    projectName:   WitSyncDest
-  indexFile:     test00-index.xml
-  changeLogFile: changes00.csv
-  logFile:       log00.txt
-  logging:       Verbose
-  advancedOptions:
-    - CreateThenUpdate
-globallists:
+﻿sourceConnection:
+  collectionUrl: http://localhost:8080/tfs/WitSync
+  projectName: WitSyncSrc
+destinationConnection:
+  collectionUrl: http://localhost:8080/tfs/WitSync
+  projectName: WitSyncDest
+pipelineSteps:
+  - globallists
+  - areas
+  - iterations
+  - workitems
+indexFile: test00-index.xml
+changeLogFile: changes00.csv
+logFile: log00.txt
+logging: Verbose
+advancedOptions:
+- CreateThenUpdate
+areasAndIterationsStage: {}
+globalListStage:
   include:
   - SampleGL
-workitems:
+workItemsStage:
   #defaults

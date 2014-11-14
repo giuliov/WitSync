@@ -19,7 +19,7 @@ namespace WitSync
             this.destProjectName = destProjectName;
         }
 
-        internal object MapState(FieldMap rule, WorkItemMap map, ProjectMapping mapping, object sourceValue)
+        internal object MapState(FieldMap rule, WorkItemMap map, WorkItemsStageConfiguration mapping, object sourceValue)
         {
             var x = map.FindMappedState(sourceValue.ToString());
             if (x != null)
@@ -31,7 +31,7 @@ namespace WitSync
             }
         }
 
-        internal object MapAreaPath(FieldMap rule, WorkItemMap map, ProjectMapping mapping, object sourceValue)
+        internal object MapAreaPath(FieldMap rule, WorkItemMap map, WorkItemsStageConfiguration mapping, object sourceValue)
         {
             var path = sourceValue.ToString();
             // search suitable mapping
@@ -67,7 +67,7 @@ namespace WitSync
             return path;
         }
 
-        internal object MapIterationPath(FieldMap rule, WorkItemMap map, ProjectMapping mapping, object sourceValue)
+        internal object MapIterationPath(FieldMap rule, WorkItemMap map, WorkItemsStageConfiguration mapping, object sourceValue)
         {
             var path = sourceValue.ToString();
             // search suitable mapping

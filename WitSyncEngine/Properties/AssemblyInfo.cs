@@ -33,7 +33,7 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("0.5.5059.10264")]
-[assembly: AssemblyInformationalVersion("0.5.0-beta")]
+[assembly: AssemblyFileVersion("0.5.5066.22530")]
+[assembly: AssemblyInformationalVersion("0.5.1-beta")]
 
 [assembly: InternalsVisibleTo("WitSyncEngine.Tests")]

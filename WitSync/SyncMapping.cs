@@ -6,20 +6,16 @@ using System.Threading.Tasks;
 
 namespace WitSync
 {
-    class SyncMapping
+    class MappingFile : PipelineConfiguration
     {
-        public GeneralConfig config { get; set; }
-        public GlobalListMapping globallists { get; set; }
-        public ProjectMapping workitems { get; set; }
-
-        public static SyncMapping LoadFrom(string path)
+        public static MappingFile LoadFrom(string path)
         {
             var input = new System.IO.StreamReader(path);
 
             var deserializer = new YamlDotNet.Serialization.Deserializer(
                 namingConvention: new YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention(), ignoreUnmatched: true);
 
-            var mapping = deserializer.Deserialize<SyncMapping>(input);
+            var mapping = deserializer.Deserialize<MappingFile>(input);
 
             return mapping;
         }
@@ -35,42 +31,42 @@ namespace WitSync
             output.Close();
         }
 
-        public static SyncMapping Generate()
+        public static MappingFile Generate()
         {
-            var self = new SyncMapping()
+            var self = new MappingFile()
             {
-                config = new GeneralConfig()
+                SourceConnection = new PipelineConfiguration.ConnectionInfo()
                 {
-                    SourceConnection = new GeneralConfig.ConnectionInfo()
-                    {
-                        CollectionUrl = "http://localhost:8080/tfs/DefaultCollection",
-                        ProjectName = "yourSourceProject",
-                        User = "sourceUser",
-                        Password = "***"
-                    },
-                    DestinationConnection = new GeneralConfig.ConnectionInfo()
-                    {
-                        CollectionUrl = "http://localhost:8080/tfs/DefaultCollection",
-                        ProjectName = "yourTargetProject",
-                        User = "targetUser",
-                        Password = "***"
-                    },
-                    MappingFile = "yourMap.yml",
-                    PipelineSteps = new List<string>() { "step1", "step2" },
-                    StopPipelineOnFirstError = true,
-                    TestOnly = true,
-                    Logging = LoggingLevel.Diagnostic,
-                    IndexFile = "index.xml",
-                    ChangeLogFile = "changes.csv",
-                    LogFile = "log.txt",
-                    AdvancedOptions = new List<string>() { "opt1", "opt2" },
+                    CollectionUrl = "http://localhost:8080/tfs/DefaultCollection",
+                    ProjectName = "yourSourceProject",
+                    User = "sourceUser",
+                    Password = "***"
                 },
-                globallists = new GlobalListMapping()
+                DestinationConnection = new PipelineConfiguration.ConnectionInfo()
+                {
+                    CollectionUrl = "http://localhost:8080/tfs/DefaultCollection",
+                    ProjectName = "yourTargetProject",
+                    User = "targetUser",
+                    Password = "***"
+                },
+                MappingFile = null, // MUST come from command line
+                PipelineSteps = new List<string>() { "step1", "step2" },
+                StopPipelineOnFirstError = true,
+                TestOnly = true,
+                Logging = LoggingLevel.Diagnostic,
+                IndexFile = "index.xml",
+                ChangeLogFile = "changes.csv",
+                LogFile = "log.txt",
+                AdvancedOptions = new List<string>() { "opt1", "opt2" },
+                AreasAndIterationsStage = new AreasAndIterationsStageConfiguration()
+                { // nothing
+                },
+                GlobalListStage = new GlobalListStageConfiguration()
                 {
                     include = new List<string>() { "incl1", "incl2" },
                     exclude = new List<string>() { "excl3", "excl4" }
                 },
-                workitems = new ProjectMapping()
+                WorkItemsStage = new WorkItemsStageConfiguration()
                 {
                     SourceQuery = "source query",
                     DestinationQuery = "dest query",

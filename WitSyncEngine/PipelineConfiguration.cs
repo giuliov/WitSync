@@ -12,7 +12,7 @@ namespace WitSync
         Verbose,
         Diagnostic
     }
-    public class GeneralConfig
+    public class PipelineConfiguration
     {
         public class ConnectionInfo
         {
@@ -36,5 +36,9 @@ namespace WitSync
         public bool StopPipelineOnFirstError { get; set; }
         public bool TestOnly { get; set; }
         public List<string> AdvancedOptions { get; set; }
+
+        public AreasAndIterationsStageConfiguration AreasAndIterationsStage { get; set; }
+        public GlobalListStageConfiguration GlobalListStage { get; set; }
+        public WorkItemsStageConfiguration WorkItemsStage { get; set; }
     }
 }

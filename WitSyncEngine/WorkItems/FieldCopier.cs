@@ -19,7 +19,7 @@ namespace WitSync
         Dictionary<FieldDefinition, CopyTask> tasks = new Dictionary<FieldDefinition, CopyTask>();
         List<CopyTask> unboundTasks = new List<CopyTask>();
 
-        public FieldCopier(ProjectMapping mapping, MapperFunctions functions, bool useEditableProperty, WorkItemType sourceType, WorkItemMap map, WorkItemType targetType, IEngineEvents engineEvents)
+        public FieldCopier(WorkItemsStageConfiguration mapping, MapperFunctions functions, bool useEditableProperty, WorkItemType sourceType, WorkItemMap map, WorkItemType targetType, IEngineEvents engineEvents)
         {
             engineEvents.TraceRule("Interpreting rules for mapping '{0}' workitems to '{1}'", sourceType.Name, targetType.Name);
 

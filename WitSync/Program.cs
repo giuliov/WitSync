@@ -11,17 +11,13 @@ namespace WitSync
 {
     class Program
     {
-        /*
-         --Globallists --Areas --Iterations  --WorkItems --sourceCollection http://localhost:8080/tfs/WitSync --sourceProject "WitSyncSrc" --destinationCollection http://localhost:8080/tfs/WitSync --destinationProject "WitSyncDest" --indexFile test01.idx --mappingFile "Sample Mappings\test01.yml" --verbose --stopOnError --test
-         --Globallists -c http://localhost:8080/tfs/WitSync -p "WitSyncSrc" -d http://localhost:8080/tfs/WitSync -q "WitSyncDest" -m "Sample Mappings\globallists.yml" -v
-         */
         static int Main(string[] args)
         {
             // option to generate sample file
             if (args.Length > 0
                 && string.Compare(args[0], "generate", true) == 0)
             {
-                SyncMapping.Generate().SaveTo("sample.yml");
+                MappingFile.Generate().SaveTo("sample.yml");
                 return 1;
             }//if
 
@@ -41,6 +37,7 @@ namespace WitSync
             var options = new WitSyncCommandLineOptions();
 
             CommandLineParser parser = new CommandLineParser(options);
+            // display the version computed by the build
             var fileVersion = System.Reflection.Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(System.Reflection.AssemblyFileVersionAttribute), false).FirstOrDefault() as System.Reflection.AssemblyFileVersionAttribute;
             parser.UsageInfo.ApplicationVersion = fileVersion.Version;
             string logHeader = parser.UsageInfo.GetHeaderAsString(lastColumn);
@@ -59,40 +56,40 @@ namespace WitSync
                 return -1;
             }//if
 
-            SyncMapping map = null;
+            MappingFile configuration = null;
             if (System.IO.File.Exists(options.MappingFile))
             {
-                map = SyncMapping.LoadFrom(options.MappingFile);
+                configuration = MappingFile.LoadFrom(options.MappingFile);
                 // merge options (hand-made)
                 if (string.IsNullOrWhiteSpace(options.SourceCollectionUrl))
-                    options.SourceCollectionUrl = map.config.SourceConnection.CollectionUrl;
+                    options.SourceCollectionUrl = configuration.SourceConnection.CollectionUrl;
                 if (string.IsNullOrWhiteSpace(options.SourceProjectName))
-                    options.SourceProjectName = map.config.SourceConnection.ProjectName;
+                    options.SourceProjectName = configuration.SourceConnection.ProjectName;
                 if (string.IsNullOrWhiteSpace(options.DestinationCollectionUrl))
-                    options.DestinationCollectionUrl = map.config.DestinationConnection.CollectionUrl;
+                    options.DestinationCollectionUrl = configuration.DestinationConnection.CollectionUrl;
                 if (string.IsNullOrWhiteSpace(options.DestinationProjectName))
-                    options.DestinationProjectName = map.config.DestinationConnection.ProjectName;
+                    options.DestinationProjectName = configuration.DestinationConnection.ProjectName;
                 if (string.IsNullOrWhiteSpace(options.IndexFile))
-                    options.IndexFile = map.config.IndexFile;
+                    options.IndexFile = configuration.IndexFile;
                 if (string.IsNullOrWhiteSpace(options.ChangeLogFile))
-                    options.ChangeLogFile = map.config.ChangeLogFile;
+                    options.ChangeLogFile = configuration.ChangeLogFile;
                 if (string.IsNullOrWhiteSpace(options.LogFile))
-                    options.LogFile = map.config.LogFile;
+                    options.LogFile = configuration.LogFile;
                 if (options.Steps == 0)
                 {
                     WitSyncCommandLineOptions.PipelineSteps steps = 0;
-                    foreach (var step in map.config.PipelineSteps)
+                    foreach (var step in configuration.PipelineSteps)
                     {
                         steps |= (WitSyncCommandLineOptions.PipelineSteps)Enum.Parse(typeof(WitSyncCommandLineOptions.PipelineSteps), step, true);
                     }//for
                     options.Steps = steps;
                 }//if
-                if (map.config.AdvancedOptions != null)
+                if (configuration.AdvancedOptions != null)
                 {
-                    WorkItemsSyncEngine.EngineOptions advanced = options.AdvancedOptions;
-                    foreach (var oneOpt in map.config.AdvancedOptions)
+                    WorkItemsStage.EngineOptions advanced = options.AdvancedOptions;
+                    foreach (var oneOpt in configuration.AdvancedOptions)
                     {
-                        advanced |= (WorkItemsSyncEngine.EngineOptions)Enum.Parse(typeof(WorkItemsSyncEngine.EngineOptions), oneOpt, true);
+                        advanced |= (WorkItemsStage.EngineOptions)Enum.Parse(typeof(WorkItemsStage.EngineOptions), oneOpt, true);
                     }//for
                     options.AdvancedOptions = advanced;
                 }//if
@@ -120,42 +117,42 @@ namespace WitSync
             if (!System.IO.File.Exists(options.MappingFile))
             {
                 eventHandler.MappingFileNotFoundAssumeDefaults(options.MappingFile);
-                map = new SyncMapping();
+                configuration = new MappingFile();
             }//if
             //TODO mapping validation
 
-            var stageBuilder = new Dictionary<WitSyncCommandLineOptions.PipelineSteps,Func<EngineBase>>();
+            var stageBuilder = new Dictionary<WitSyncCommandLineOptions.PipelineSteps,Func<PipelineStage>>();
             stageBuilder[WitSyncCommandLineOptions.PipelineSteps.Globallists] = () =>
             {
-                var engine = new GlobalListsSyncEngine(source, dest, eventHandler);
-                engine.MapGetter = () => { return map.globallists; };
+                var engine = new GlobalListsStage(source, dest, eventHandler);
+                engine.MapGetter = () => { return configuration.GlobalListStage; };
                 return engine;
             };
             stageBuilder[WitSyncCommandLineOptions.PipelineSteps.Areas] = () =>
             {
-                var engine = new AreasAndIterationsSyncEngine(source, dest, eventHandler);
-                engine.Options = AreasAndIterationsSyncEngine.EngineOptions.Areas;
+                var engine = new AreasAndIterationsStage(source, dest, eventHandler);
+                engine.Options = AreasAndIterationsStage.EngineOptions.Areas;
                 return engine;
             };
             stageBuilder[WitSyncCommandLineOptions.PipelineSteps.Iterations] = () =>
             {
-                var engine = new AreasAndIterationsSyncEngine(source, dest, eventHandler);
-                engine.Options = AreasAndIterationsSyncEngine.EngineOptions.Iterations;
+                var engine = new AreasAndIterationsStage(source, dest, eventHandler);
+                engine.Options = AreasAndIterationsStage.EngineOptions.Iterations;
                 return engine;
             };
             stageBuilder[WitSyncCommandLineOptions.PipelineSteps.WorkItems] = () =>
             {
-                var engine = new WorkItemsSyncEngine(source, dest, eventHandler);
+                var engine = new WorkItemsStage(source, dest, eventHandler);
                 engine.MapGetter = () => {
-                    if (map.workitems == null)
+                    if (configuration.WorkItemsStage == null)
                         // mapping file could be empty
-                        map.workitems = new ProjectMapping();
+                        configuration.WorkItemsStage = new WorkItemsStageConfiguration();
                     if (!string.IsNullOrEmpty(options.IndexFile))
                     {
                         // if specified both in the mapping and on the command line, latter wins
-                        map.workitems.IndexFile = options.IndexFile;
-                    } 
-                    return map.workitems;
+                        configuration.WorkItemsStage.IndexFile = options.IndexFile;
+                    }
+                    return configuration.WorkItemsStage;
                 };
                 engine.Options = options.AdvancedOptions;
                 return engine;

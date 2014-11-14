@@ -30,7 +30,7 @@ namespace WitSync
         { }
     }
 
-    public class AreasAndIterationsSyncEngine : EngineBase
+    public class AreasAndIterationsStage : PipelineStage
     {
         [Flags]
         public enum EngineOptions
@@ -45,7 +45,7 @@ namespace WitSync
         ICommonStructureService4 sourceCSS = null;
         ICommonStructureService4 destCSS = null;
 
-        public AreasAndIterationsSyncEngine(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
+        public AreasAndIterationsStage(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
             : base(source, dest, eventHandler)
         {
             //no-op
