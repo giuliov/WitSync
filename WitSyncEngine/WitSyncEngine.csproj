@@ -73,7 +73,7 @@
     <Compile Include="WorkItems\LinkMapper.cs" />
     <Compile Include="WorkItems\WorkItemMapper.cs" />
     <Compile Include="WorkItems\MapperFunctions.cs" />
-    <Compile Include="MappingChecker.cs" />
+    <Compile Include="WorkItems\MappingChecker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WorkItems\QueryRunner.cs" />
     <Compile Include="SyncContext.cs" />
@@ -82,7 +82,7 @@
     <Compile Include="WorkItems\WorkItemNode.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Mapping.xsd">
+    <EmbeddedResource Include="WorkItems\Mapping.xsd">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
