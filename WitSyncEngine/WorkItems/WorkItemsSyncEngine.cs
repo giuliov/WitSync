@@ -18,7 +18,7 @@ namespace WitSync
             {}
     }
 
-    public class WitSyncEngine : EngineBase
+    public class WorkItemsSyncEngine : EngineBase
     {
         [Flags]
         public enum EngineOptions
@@ -31,7 +31,7 @@ namespace WitSync
             CreateThenUpdate = 0x20,
         }
 
-        public WitSyncEngine(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
+        public WorkItemsSyncEngine(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
             : base(source, dest, eventHandler)
         {
             //no-op

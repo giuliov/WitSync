@@ -297,7 +297,7 @@ namespace WitSync
                 , sourceLink.SourceId, sourceLink.TargetId, sourceLink.LinkTypeEnd.Name);
         }
 
-        public void DumpOptions(WitSyncEngine.EngineOptions options)
+        public void DumpOptions(WorkItemsSyncEngine.EngineOptions options)
         {
             this.Verbose("Active options: {0}", options);
         }

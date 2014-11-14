@@ -59,7 +59,7 @@ namespace WitSync
         void MappingFileNotFoundAssumeDefaults(string path);
         void ExceptionWhileMappingLink(Exception ex, WorkItemLink sourceLink);
         void ExceptionWhileMappingWorkItem(Exception ex, WorkItem sourceWorkItem);
-        void DumpOptions(WitSyncEngine.EngineOptions options);
+        void DumpOptions(WorkItemsSyncEngine.EngineOptions options);
         void ReadingGlobalListsFromSource();
         void GlobalListQueuedForUpdate(string glName);
         void UpdatingGlobalListsOnDestination();

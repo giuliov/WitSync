@@ -68,7 +68,7 @@
     <Compile Include="CollectionExtensions.cs" />
     <Compile Include="WorkItems\WitMapping.cs" />
     <Compile Include="SyncPipeline.cs" />
-    <Compile Include="WorkItems\WitSyncEngine.cs" />
+    <Compile Include="WorkItems\WorkItemsSyncEngine.cs" />
     <Compile Include="IEngineEvents.cs" />
     <Compile Include="WorkItems\LinkMapper.cs" />
     <Compile Include="WorkItems\WorkItemMapper.cs" />

@@ -87,10 +87,10 @@ namespace WitSync
                     }//for
                     options.Steps = steps;
                 }//if
-                WitSyncEngine.EngineOptions advanced = options.AdvancedOptions;
+                WorkItemsSyncEngine.EngineOptions advanced = options.AdvancedOptions;
                 foreach (var oneOpt in map.config.AdvancedOptions)
                 {
-                    advanced |= (WitSyncEngine.EngineOptions)Enum.Parse(typeof(WitSyncEngine.EngineOptions), oneOpt, true);
+                    advanced |= (WorkItemsSyncEngine.EngineOptions)Enum.Parse(typeof(WorkItemsSyncEngine.EngineOptions), oneOpt, true);
                 }//for
                 options.AdvancedOptions = advanced;
             }
@@ -142,7 +142,7 @@ namespace WitSync
             };
             stageBuilder[WitSyncCommandLineOptions.PipelineSteps.WorkItems] = () =>
             {
-                var engine = new WitSyncEngine(source, dest, eventHandler);
+                var engine = new WorkItemsSyncEngine(source, dest, eventHandler);
                 engine.MapGetter = () => {
                     if (map.workitems == null)
                         // mapping file could be empty
