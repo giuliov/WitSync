@@ -9,14 +9,23 @@ using System.Threading.Tasks;
 
 namespace WitSync
 {
-    internal class WorkItemChangeEntry : ChangeEntry
+    internal class WorkItemChangeEntry : SuccessEntry
     {
         internal enum Change { New, Update }
 
         internal WorkItemChangeEntry(int source, int target, Change change)
-            : base("WorkItem",source.ToString(), target.ToString(), change.ToString())
+            : base("WorkItem", source.ToString(), target.ToString(), change.ToString())
             {}
     }
+
+    internal class WorkItemFailureEntry : FailureEntry
+    {
+        internal WorkItemFailureEntry(int source, int target, string message)
+            : base("WorkItem", source.ToString(), target.ToString(), message)
+            {}
+    }
+
+    
 
     public class WorkItemsSyncEngine : EngineBase
     {
@@ -201,11 +210,11 @@ namespace WitSync
             else
             {
                 var errors = destWIStore.BatchSave(changedWorkItems.ToArray(), SaveFlags.MergeAll);
-                failedWorkItems = ExamineSaveErrors(errors);
+                failedWorkItems = ExamineSaveErrors(errors, index);
             }//if
 
             var validWorkItems = changedWorkItems.Except(failedWorkItems);
-            // some succeded: their Ids could be changed, so refresh index
+            // some succeeded: their Ids could be changed, so refresh index
             if (!testOnly)
             {
                 UpdateIndex(index, validWorkItems, mapping);
@@ -213,8 +222,8 @@ namespace WitSync
                 {
                     this.ChangeLog.AddEntry(
                         new WorkItemChangeEntry(
-                            item.Id,
                             index.GetSourceIdFromTargetId(item.Id),
+                            item.Id,
                             item.IsNew ? WorkItemChangeEntry.Change.New : WorkItemChangeEntry.Change.Update));
                 }//for
             }//if
@@ -231,12 +240,11 @@ namespace WitSync
             else
             {
                 var errors = destWIStore.BatchSave(changedWorkItems.ToArray(), SaveFlags.MergeAll);
-                ExamineSaveErrors(errors);
-                // TODO any chance we must add anything to the ChangeLog ???
+                ExamineSaveErrors(errors, index);
             }//if
         }
 
-        private List<WorkItem> ExamineSaveErrors(BatchSaveError[] errors)
+        private List<WorkItem> ExamineSaveErrors(BatchSaveError[] errors, WitMappingIndex index)
         {
             // log what failed
             var failedWorkItems = new List<WorkItem>();
@@ -252,6 +260,15 @@ namespace WitSync
                     }
                 }//for
                 saveErrors++;
+
+                // ChangeLog also
+                int targetId = err.WorkItem.IsNew ? err.WorkItem.TemporaryId : err.WorkItem.Id;
+                this.ChangeLog.AddEntry(
+                    new WorkItemFailureEntry(
+                        index.GetSourceIdFromTargetId(targetId),
+                        targetId,
+                        err.Exception.Message));
+                
             }//for
             return failedWorkItems;
         }

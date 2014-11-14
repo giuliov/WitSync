@@ -177,10 +177,15 @@ namespace WitSync
                 using (System.IO.StreamWriter file = new System.IO.StreamWriter(options.ChangeLogFile))
                 {
                     //CSV header
-                    file.WriteLine("Source,SourceId,TargetId,ChangeType");
+                    file.WriteLine("Source,SourceId,TargetId,ChangeType,Message");
                     foreach (var entry in pipeline.ChangeLog.GetEntries())
                     {
-                        file.WriteLine("{0},{1},{2},{3}", entry.Source, entry.SourceId, entry.TargetId, entry.ChangeType);
+                        file.WriteLine("{0},{1},{2},{3},\"{4}\"",
+                            entry.Source,
+                            entry.SourceId,
+                            entry.TargetId,
+                            entry.Succeeded ? entry.ChangeType : "Failure",
+                            entry.Message);
                     }//for
                 }//using
                 eventHandler.SavedChangeLog(pipeline.ChangeLog.Count);

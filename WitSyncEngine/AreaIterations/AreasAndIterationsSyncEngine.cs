@@ -7,7 +7,7 @@ using System.Text;
 
 namespace WitSync
 {
-    internal class NodeChangeEntry : ChangeEntry
+    internal class NodeChangeEntry : SuccessEntry
     {
         internal enum Change { Add }
 

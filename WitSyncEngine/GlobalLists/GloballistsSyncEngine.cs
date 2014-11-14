@@ -9,7 +9,7 @@ using System.Xml;
 namespace WitSync
 {
 
-    internal class GlobalListChangeEntry : ChangeEntry
+    internal class GlobalListChangeEntry : SuccessEntry
     {
         internal GlobalListChangeEntry(string name)
             : base("GlobalList", name, name, "AddOrUpdate")
