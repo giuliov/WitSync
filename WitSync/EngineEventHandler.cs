@@ -60,7 +60,7 @@ namespace WitSync
         public void SyncStarted()
         {
             syncStart = DateTimeOffset.UtcNow;
-            this.Info("Syncronization started.");
+            this.Info("Synchronization started.");
         }
 
         public void SyncFinished(int errors)
@@ -68,11 +68,11 @@ namespace WitSync
             var elapsed = DateTimeOffset.UtcNow - syncStart;
             if (errors != 0)
             {
-                base.RawOut(ErrorColor, OutputFlags.All, "Syncronization completed in {0:d'.'hh':'mm':'ss} with {1} error(s).", elapsed, errors);
+                base.RawOut(ErrorColor, OutputFlags.All, "Synchronization completed in {0:d'.'hh':'mm':'ss} with {1} error(s).", elapsed, errors);
             }
             else
             {
-                base.RawOut(SuccessColor, OutputFlags.All, "Syncronization completed in {0:d'.'hh':'mm':'ss} with no errors.", elapsed);
+                base.RawOut(SuccessColor, OutputFlags.All, "Synchronization completed in {0:d'.'hh':'mm':'ss} with no errors.", elapsed);
             }
         }
 
