@@ -222,30 +222,9 @@ namespace WitSync
             return IterationMap.Where(a => a.SourcePath == "*").FirstOrDefault();
         }
 
-
-        public static WorkItemsStageConfiguration LoadFrom(string path)
-        {
-            var input = new StreamReader(path);
-
-            var deserializer = new Deserializer(namingConvention: new CamelCaseNamingConvention());
-
-            var mapping = deserializer.Deserialize<WorkItemsStageConfiguration>(input);
-
-            return mapping;
-        }
-
         public void RebuildMappingIndexes()
         {
             //no-op
-        }
-
-        public void SaveTo(string path)
-        {
-            var serializer = new XmlSerializer(typeof(WorkItemsStageConfiguration));
-            using (var writer = new StreamWriter(path))
-            {
-                serializer.Serialize(writer, this);
-            }
         }
 
         // Validation Error Count
@@ -262,6 +241,7 @@ namespace WitSync
             ErrorMessage.Add(args.Message);
         }
 
+        [Obsolete("Schema is no more up to date")]
         public void Validate(Stream documentStream, string schemaPath)
         {
             try
@@ -289,29 +269,48 @@ namespace WitSync
             }//try
         }
 
-        public static void GenerateSampleMappingFile(string path)
+        public static WorkItemsStageConfiguration Generate()
         {
-            //TODO (very poor now)
-            var mapping = new WorkItemsStageConfiguration()
+            var self = new WorkItemsStageConfiguration()
             {
-                SourceQuery = "sq",
-                DestinationQuery = "dq",
+                SourceQuery = "source query",
+                DestinationQuery = "dest query",
+                IndexFile = "index",
+                AreaMap = new AreaMap[] {
+                    new AreaMap() { SourcePath = "srcArea1", DestinationPath = "dstArea1" },
+                    new AreaMap() { SourcePath = "srcArea2", DestinationPath = "dstArea2" }
+                },
+                IterationMap = new IterationMap[] {
+                    new IterationMap() { SourcePath = "src", DestinationPath = "dst" },
+                    new IterationMap() { SourcePath = "*", DestinationPath = "" }
+                },
                 WorkItemMappings = new WorkItemMap[] {
                     new WorkItemMap() {
-                        SourceType = "st",
-                        DestinationType = "dt",
-                        IDField = new FieldMap() {
-                            Source="id", Destination="destid"
-                        },
+                        SourceType = "srctype", DestinationType="desttype",
+                        Attachments = WorkItemMap.AttachmentMode.Sync,
+                        IDField = new FieldMap() { Source="srcID", Destination="dstID" },
+                        StateList = new StateList() {
+                        States = new StateMap[] {
+                            new StateMap() { Source="srcstate1", Destination="deststate1"},
+                            new StateMap() { Source="srcstate2", Destination="deststate2"}
+                        }},
                         Fields = new FieldMap[] {
-                            new FieldMap() {
-                                Source = "*", Destination="*"
-                            }
+                            new FieldMap() { Source="src1", Destination="dst1"},
+                            new FieldMap() { Source="src2", Destination="dst2", Translate="tranFunc2"},
+                            new FieldMap() { Destination="dst3", Set="val3" },
+                            new FieldMap() { Source="src4", Destination="dst4", SetIfNull="set4"},
+                            new FieldMap() { Source="*", Destination="*"},
+                            new FieldMap() { Source="*", Destination=""},
                         }
                     }
+                },
+                LinkTypeMap = new LinkTypeMap[] { 
+                    new LinkTypeMap() {SourceType="srclnk1", DestinationType="dstlnk1" },
+                    new LinkTypeMap() {SourceType="srclnk2", DestinationType="dstlnk2" },
+                    new LinkTypeMap() {SourceType="*", DestinationType="*" }
                 }
             };
-            mapping.SaveTo(path);
+            return self;
         }
 
         // TODO move this code out of this class to remove dependency on Microsoft.TeamFoundation.WorkItemTracking.Client

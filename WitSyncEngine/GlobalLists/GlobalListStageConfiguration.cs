@@ -44,5 +44,14 @@ namespace WitSync
             }
             throw new IndexOutOfRangeException("At least one of exclude/include must be present.");
         }
+
+        public static GlobalListStageConfiguration Generate()
+        {
+            return new GlobalListStageConfiguration()
+            {
+                include = new List<string>() { "incl1", "incl2" },
+                exclude = new List<string>() { "excl3", "excl4" }
+            };
+        }
     }
 }

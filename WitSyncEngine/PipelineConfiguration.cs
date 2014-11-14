@@ -12,6 +12,7 @@ namespace WitSync
         Verbose,
         Diagnostic
     }
+
     public class PipelineConfiguration
     {
         public class ConnectionInfo
@@ -40,5 +41,41 @@ namespace WitSync
         public AreasAndIterationsStageConfiguration AreasAndIterationsStage { get; set; }
         public GlobalListStageConfiguration GlobalListStage { get; set; }
         public WorkItemsStageConfiguration WorkItemsStage { get; set; }
+
+        public static T Generate<T>()
+            where T : PipelineConfiguration, new()
+        {
+            var self = new T()
+            {
+                SourceConnection = new ConnectionInfo()
+                {
+                    CollectionUrl = "http://localhost:8080/tfs/DefaultCollection",
+                    ProjectName = "yourSourceProject",
+                    User = "sourceUser",
+                    Password = "***"
+                },
+                DestinationConnection = new ConnectionInfo()
+                {
+                    CollectionUrl = "http://localhost:8080/tfs/DefaultCollection",
+                    ProjectName = "yourTargetProject",
+                    User = "targetUser",
+                    Password = "***"
+                },
+                MappingFile = null, // MUST come from command line
+                PipelineSteps = new List<string>() { "step1", "step2" },
+                StopPipelineOnFirstError = true,
+                TestOnly = true,
+                Logging = LoggingLevel.Diagnostic,
+                IndexFile = "index.xml",
+                ChangeLogFile = "changes.csv",
+                LogFile = "log.txt",
+                AdvancedOptions = new List<string>() { "opt1", "opt2" },
+                // let them say
+                AreasAndIterationsStage = AreasAndIterationsStageConfiguration.Generate(),
+                GlobalListStage = GlobalListStageConfiguration.Generate(),
+                WorkItemsStage = WorkItemsStageConfiguration.Generate()
+            };
+            return self;
+        }
     }
 }

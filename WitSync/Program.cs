@@ -13,11 +13,11 @@ namespace WitSync
     {
         static int Main(string[] args)
         {
-            // option to generate sample file
+            // HACK option to generate sample file
             if (args.Length > 0
                 && string.Compare(args[0], "generate", true) == 0)
             {
-                MappingFile.Generate().SaveTo("sample.yml");
+                MappingFile.Generate().SaveAsYaml("sample.yml");
                 return 1;
             }//if
 

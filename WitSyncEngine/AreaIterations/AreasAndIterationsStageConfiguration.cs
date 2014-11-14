@@ -8,5 +8,12 @@ namespace WitSync
 {
     public class AreasAndIterationsStageConfiguration : StageConfiguration
     {
+        public static AreasAndIterationsStageConfiguration Generate()
+        {
+            return new AreasAndIterationsStageConfiguration()
+            {
+                // nothing
+            };
+        }
     }
 }

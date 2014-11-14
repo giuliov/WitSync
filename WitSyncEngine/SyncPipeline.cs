@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace WitSync
 {
-    public abstract class StageConfiguration { }
+    public class StageConfiguration { }
 
     public class SyncPipeline
     {
