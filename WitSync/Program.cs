@@ -87,12 +87,15 @@ namespace WitSync
                     }//for
                     options.Steps = steps;
                 }//if
-                WorkItemsSyncEngine.EngineOptions advanced = options.AdvancedOptions;
-                foreach (var oneOpt in map.config.AdvancedOptions)
+                if (map.config.AdvancedOptions != null)
                 {
-                    advanced |= (WorkItemsSyncEngine.EngineOptions)Enum.Parse(typeof(WorkItemsSyncEngine.EngineOptions), oneOpt, true);
-                }//for
-                options.AdvancedOptions = advanced;
+                    WorkItemsSyncEngine.EngineOptions advanced = options.AdvancedOptions;
+                    foreach (var oneOpt in map.config.AdvancedOptions)
+                    {
+                        advanced |= (WorkItemsSyncEngine.EngineOptions)Enum.Parse(typeof(WorkItemsSyncEngine.EngineOptions), oneOpt, true);
+                    }//for
+                    options.AdvancedOptions = advanced;
+                }//if
             }
             else
             {
