@@ -5,9 +5,6 @@ branches:
   only:
     - master
     - develop
-  # blacklist
-  except:
-    - gh-pages
 
 # Do not build on tags (GitHub only)
 skip_tags: true
@@ -37,8 +34,9 @@ build:
 # scripts to run before build
 before_build:
   - nuget restore
-# scripts to run after build
-after_build:
-  - appveyor PushArtifact witsync.*.nupkg
+  
+artifacts:
+  # pushing all *.nupkg files in directory
+  - path: witsync.*.nupkg
 
 test: off
