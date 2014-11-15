@@ -29,42 +29,32 @@ namespace WitSync
 
     public class WorkItemsStage : PipelineStage
     {
-        [Flags]
-        public enum EngineOptions
-        {
-            TestOnly = 0x1,
-            BypassWorkItemStoreRules = 0x2,
-            UseEditableProperty = 0x4,
-            OpenTargetWorkItem = 0x8,
-            PartialOpenTargetWorkItem = 0x10,
-            CreateThenUpdate = 0x20,
-        }
-
         public WorkItemsStage(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
             : base(source, dest, eventHandler)
         {
             //no-op
         }
 
-        public Func<WorkItemsStageConfiguration> MapGetter { get; set; }
-        public EngineOptions Options { set { this.options = value; } }
-
         protected WorkItemsStageConfiguration mapping;
-        protected EngineOptions options;
+
+        //protected EngineOptions options;
 
         protected WorkItemStore sourceWIStore;
         protected WorkItemStore destWIStore;
         internal WorkItemsStageConfigurationChecker checker;
 
-        public override int Prepare(bool testOnly)
+        public override int Prepare(StageConfiguration configuration)
         {
-            mapping = MapGetter();
+            mapping = (WorkItemsStageConfiguration)configuration;
+            Debug.Assert(mapping != null);
+            /* TODO
             if (mapping == null)
                 // SetDefaults will fill this in
                 mapping = new WorkItemsStageConfiguration();
+             */
 
             sourceWIStore = sourceConn.Collection.GetService<WorkItemStore>();
-            if (options.HasFlag(EngineOptions.BypassWorkItemStoreRules))
+            if (mapping.Mode.HasFlag(WorkItemsStageConfiguration.Modes.BypassWorkItemStoreRules))
             {
                 eventSink.BypassingRulesOnDestinationWorkItemStore(destConn);
                 // this will turn off validation!
@@ -88,8 +78,10 @@ namespace WitSync
             return 0;
         }
 
-        public override int Execute(bool testOnly)
+        public override int Execute(StageConfiguration configuration)
         {
+            mapping = (WorkItemsStageConfiguration)configuration;
+
             var sourceRunner = new QueryRunner(sourceWIStore, sourceConn.ProjectName);
             eventSink.ExecutingSourceQuery(mapping.SourceQuery, sourceConn);
             var sourceResult = sourceRunner.RunQuery(mapping.SourceQuery);
@@ -122,9 +114,9 @@ namespace WitSync
 
             var workItemMapper = new WorkItemMapper(context);
             // configure options
-            workItemMapper.UseEditableProperty = options.HasFlag(EngineOptions.UseEditableProperty);
-            workItemMapper.OpenTargetWorkItem = options.HasFlag(EngineOptions.OpenTargetWorkItem);
-            workItemMapper.PartialOpenTargetWorkItem = options.HasFlag(EngineOptions.PartialOpenTargetWorkItem);
+            workItemMapper.UseEditableProperty = mapping.Mode.HasFlag(WorkItemsStageConfiguration.Modes.UseEditableProperty);
+            workItemMapper.OpenTargetWorkItem = mapping.Mode.HasFlag(WorkItemsStageConfiguration.Modes.OpenTargetWorkItem);
+            workItemMapper.PartialOpenTargetWorkItem = mapping.Mode.HasFlag(WorkItemsStageConfiguration.Modes.PartialOpenTargetWorkItem);
 
             List<WorkItem> newWorkItems;
             List<WorkItem> updatedWorkItems;
@@ -134,11 +126,11 @@ namespace WitSync
             // "It happens when you add a link when you are creating a new work item. If you add the link after the new work item is saved then it works OK."
             eventSink.SavingWorkItems(newWorkItems, updatedWorkItems);
             var validWorkItems = new List<WorkItem>();
-            if (options.HasFlag(EngineOptions.CreateThenUpdate))
+            if (mapping.Mode.HasFlag(WorkItemsStageConfiguration.Modes.CreateThenUpdate))
             {
                 // uncommon path
                 eventSink.UsingThreePassSavingAlgorithm();
-                SaveWorkItems3Passes(mapping, index, testOnly, destWIStore, newWorkItems, updatedWorkItems, validWorkItems);
+                SaveWorkItems3Passes(mapping, index, configuration.TestOnly, destWIStore, newWorkItems, updatedWorkItems, validWorkItems);
                 // multi-pass records the same WI object multiple times
                 validWorkItems = validWorkItems.DistinctBy(x => x.Id, null).ToList();
             }
@@ -146,7 +138,7 @@ namespace WitSync
             {
                 // normal path
                 var changedWorkItems = newWorkItems.Concat(updatedWorkItems).ToList();
-                var savedWorkItems = SaveWorkItems(mapping, index, destWIStore, changedWorkItems, testOnly);
+                var savedWorkItems = SaveWorkItems(mapping, index, destWIStore, changedWorkItems, configuration.TestOnly);
                 validWorkItems.AddRange(savedWorkItems);
             }//if
 
@@ -156,7 +148,7 @@ namespace WitSync
             var changedLinks = linkMapper.MapLinks(sourceResult.WorkItems.Values, validWorkItems);
 
             eventSink.SavingLinks(changedLinks, validWorkItems);
-            SaveLinks(mapping, index, destWIStore, validWorkItems, testOnly);
+            SaveLinks(mapping, index, destWIStore, validWorkItems, configuration.TestOnly);
 
             return saveErrors;
         }

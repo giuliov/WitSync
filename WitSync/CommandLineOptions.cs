@@ -172,25 +172,25 @@ namespace WitSync
             , Description = "WorkItems missing from the target are first added in the initial state specified by InitalStateOnDestination, then updated to reflect the state of the source.")]
         public bool CreateThenUpdate { get; set; }
 
-        private WorkItemsStage.EngineOptions? advancedOptions = null;
-        public WorkItemsStage.EngineOptions AdvancedOptions
+        private WorkItemsStageConfiguration.Modes? advancedOptions = null;
+        public WorkItemsStageConfiguration.Modes AdvancedOptions
         {
             get
             {
                 if (!advancedOptions.HasValue)
                 {
-                    WorkItemsStage.EngineOptions result = 0;
+                    WorkItemsStageConfiguration.Modes result = 0;
 
                     if (BypassWorkItemValidation)
-                        result |= WorkItemsStage.EngineOptions.BypassWorkItemStoreRules;
+                        result |= WorkItemsStageConfiguration.Modes.BypassWorkItemStoreRules;
                     if (!UseHeuristicForFieldUpdatability)
-                        result |= WorkItemsStage.EngineOptions.UseEditableProperty;
+                        result |= WorkItemsStageConfiguration.Modes.UseEditableProperty;
                     if (!DoNotOpenTargetWorkItem)
-                        result |= WorkItemsStage.EngineOptions.OpenTargetWorkItem;
+                        result |= WorkItemsStageConfiguration.Modes.OpenTargetWorkItem;
                     if (PartialOpenTargetWorkItem)
-                        result |= WorkItemsStage.EngineOptions.PartialOpenTargetWorkItem;
+                        result |= WorkItemsStageConfiguration.Modes.PartialOpenTargetWorkItem;
                     if (CreateThenUpdate)
-                        result |= WorkItemsStage.EngineOptions.CreateThenUpdate;
+                        result |= WorkItemsStageConfiguration.Modes.CreateThenUpdate;
 
                     advancedOptions = result;
                 }

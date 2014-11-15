@@ -60,10 +60,12 @@
   <ItemGroup>
     <Compile Include="AreaIterations\AreasAndIterationsStageConfiguration.cs" />
     <Compile Include="ChangeLog.cs" />
+    <Compile Include="ConfigurationBase.cs" />
     <Compile Include="PipelineStage.cs" />
+    <Compile Include="StageConfiguration.cs" />
     <Compile Include="WorkItems\FieldCopier.cs" />
     <Compile Include="PipelineConfiguration.cs" />
-    <Compile Include="GlobalLists\GlobalListStageConfiguration.cs" />
+    <Compile Include="GlobalLists\GlobalListsStageConfiguration.cs" />
     <Compile Include="GlobalLists\GlobalListsStage.cs" />
     <Compile Include="AreaIterations\AreasAndIterationsStage.cs" />
     <Compile Include="CollectionExtensions.cs" />

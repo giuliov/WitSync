@@ -86,10 +86,10 @@ namespace WitSync
                 }//if
                 if (configuration.AdvancedOptions != null)
                 {
-                    WorkItemsStage.EngineOptions advanced = options.AdvancedOptions;
+                    WorkItemsStageConfiguration.Modes advanced = options.AdvancedOptions;
                     foreach (var oneOpt in configuration.AdvancedOptions)
                     {
-                        advanced |= (WorkItemsStage.EngineOptions)Enum.Parse(typeof(WorkItemsStage.EngineOptions), oneOpt, true);
+                        advanced |= (WorkItemsStageConfiguration.Modes)Enum.Parse(typeof(WorkItemsStageConfiguration.Modes), oneOpt, true);
                     }//for
                     options.AdvancedOptions = advanced;
                 }//if
@@ -109,64 +109,42 @@ namespace WitSync
             eventHandler.FirstMessage(logHeader);
             eventHandler.DumpOptions(options);
 
-            TfsConnection source;
-            TfsConnection dest;
-            MakeConnection(options, out source, out dest);
-
-            var pipeline = new SyncPipeline(source, dest, eventHandler);
             if (!System.IO.File.Exists(options.MappingFile))
             {
                 eventHandler.MappingFileNotFoundAssumeDefaults(options.MappingFile);
                 configuration = new MappingFile();
             }//if
-            //TODO mapping validation
 
-            var stageBuilder = new Dictionary<WitSyncCommandLineOptions.PipelineSteps,Func<PipelineStage>>();
-            stageBuilder[WitSyncCommandLineOptions.PipelineSteps.Globallists] = () =>
+            //TODO configuration validation
+            if (configuration.WorkItemsStage == null)
             {
-                var engine = new GlobalListsStage(source, dest, eventHandler);
-                engine.MapGetter = () => { return configuration.GlobalListStage; };
-                return engine;
-            };
-            stageBuilder[WitSyncCommandLineOptions.PipelineSteps.Areas] = () =>
+                // mapping file could be empty
+                configuration.WorkItemsStage = new WorkItemsStageConfiguration();
+            }
+            if (!string.IsNullOrEmpty(options.IndexFile))
             {
-                var engine = new AreasAndIterationsStage(source, dest, eventHandler);
-                engine.Options = AreasAndIterationsStage.EngineOptions.Areas;
-                return engine;
-            };
-            stageBuilder[WitSyncCommandLineOptions.PipelineSteps.Iterations] = () =>
-            {
-                var engine = new AreasAndIterationsStage(source, dest, eventHandler);
-                engine.Options = AreasAndIterationsStage.EngineOptions.Iterations;
-                return engine;
-            };
-            stageBuilder[WitSyncCommandLineOptions.PipelineSteps.WorkItems] = () =>
-            {
-                var engine = new WorkItemsStage(source, dest, eventHandler);
-                engine.MapGetter = () => {
-                    if (configuration.WorkItemsStage == null)
-                        // mapping file could be empty
-                        configuration.WorkItemsStage = new WorkItemsStageConfiguration();
-                    if (!string.IsNullOrEmpty(options.IndexFile))
-                    {
-                        // if specified both in the mapping and on the command line, latter wins
-                        configuration.WorkItemsStage.IndexFile = options.IndexFile;
-                    }
-                    return configuration.WorkItemsStage;
-                };
-                engine.Options = options.AdvancedOptions;
-                return engine;
-            };//lambda
+                // if specified both in the mapping and on the command line, latter wins
+                configuration.WorkItemsStage.IndexFile = options.IndexFile;
+            }
 
+            // correspondence
+            var stageMap = new Dictionary<WitSyncCommandLineOptions.PipelineSteps, Type>();
+            stageMap[WitSyncCommandLineOptions.PipelineSteps.Globallists] = typeof(GlobalListsStage);
+            stageMap[WitSyncCommandLineOptions.PipelineSteps.Areas] = typeof(AreasStage);
+            stageMap[WitSyncCommandLineOptions.PipelineSteps.Iterations] = typeof(IterationsStage);
+            stageMap[WitSyncCommandLineOptions.PipelineSteps.WorkItems] = typeof(WorkItemsStage);
+
+            // build the pipeline
+            var pipeline = new SyncPipeline(configuration, eventHandler);
             foreach (WitSyncCommandLineOptions.PipelineSteps stage in Enum.GetValues(typeof(WitSyncCommandLineOptions.PipelineSteps)))
             {
                 if ((options.Steps & stage) == stage)
                 {
-                    pipeline.AddStage(stageBuilder[stage]);
+                    pipeline.AddStage(stageMap[stage]);
                 }//if
             }//for
 
-            int rc = pipeline.Execute(options.StopPipelineOnFirstError, options.TestOnly);
+            int rc = pipeline.Execute();
 
             if (!string.IsNullOrWhiteSpace(options.ChangeLogFile))
             {
@@ -190,22 +168,6 @@ namespace WitSync
 
             eventHandler.LastMessage(rc);
             return rc;
-        }
-
-        private static void MakeConnection(WitSyncCommandLineOptions options, out TfsConnection source, out TfsConnection dest)
-        {
-            source = new TfsConnection()
-            {
-                CollectionUrl = new Uri(options.SourceCollectionUrl),
-                ProjectName = options.SourceProjectName,
-                Credential = new NetworkCredential(options.SourceUser, options.SourcePassword)
-            };
-            dest = new TfsConnection()
-            {
-                CollectionUrl = new Uri(options.DestinationCollectionUrl),
-                ProjectName = options.DestinationProjectName,
-                Credential = new NetworkCredential(options.DestinationUser, options.DestinationPassword)
-            };
         }
     }
 }

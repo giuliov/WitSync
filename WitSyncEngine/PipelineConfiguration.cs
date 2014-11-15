@@ -13,7 +13,7 @@ namespace WitSync
         Diagnostic
     }
 
-    public class PipelineConfiguration
+    public class PipelineConfiguration : ConfigurationBase
     {
         public class ConnectionInfo
         {
@@ -39,8 +39,32 @@ namespace WitSync
         public List<string> AdvancedOptions { get; set; }
 
         public AreasAndIterationsStageConfiguration AreasAndIterationsStage { get; set; }
-        public GlobalListStageConfiguration GlobalListStage { get; set; }
+        public GlobalListsStageConfiguration GlobalListStage { get; set; }
         public WorkItemsStageConfiguration WorkItemsStage { get; set; }
+
+        internal StageConfiguration GetStageConfiguration(PipelineStage stage)
+        {
+            if (stage.GetType() == typeof(AreasAndIterationsStage)
+                || stage.GetType() == typeof(AreasStage)
+                || stage.GetType() == typeof(IterationsStage))
+            {
+                this.AreasAndIterationsStage.TestOnly = this.TestOnly;
+                return this.AreasAndIterationsStage;
+            }
+            if (stage.GetType() == typeof(GlobalListsStage))
+            {
+                this.GlobalListStage.TestOnly = this.TestOnly;
+                return this.GlobalListStage;
+            }
+            if (stage.GetType() == typeof(WorkItemsStage))
+            {
+                this.WorkItemsStage.TestOnly = this.TestOnly;
+                return this.WorkItemsStage;
+            }
+            // catch design errors
+            throw new ApplicationException("Forgot to add PipelineStage in PipelineConfiguration.GetStageConfiguration, please correct.");
+        }
+
 
         public static T Generate<T>()
             where T : PipelineConfiguration, new()
@@ -72,7 +96,7 @@ namespace WitSync
                 AdvancedOptions = new List<string>() { "opt1", "opt2" },
                 // let them say
                 AreasAndIterationsStage = AreasAndIterationsStageConfiguration.Generate(),
-                GlobalListStage = GlobalListStageConfiguration.Generate(),
+                GlobalListStage = GlobalListsStageConfiguration.Generate(),
                 WorkItemsStage = WorkItemsStageConfiguration.Generate()
             };
             return self;

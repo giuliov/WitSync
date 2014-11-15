@@ -67,6 +67,7 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Pipeline.cd" />
     <None Include="packages.config" />
     <None Include="Sample Mappings\test00.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

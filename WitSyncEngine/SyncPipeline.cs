@@ -1,30 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace WitSync
 {
-    public class StageConfiguration { }
-
     public class SyncPipeline
     {
-        public SyncPipeline(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
-        { 
-            sourceConn = source;
-            destConn = dest;
+        PipelineConfiguration configuration;
+
+        public SyncPipeline(PipelineConfiguration configuration, IEngineEvents eventHandler)
+        {
+            this.configuration = configuration;
             eventSink = eventHandler;
         }
 
-        List<Func<PipelineStage>> stageBuilders = new List<Func<PipelineStage>>();
+        List<ConstructorInfo> stageBuilders = new List<ConstructorInfo>();
         List<PipelineStage> preparedStages = new List<PipelineStage>();
 
-        public void AddStage<TEngine>(Func<TEngine> engineBuilder)
-            where TEngine : PipelineStage
+        public void AddStage<TStage>()
+            where TStage : PipelineStage
         {
-            stageBuilders.Add(engineBuilder);
+            AddStage(typeof(TStage));
+        }
+        public void AddStage(Type t)
+        {
+            var ctor = t.GetConstructor(new Type[] { typeof(TfsConnection), typeof(TfsConnection), typeof(IEngineEvents) });
+            stageBuilders.Add(ctor);
         }
 
         protected TfsConnection sourceConn;
@@ -35,18 +40,19 @@ namespace WitSync
 
         public ChangeLog ChangeLog { get { return changeLog; } }
 
-        public int Execute(bool stopPipelineOnFirstError, bool testOnly)
+        public int Execute()
         {
             try
             {
+                MakeConnections();
                 Connect();
 
-                PrepareStages(stopPipelineOnFirstError, testOnly);
+                PrepareStages();
 
                 // execute the stages in order
                 eventSink.SyncStarted();
 
-                ExecuteStages(stopPipelineOnFirstError, testOnly);
+                ExecuteStages();
 
                 eventSink.SyncFinished(syncErrors);
                 return syncErrors;
@@ -58,30 +64,48 @@ namespace WitSync
             }//try
         }
 
-        private void PrepareStages(bool stopPipelineOnFirstError, bool testOnly)
+        private void PrepareStages()
         {
             preparedStages.Clear();
 
             foreach (var stageBuilder in stageBuilders)
             {
-                var stage = stageBuilder();
+                // create Stage object
+                var stage = stageBuilder.Invoke(new object[] { sourceConn, destConn, eventSink }) as PipelineStage;
                 int stageErrors = -1;
                 try
                 {
                     eventSink.PreparingStage(stage);
-                    stageErrors = stage.Prepare(testOnly);
+                    StageConfiguration config = configuration.GetStageConfiguration(stage);
+                    stageErrors = stage.Prepare(config);
                     eventSink.StagePrepared(stage, stageErrors);
-
+                    // only succeeded stages will be executed
                     preparedStages.Add(stage);
                 }
                 catch (Exception ex)
                 {
-                    if (stopPipelineOnFirstError)
+                    if (configuration.StopPipelineOnFirstError)
                         throw;
                     else
                         eventSink.StagePreparationError(stage, ex);
                 }//try
             }//for
+        }
+
+        private void MakeConnections()
+        {
+            sourceConn = new TfsConnection()
+            {
+                CollectionUrl = new Uri(configuration.SourceConnection.CollectionUrl),
+                ProjectName = configuration.SourceConnection.ProjectName,
+                Credential = new NetworkCredential(configuration.SourceConnection.User, configuration.SourceConnection.Password)
+            };
+            destConn = new TfsConnection()
+            {
+                CollectionUrl = new Uri(configuration.DestinationConnection.CollectionUrl),
+                ProjectName = configuration.DestinationConnection.ProjectName,
+                Credential = new NetworkCredential(configuration.DestinationConnection.User, configuration.DestinationConnection.Password)
+            };
         }
 
         private void Connect()
@@ -95,7 +119,7 @@ namespace WitSync
             eventSink.DestinationConnected(destConn);
         }
 
-        private void ExecuteStages(bool stopPipelineOnFirstError, bool testOnly)
+        private void ExecuteStages()
         {
             foreach (var stage in preparedStages)
             {
@@ -103,14 +127,15 @@ namespace WitSync
                 try
                 {
                     eventSink.ExecutingStage(stage);
-                    stageErrors = stage.Execute(testOnly);
+                    StageConfiguration config = configuration.GetStageConfiguration(stage);
+                    stageErrors = stage.Execute(config);
                     eventSink.StageCompleted(stage, stageErrors);
 
                     syncErrors += stageErrors;
                 }
                 catch (Exception ex)
                 {
-                    if (stopPipelineOnFirstError)
+                    if (configuration.StopPipelineOnFirstError)
                         throw;
                     else
                     {

@@ -24,18 +24,18 @@ namespace WitSync
             //no-op
         }
 
-        public Func<GlobalListStageConfiguration> MapGetter { get; set; }
+        protected GlobalListsStageConfiguration mapping;
 
-        protected GlobalListStageConfiguration mapping;
-
-        public override int Prepare(bool testOnly)
+        public override int Prepare(StageConfiguration configuration)
         {
-            mapping = MapGetter();
+            mapping = (GlobalListsStageConfiguration)configuration;
             return 0;
         }
 
-        public override int Execute(bool testOnly)
+        public override int Execute(StageConfiguration configuration)
         {
+            mapping = (GlobalListsStageConfiguration)configuration;
+
             var sourceWIStore = sourceConn.Collection.GetService<WorkItemStore>();
             var destWIStore = destConn.Collection.GetService<WorkItemStore>();
 
@@ -77,7 +77,7 @@ namespace WitSync
 
             eventSink.UpdatingGlobalListsOnDestination();
 
-            if (!testOnly)
+            if (!configuration.TestOnly)
             {
                 destWIStore.ImportGlobalLists(updateDoc.InnerXml);
                 foreach (var glSourceElement in updateList)

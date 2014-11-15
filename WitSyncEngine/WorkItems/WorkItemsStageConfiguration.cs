@@ -165,6 +165,19 @@ namespace WitSync
     [XmlRoot("Mapping")]
     public class WorkItemsStageConfiguration : StageConfiguration
     {
+        [Flags]
+        public enum Modes
+        {
+            NOT_USED = 0x1,
+            BypassWorkItemStoreRules = 0x2,
+            UseEditableProperty = 0x4,
+            OpenTargetWorkItem = 0x8,
+            PartialOpenTargetWorkItem = 0x10,
+            CreateThenUpdate = 0x20,
+        }
+
+        public Modes Mode { get; set; }
+
         [XmlElement]
         public string SourceQuery { get; set; }
         [XmlElement]
@@ -276,6 +289,7 @@ namespace WitSync
                 SourceQuery = "source query",
                 DestinationQuery = "dest query",
                 IndexFile = "index",
+                Mode = Modes.OpenTargetWorkItem | Modes.UseEditableProperty,
                 AreaMap = new AreaMap[] {
                     new AreaMap() { SourcePath = "srcArea1", DestinationPath = "dstArea1" },
                     new AreaMap() { SourcePath = "srcArea2", DestinationPath = "dstArea2" }
