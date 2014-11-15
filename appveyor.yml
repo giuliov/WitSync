@@ -9,9 +9,6 @@ branches:
 # Do not build on tags (GitHub only)
 skip_tags: true
 
-# Operating system (build VM template)
-os: Windows Server 2012
-
 # enable patching of AssemblyInfo.* files
 assembly_info:
   patch: false
@@ -34,18 +31,5 @@ build:
 # scripts to run before build
 before_build:
   - nuget restore
-  
-artifacts:
-  # pushing all *.nupkg files in directory
-  - path: witsync.*.nupkg
 
 test: off
-
-deploy:
-  provider: NuGet
-  server: https://ci.appveyor.com/nuget/giuliov-b9nlf0b35bat # private appveyor account feed
-  api_key:
-    secure: aIeIJNJAv5miMuzkKyGcSR6gsDB/c7WH2SN8PQkscBw=
-  skip_symbols: false
-  symbol_server:           # remove to push symbols to SymbolSource.org
-  artifact: /witsync\..*\.nupkg/
