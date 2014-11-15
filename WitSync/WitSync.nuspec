@@ -9,7 +9,7 @@
     <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
     <projectUrl>https://github.com/giuliov/WitSync</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Team Foundation Server Work Item Syncronization tool</description>
+    <description>Team Foundation Server Work Item Synchronization tool</description>
     <releaseNotes>TODO : Summary of changes made in this release of the package.</releaseNotes>
     <copyright>Copyright 2014</copyright>
     <tags>TFS</tags>
