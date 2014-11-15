@@ -288,7 +288,7 @@ namespace WitSync
             {
                 SourceQuery = "source query",
                 DestinationQuery = "dest query",
-                IndexFile = "index",
+                IndexFile = "index.xml",
                 Mode = Modes.OpenTargetWorkItem | Modes.UseEditableProperty,
                 AreaMap = new AreaMap[] {
                     new AreaMap() { SourcePath = "srcArea1", DestinationPath = "dstArea1" },

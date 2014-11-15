@@ -426,12 +426,12 @@ namespace WitSync
         {
             this.Info("{0} record(s) saved.", numRecords);
         }
-
+        /* TODO
         internal void DumpOptions(WitSyncCommandLineOptions options)
         {
             this.Verbose(options.ToString());
         }
-
+        */
         internal void FirstMessage(string logHeader)
         {
             // empty line

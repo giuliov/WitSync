@@ -10,27 +10,50 @@ namespace WitSync
 {
     public class SyncPipeline
     {
+        public class StageInfo
+        {
+            public int Order { get; set; }
+            public Type Type { get; set; }
+            public string Name
+            {
+                get
+                {
+                    return this.Type.Name.Replace("Stage", "");
+                }
+            }
+            public string ConfigurationProperty { get; set; }
+            public StageConfiguration GetConfiguration(PipelineConfiguration parent)
+            {
+                string propName = this.ConfigurationProperty ?? this.Type.Name;
+                return parent.GetType().GetProperty(propName).GetValue(parent) as StageConfiguration;
+            }
+        }//class
+
+        static private StageInfo[] possibleStages = new StageInfo[] {
+            new StageInfo() { Order = 10, Type = typeof(GlobalListsStage) },
+            new StageInfo() { Order = 20, Type = typeof(AreasAndIterationsStage) },
+            new StageInfo() { Order = 21, Type = typeof(AreasStage), ConfigurationProperty = "AreasAndIterationsStageConfiguration" },
+            new StageInfo() { Order = 22, Type = typeof(IterationsStage), ConfigurationProperty = "AreasAndIterationsStageConfiguration" },
+            new StageInfo() { Order = 30, Type = typeof(WorkItemsStage) },
+        };
+
+        private string DeAlias(string name)
+        {
+            switch (name)
+            {
+                case "Areas":
+                    return "AreasAndIterations";
+                case "Iterations":
+                    return "AreasAndIterations";
+                default:
+                    return name;
+            }
+        }
+
         PipelineConfiguration configuration;
 
-        public SyncPipeline(PipelineConfiguration configuration, IEngineEvents eventHandler)
-        {
-            this.configuration = configuration;
-            eventSink = eventHandler;
-        }
-
-        List<ConstructorInfo> stageBuilders = new List<ConstructorInfo>();
+        List<PipelineStage> requestedStages = new List<PipelineStage>();
         List<PipelineStage> preparedStages = new List<PipelineStage>();
-
-        public void AddStage<TStage>()
-            where TStage : PipelineStage
-        {
-            AddStage(typeof(TStage));
-        }
-        public void AddStage(Type t)
-        {
-            var ctor = t.GetConstructor(new Type[] { typeof(TfsConnection), typeof(TfsConnection), typeof(IEngineEvents) });
-            stageBuilders.Add(ctor);
-        }
 
         protected TfsConnection sourceConn;
         protected TfsConnection destConn;
@@ -40,10 +63,17 @@ namespace WitSync
 
         public ChangeLog ChangeLog { get { return changeLog; } }
 
+        public SyncPipeline(PipelineConfiguration configuration, IEngineEvents eventHandler)
+        {
+            this.configuration = configuration;
+            eventSink = eventHandler;
+        }
+
         public int Execute()
         {
             try
             {
+                BuildPipeline();
                 MakeConnections();
                 Connect();
 
@@ -64,19 +94,32 @@ namespace WitSync
             }//try
         }
 
+        private void BuildPipeline()
+        {
+            foreach (var info in possibleStages.OrderBy(x => x.Order))
+            {
+                if (configuration.PipelineStages.Contains(info.Name, StringComparer.InvariantCultureIgnoreCase))
+                {
+                    //build
+                    var ctor = info.Type.GetConstructor(new Type[] { typeof(TfsConnection), typeof(TfsConnection), typeof(IEngineEvents) });
+                    var stage = ctor.Invoke(new object[] { sourceConn, destConn, eventSink }) as PipelineStage;
+                    requestedStages.Add(stage);
+                }//if
+            }//for
+
+        }
+
         private void PrepareStages()
         {
             preparedStages.Clear();
 
-            foreach (var stageBuilder in stageBuilders)
+            foreach (var stage in requestedStages)
             {
-                // create Stage object
-                var stage = stageBuilder.Invoke(new object[] { sourceConn, destConn, eventSink }) as PipelineStage;
                 int stageErrors = -1;
                 try
                 {
                     eventSink.PreparingStage(stage);
-                    StageConfiguration config = configuration.GetStageConfiguration(stage);
+                    StageConfiguration config = GetStageConfiguration(stage);
                     stageErrors = stage.Prepare(config);
                     eventSink.StagePrepared(stage, stageErrors);
                     // only succeeded stages will be executed
@@ -127,7 +170,7 @@ namespace WitSync
                 try
                 {
                     eventSink.ExecutingStage(stage);
-                    StageConfiguration config = configuration.GetStageConfiguration(stage);
+                    StageConfiguration config = GetStageConfiguration(stage);
                     stageErrors = stage.Execute(config);
                     eventSink.StageCompleted(stage, stageErrors);
 
@@ -146,6 +189,15 @@ namespace WitSync
                     this.changeLog.Append(stage.ChangeLog);
                 }//try
             }//for
+        }
+
+        internal StageConfiguration GetStageConfiguration(PipelineStage stage)
+        {
+            var info = possibleStages.Where(x => x.Name == DeAlias(stage.Name)).FirstOrDefault();
+            if (info != null)
+                return info.GetConfiguration(configuration);
+            // catch design errors
+            throw new ApplicationException("Forgot to add PipelineStage in PipelineConfiguration.GetStageConfiguration, please correct.");
         }
     }
 }

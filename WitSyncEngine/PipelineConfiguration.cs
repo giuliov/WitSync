@@ -26,10 +26,8 @@ namespace WitSync
         public ConnectionInfo SourceConnection { get; set; }
         public ConnectionInfo DestinationConnection { get; set; }
 
-        public List<string> PipelineSteps { get; set; }
+        public List<string> PipelineStages { get; set; }
 
-        public string MappingFile { get; set; }
-        public string IndexFile { get; set; }
         public string ChangeLogFile { get; set; }
         public string LogFile { get; set; }
 
@@ -39,32 +37,36 @@ namespace WitSync
         public List<string> AdvancedOptions { get; set; }
 
         public AreasAndIterationsStageConfiguration AreasAndIterationsStage { get; set; }
-        public GlobalListsStageConfiguration GlobalListStage { get; set; }
+        public GlobalListsStageConfiguration GlobalListsStage { get; set; }
         public WorkItemsStageConfiguration WorkItemsStage { get; set; }
 
-        internal StageConfiguration GetStageConfiguration(PipelineStage stage)
+        public void FixNulls()
         {
-            if (stage.GetType() == typeof(AreasAndIterationsStage)
-                || stage.GetType() == typeof(AreasStage)
-                || stage.GetType() == typeof(IterationsStage))
-            {
-                this.AreasAndIterationsStage.TestOnly = this.TestOnly;
-                return this.AreasAndIterationsStage;
-            }
-            if (stage.GetType() == typeof(GlobalListsStage))
-            {
-                this.GlobalListStage.TestOnly = this.TestOnly;
-                return this.GlobalListStage;
-            }
-            if (stage.GetType() == typeof(WorkItemsStage))
-            {
-                this.WorkItemsStage.TestOnly = this.TestOnly;
-                return this.WorkItemsStage;
-            }
-            // catch design errors
-            throw new ApplicationException("Forgot to add PipelineStage in PipelineConfiguration.GetStageConfiguration, please correct.");
+            SourceConnection = SourceConnection ?? new ConnectionInfo();
+            DestinationConnection = DestinationConnection ?? new ConnectionInfo();
+            PipelineStages = PipelineStages ?? new List<string>();
+            AdvancedOptions = AdvancedOptions ?? new List<string>();
+            AreasAndIterationsStage = AreasAndIterationsStage ?? new AreasAndIterationsStageConfiguration();
+            GlobalListsStage = GlobalListsStage ?? new GlobalListsStageConfiguration();
+            WorkItemsStage = WorkItemsStage ?? new WorkItemsStageConfiguration();
         }
 
+        public bool Validate()
+        {
+            if (this.WorkItemsStage == null)
+            {
+                // mapping file could be empty
+                this.WorkItemsStage = new WorkItemsStageConfiguration();
+            }
+
+            foreach (var stageName in this.PipelineStages)
+            {
+                //TODO
+            }
+            // TODO more and more
+
+            return true;
+        }
 
         public static T Generate<T>()
             where T : PipelineConfiguration, new()
@@ -85,18 +87,16 @@ namespace WitSync
                     User = "targetUser",
                     Password = "***"
                 },
-                MappingFile = null, // MUST come from command line
-                PipelineSteps = new List<string>() { "step1", "step2" },
+                PipelineStages = new List<string>() { "step1", "step2" },
                 StopPipelineOnFirstError = true,
                 TestOnly = true,
                 Logging = LoggingLevel.Diagnostic,
-                IndexFile = "index.xml",
                 ChangeLogFile = "changes.csv",
                 LogFile = "log.txt",
                 AdvancedOptions = new List<string>() { "opt1", "opt2" },
                 // let them say
                 AreasAndIterationsStage = AreasAndIterationsStageConfiguration.Generate(),
-                GlobalListStage = GlobalListsStageConfiguration.Generate(),
+                GlobalListsStage = GlobalListsStageConfiguration.Generate(),
                 WorkItemsStage = WorkItemsStageConfiguration.Generate()
             };
             return self;
