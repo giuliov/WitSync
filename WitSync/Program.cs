@@ -20,9 +20,10 @@ namespace WitSync
                 // parsing failed
                 return -1;
 
-            if (initialOptions.Generate)
+            if (initialOptions.SampleFile != null)
             {
-                MappingFile.Generate().SaveAsYaml("sample.yml");
+                Console.WriteLine("Generating sample file '{0}'.", initialOptions.SampleFile);
+                MappingFile.Generate().SaveAsYaml(initialOptions.SampleFile);
                 return 1;
             }
 

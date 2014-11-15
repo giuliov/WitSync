@@ -34,7 +34,6 @@ namespace WitSync
         public LoggingLevel Logging { get; set; }
         public bool StopPipelineOnFirstError { get; set; }
         public bool TestOnly { get; set; }
-        public List<string> AdvancedOptions { get; set; }
 
         public AreasAndIterationsStageConfiguration AreasAndIterationsStage { get; set; }
         public GlobalListsStageConfiguration GlobalListsStage { get; set; }
@@ -45,7 +44,6 @@ namespace WitSync
             SourceConnection = SourceConnection ?? new ConnectionInfo();
             DestinationConnection = DestinationConnection ?? new ConnectionInfo();
             PipelineStages = PipelineStages ?? new List<string>();
-            AdvancedOptions = AdvancedOptions ?? new List<string>();
             AreasAndIterationsStage = AreasAndIterationsStage ?? new AreasAndIterationsStageConfiguration();
             GlobalListsStage = GlobalListsStage ?? new GlobalListsStageConfiguration();
             WorkItemsStage = WorkItemsStage ?? new WorkItemsStageConfiguration();
@@ -93,7 +91,6 @@ namespace WitSync
                 Logging = LoggingLevel.Diagnostic,
                 ChangeLogFile = "changes.csv",
                 LogFile = "log.txt",
-                AdvancedOptions = new List<string>() { "opt1", "opt2" },
                 // let them say
                 AreasAndIterationsStage = AreasAndIterationsStageConfiguration.Generate(),
                 GlobalListsStage = GlobalListsStageConfiguration.Generate(),

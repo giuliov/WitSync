@@ -47,11 +47,6 @@ namespace WitSync
         {
             mapping = (WorkItemsStageConfiguration)configuration;
             Debug.Assert(mapping != null);
-            /* TODO
-            if (mapping == null)
-                // SetDefaults will fill this in
-                mapping = new WorkItemsStageConfiguration();
-             */
 
             sourceWIStore = sourceConn.Collection.GetService<WorkItemStore>();
             if (mapping.Mode.HasFlag(WorkItemsStageConfiguration.Modes.BypassWorkItemStoreRules))

@@ -73,8 +73,8 @@ namespace WitSync
         {
             try
             {
-                BuildPipeline();
                 MakeConnections();
+                BuildPipeline();
                 Connect();
 
                 PrepareStages();

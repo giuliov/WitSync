@@ -37,18 +37,11 @@ namespace WitSync
         static internal CommandLineArgs InitalParse(string[] args)
         {
             var options = new CommandLineArgs();
+            options.ShowHelp = true;
 
-            bool show_help = false;
-
-            var p = new OptionSet()
-            {
-            { "h|help",  "Shows this message and exit", 
-              value => show_help = value != null },
-            { "m|configuration:",  "Configuration & Mapping file", 
-              value => options.MappingFile = value },
-            { "g|generate",  "Generate sample configuration file", 
-              value => options.Generate = value != null },
-            };
+            // fake
+            MappingFile configuration = new MappingFile();
+            var p = MakeOptionSet(configuration, options);
 
             try
             {
@@ -60,12 +53,20 @@ namespace WitSync
                 return null;
             }//try
 
-            if (show_help)
+            if (options.ShowHelp)
             {
                 p.WriteOptionDescriptions(Console.Out);
                 return null;
             }
             return options;
+        }
+
+        private static OptionSet MakeInitialSet(CommandLineArgs options)
+        {
+            var p = new OptionSet()
+            {
+            };
+            return p;
         }
 
         internal static MappingFile ParseAndMerge(string[] args, MappingFile configuration)
@@ -74,10 +75,31 @@ namespace WitSync
 
             var options = new CommandLineArgs();
 
+            var p = MakeOptionSet(configuration, options);
+
+            try
+            {
+                p.Parse(args);
+            }
+            catch (OptionException e)
+            {
+                Console.WriteLine(e.Message);
+                return null;
+            }//try
+            
+            return configuration;
+        }
+
+        private static OptionSet MakeOptionSet(MappingFile configuration, CommandLineArgs options)
+        {
             var p = new OptionSet()
             {
-            { "m|configuration=",  "Configuration & Mapping file", 
-              value => options.MappingFile = value },
+            { "h|help",  "Shows this message and exit", 
+              value => options.ShowHelp = value != null },
+            { "m|configuration:",  "Configuration & Mapping file", 
+              value => { options.MappingFile = value; options.ShowHelp = false; } },
+            { "g|generate:",  "Generate sample configuration file", 
+              value => { options.SampleFile = value; options.ShowHelp = false; } },
             // pipeline behavior
             { "e|stopOnError",  "Test and does not save changes to target", 
               value => configuration.StopPipelineOnFirstError = value != null },
@@ -111,18 +133,7 @@ namespace WitSync
             { "dw|destinationPassword:",  "Password for Destination user", 
               value => configuration.DestinationConnection.Password = value },
             };
-
-            try
-            {
-                p.Parse(args);
-            }
-            catch (OptionException e)
-            {
-                Console.WriteLine(e.Message);
-                return null;
-            }//try
-            
-            return configuration;
+            return p;
         }
     }
 }

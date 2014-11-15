@@ -8,7 +8,8 @@ namespace WitSync
 {
     class CommandLineArgs
     {
+        internal bool ShowHelp { get; set; }
         internal string MappingFile { get; set; }
-        internal bool Generate { get; set; }
+        internal string SampleFile { get; set; }
     }
 }
