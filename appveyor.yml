@@ -40,3 +40,12 @@ artifacts:
   - path: witsync.*.nupkg
 
 test: off
+
+deploy:
+  provider: NuGet
+  server: https://ci.appveyor.com/nuget/witsync-8n5g4bnxalj3 # private appveyor feed
+  api_key:
+    secure: aIeIJNJAv5miMuzkKyGcSR6gsDB/c7WH2SN8PQkscBw=
+  skip_symbols: false
+  symbol_server:           # remove to push symbols to SymbolSource.org
+  artifact: /witsync\..*\.nupkg/
