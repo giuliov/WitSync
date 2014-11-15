@@ -43,7 +43,7 @@ test: off
 
 deploy:
   provider: NuGet
-  server: https://ci.appveyor.com/nuget/witsync-8n5g4bnxalj3 # private appveyor feed
+  server: https://ci.appveyor.com/nuget/giuliov-b9nlf0b35bat # private appveyor account feed
   api_key:
     secure: aIeIJNJAv5miMuzkKyGcSR6gsDB/c7WH2SN8PQkscBw=
   skip_symbols: false
