@@ -1,3 +1,6 @@
+[![Build status: Develop branch](<https://ci.appveyor.com/api/projects/status/github/giuliov/WitSync?branch=develop&svg=true>)](https://ci.appveyor.com/project/giuliov/witsync)
+[![Build status: Master branch](https://ci.appveyor.com/api/projects/status/github/giuliov/WitSync?branch=master&svg=true>)](https://ci.appveyor.com/project/giuliov/witsync)
+
 # WitSync
 
 WitSync is a command line tool that can copy TFS Work Item data from a source to a target project.
