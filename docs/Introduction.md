@@ -12,13 +12,13 @@ in this order.
 WitSync is designed to be idempotent, that is, it can be run multiple times and getting the same result. The tool will pull the work items returned from a Work Item Query on the source TFS Project, compare to matching work items on the target TFS Project and update the latters.
 Command line is less user friendly to start, but easy to automate.
 
-The tool is controlled via a mapping file and you can force options on the command line.
+The tool is controlled via a configuration file and you can force options on the command line.
 
 Sample executions:
 ```Batchfile
-WitSync.exe --workitems -c http://localhost:8080/tfs/DefaultCollection -p SourceProject -d http://localhost:8080/tfs/DefaultCollection -q DestProject -m MyMappingFile.yml –v
+WitSync.exe --sc=http://localhost:8080/tfs/DefaultCollection --sp=SourceProject --dc=http://localhost:8080/tfs/DefaultCollection --dp=DestProject -m=MyMappingFile.yml –v=Diagnostic
 
-WitSync.exe -m MyMappingFile.yml
+WitSync.exe -m=MyMappingFile.yml
 ```
 
 You can project only a data subset from the source to the target. This is very useful in scenario where TFS is used at different organization and they want to sync only a couple of work item types; it was indeed the first application for WitSync.
@@ -56,7 +56,7 @@ You can use a single account when target and source belongs to the same AD domai
 
 Syntax is
 ```Batchfile
-WitSync.exe <action> -c <source_collection_url> -p <source_project_name> -d <destination_collection_url> -q <destination_project_name> [-m <path_to_mapping_file>] [-v[erbose]] [-t[est]] [_advanced_options_]
+WitSync.exe <action> -c <source_collection_url> -p <source_project_name> -d <destination_collection_url> -q <destination_project_name> [-m <path_to_mapping_file>] [-v[erbose]] [-t[est]]
 ```
 The supported values for action are `SyncWorkItems` and `SyncAreasAndIterations`. This gives flexibility as Area/Iteration can be different in the two projects and you may not want syncronyze it.
 

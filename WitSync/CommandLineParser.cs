@@ -101,9 +101,9 @@ namespace WitSync
             { "g|generate:",  "Generate sample configuration file", 
               value => { options.SampleFile = value; options.ShowHelp = false; } },
             // pipeline behavior
-            { "e|stopOnError",  "Test and does not save changes to target", 
+            { "e|stopOnError",  "Stops if pipeline stage fails", 
               value => configuration.StopPipelineOnFirstError = value != null },
-            { "t|test",  "Stops if pipeline stage fails", 
+            { "t|test",  "Test and does not save changes to target", 
               value => configuration.TestOnly = value != null },
             //logging
             { "l|log:",  "Write complete log to file", 
