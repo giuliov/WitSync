@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>witsync</id>
-    <version>0.5.1-beta</version>
+    <version>0.6-beta</version>
     <title>WitSync</title>
     <authors>Giulio Vian</authors>
     <owners>Giulio Vian</owners>
@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/giuliov/WitSync</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Team Foundation Server Work Item Synchronization tool</description>
-    <releaseNotes>TODO : Summary of changes made in this release of the package.</releaseNotes>
+    <releaseNotes>Reworked the command line and pipeline to be easily maintenable.</releaseNotes>
     <copyright>Copyright 2014</copyright>
     <tags>TFS</tags>
   </metadata>

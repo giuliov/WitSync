@@ -43,7 +43,7 @@
   </UsingTask>
 
   <Target Name="SetFileVersion" BeforeTargets="BeforeBuild">
-    <SetVersion FileName="Properties\AssemblyInfo.cs" MajorVersion="0" MinorVersion="5" />
+    <SetVersion FileName="Properties\AssemblyInfo.cs" MajorVersion="0" MinorVersion="6" />
   </Target>
 
 </Project>
