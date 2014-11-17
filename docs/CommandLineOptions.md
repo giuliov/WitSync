@@ -4,7 +4,10 @@
 
 Syntax is
 ```Batchfile
-WitSync.exe -m <path_to_mapping_file>
+WitSync.exe -m=<path_to_mapping_file> [options]
+```
+```Batchfile
+WitSync.exe -g=<sample_file_to_generate>
 ```
 
  _Command_                     | _Description_

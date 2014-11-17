@@ -1,6 +1,13 @@
-# Mapping file Reference
+# Configuration (mapping) file Reference
 
-WitSync is controlled via a mapping file. The mapping file use the [YAML](http://www.yaml.org/) format to configure the WitSync pipeline. You can configure just a small subset of information, as WitSync assumes you want an hi-fidelity copy of the source.
+WitSync is controlled via a configuration or mapping file. The mapping file use the [YAML](http://www.yaml.org/) format to configure the WitSync pipeline. You can configure just a small subset of information, as WitSync assumes you want an hi-fidelity copy of the source.
+This page describe the configuration in sections:
+ * [Pipeline](#pipeline-configuration)
+ * [Areas & Iterations](#areas-and-iterations)
+ * [Global lists](#global-lists)
+ * [Work Items](#work-items)
+
+At the end, there are some sample configurations.
 
 
 
@@ -11,12 +18,12 @@ sourceConnection:
   collectionUrl: url_to_source_collection
   projectName: source_team_project_name
   user: user_connecting_to_source_specify_the_domain_when_required
-  password: '***'
+  password: user_password
 destinationConnection:
   collectionUrl: url_to_target_collection
   projectName: destination_team_project_name
   user: user_connecting_to_target_specify_the_domain_when_required
-  password: '***'
+  password: user_password
 pipelineStages:
   - globallists
   - areas
@@ -24,14 +31,14 @@ pipelineStages:
   - workitems
 changeLogFile: relative_or_absolute_path_to_changelog_file
 logFile: relative_or_absolute_path_to_log_file
-logging: Diagnostic
+logging: Normal|Verbose|Diagnostic
 stopPipelineOnFirstError: boolean
 testOnly: boolean
 ```
 
 These parameters can also be set on the command line, the latter wins.
 
-### Trial mode
+### Test (trial) mode
 This is the single most important configuration value. When `testOnly` has value `true`, no data is written on the target TFS Project.
 
 ```YAML
@@ -46,22 +53,22 @@ sourceConnection:
   collectionUrl: url_to_source_collection
   projectName: source_team_project_name
   user: user_connecting_to_source_specify_the_domain_when_required
-  password: '***'
+  password: user_password
 destinationConnection:
   collectionUrl: url_to_target_collection
   projectName: destination_team_project_name
   user: user_connecting_to_target_specify_the_domain_when_required
-  password: '***'
+  password: user_password
 ```
 
-The users are optional, WitSync will use the running user is not specified.
+The users are optional: if not specified, WitSync will use the running user or what is configured in Windows Credential Store.
 
 ### Logging
 This section controls the logging level and the log file.
 
 ```YAML
 logFile: relative_or_absolute_path_to_log_file
-logging: Diagnostic
+logging: Normal|Verbose|Diagnostic
 ```
 Note that WitSync always appends to the log file.
 
@@ -99,7 +106,7 @@ pipelineStages:
 ```
 The tool arranges in a pre-defined order even if you use a different one.
 
-| _Stage_     | _Description_
+| Stage       | Description
 |-------------|--------------------------------
 | globallists |  Syncronize GlobalLists data
 | areas       |  Syncronize Areas (see documentation for limits)
@@ -110,7 +117,7 @@ The `stopPipelineOnFirstError` controls if the pipeline will continue after an e
 
 
 
-## Areas & Iterations
+## Areas and Iterations
 
 ```YAML
 areasAndIterationsStage: {}
@@ -146,6 +153,23 @@ Should not be used. WitSync will copy only the GlobalLists listed in `include` c
 
 
 ## Work Items
+
+### Index file
+
+WitSync uses the work item [ID field](#id-field) (`System.Id`) to uniquely identify work items to syncronize. There are two ways to relate work items on the destination  project with the source:
+    - using a field to holds the source ID, useful when the ID is meaningful to users (like a bug number)
+    - using an external file to track mapping, useful when replicating a project on a different TFS collection or instance
+
+When you specify an _Index_ file
+
+```YAML
+workItemsStage:
+  indexFile: relative_or_absolute_path_to_index_file
+```
+you get the maximum freedom in mapping work item schemas. WitSync looks up the Index file to know if a work item has a correspondent on the destination project; if not found, a new work item is created. On a match, the existing work item on the target project is updated.
+You can specify the file on the command line, and this takes precedence and the element in the mapping file is optional.
+
+Make sure to properly backup this file, otherwise the tool will re-create new workitems instead of updating the existing  workitems.
 
 ### Source query
 
@@ -198,8 +222,8 @@ If you need to replicate all workitems, use a generic query like this
     SELECT [System.Id], [System.WorkItemType], [System.Title], [System.AssignedTo], [System.State], [System.Tags]
     FROM WorkItems
     WHERE [System.TeamProject] = @project
-    and [System.WorkItemType] &lt;&gt; ''
-    and [System.State] &lt;&gt; ''
+    and [System.WorkItemType] <> ''
+    and [System.State] <> ''
   </Wiql>
 </WorkItemQuery>
 ```
@@ -229,6 +253,7 @@ workItemsStage:
     destinationPath: Dest\Sprint 3
 ```
 Useful in partial-replica scenarios, where you are transferring specific data subsets.
+
 **Note**: YAML requires the quotes around the asterisk symbol.
 
 If the destination is empty, it is mapped to the **root** node, so
@@ -289,7 +314,7 @@ To avoid syncing attachments, set Attachments to `DoNotSync`.
 
 If you do not specify any Work Item mapping, Work Items maps to the same type on the destination, assuming the same set of States and Fields. This is done via the rules included by default. If you want to exclude the default rules, set `defaultRules` to `true`.
 
-#### ID
+#### ID Field (_optional_)
 WitSync uses the work item ID field (`System.Id`) to uniquely identify them. There are two ways to relate work items on the destination  project:
     - using a field to holds the source ID, useful when the ID is meaningful to users (like a bug number)
     - using an external file to track mapping, useful when replicating a project on a different TFS collection or instance
@@ -304,23 +329,6 @@ workItemsStage:
 
 The field in the target work item type that holds the source ID must be an integer. If not using the `iDField`, you must specify an _Index_ file and take care of it: make sure to properly backup it, otherwise the tool will re-create new workitems instead of updating the existing  workitems.
 
-
-#### Index file
-
-WitSync uses the work item ID field (`System.Id`) to uniquely identify work items to syncronize. There are two ways to relate work items on the destination  project with the source:
-    - using a field to holds the source ID, useful when the ID is meaningful to users (like a bug number)
-    - using an external file to track mapping, useful when replicating a project on a different TFS collection or instance
-
-When you specify an _Index_ file
-
-```YAML
-workItemsStage:
-  indexFile: relative_or_absolute_path_to_index_file
-```
-you get the maximum freedom in mapping work item schemas. WitSync looks up the Index file to know if a work item has a correspondent on the destination project; if not found, a new work item is created. On a match, the existing work item on the target project is updated.
-You can specify the file on the command line, and this takes precedence and the element in the mapping file is optional.
-
-Make sure to properly backup this file, otherwise the tool will re-create new workitems instead of updating the existing  workitems.
 
 #### States
 State mapping table is optional; when missing the target work item type must have at least the same states of the source.
@@ -492,7 +500,7 @@ workItemsStage:
 
 
 
-## Sample content
+## Sample configurations
 
 This is an example of a full blown mapping file.
 
