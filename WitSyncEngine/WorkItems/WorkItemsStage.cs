@@ -9,53 +9,47 @@ using System.Threading.Tasks;
 
 namespace WitSync
 {
-    internal class WorkItemChangeEntry : ChangeEntry
+    internal class WorkItemChangeEntry : SuccessEntry
     {
         internal enum Change { New, Update }
 
         internal WorkItemChangeEntry(int source, int target, Change change)
-            : base("WorkItem",source.ToString(), target.ToString(), change.ToString())
+            : base("WorkItem", source.ToString(), target.ToString(), change.ToString())
             {}
     }
 
-    public class WitSyncEngine : EngineBase
+    internal class WorkItemFailureEntry : FailureEntry
     {
-        [Flags]
-        public enum EngineOptions
-        {
-            TestOnly = 0x1,
-            BypassWorkItemStoreRules = 0x2,
-            UseEditableProperty = 0x4,
-            OpenTargetWorkItem = 0x8,
-            PartialOpenTargetWorkItem = 0x10,
-            CreateThenUpdate = 0x20,
-        }
+        internal WorkItemFailureEntry(int source, int target, string message)
+            : base("WorkItem", source.ToString(), target.ToString(), message)
+            {}
+    }
 
-        public WitSyncEngine(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
+    
+
+    public class WorkItemsStage : PipelineStage
+    {
+        public WorkItemsStage(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
             : base(source, dest, eventHandler)
         {
             //no-op
         }
 
-        public Func<ProjectMapping> MapGetter { get; set; }
-        public EngineOptions Options { set { this.options = value; } }
+        protected WorkItemsStageConfiguration mapping;
 
-        protected ProjectMapping mapping;
-        protected EngineOptions options;
+        //protected EngineOptions options;
 
         protected WorkItemStore sourceWIStore;
         protected WorkItemStore destWIStore;
-        internal ProjectMappingChecker checker;
+        internal WorkItemsStageConfigurationChecker checker;
 
-        public override int Prepare(bool testOnly)
+        public override int Prepare(StageConfiguration configuration)
         {
-            mapping = MapGetter();
-            if (mapping == null)
-                // SetDefaults will fill this in
-                mapping = new ProjectMapping();
+            mapping = (WorkItemsStageConfiguration)configuration;
+            Debug.Assert(mapping != null);
 
             sourceWIStore = sourceConn.Collection.GetService<WorkItemStore>();
-            if (options.HasFlag(EngineOptions.BypassWorkItemStoreRules))
+            if (mapping.Mode.HasFlag(WorkItemsStageConfiguration.Modes.BypassWorkItemStoreRules))
             {
                 eventSink.BypassingRulesOnDestinationWorkItemStore(destConn);
                 // this will turn off validation!
@@ -70,7 +64,7 @@ namespace WitSync
 
             eventSink.DumpMapping(mapping);
 
-            checker = new ProjectMappingChecker(sourceWIStore, sourceConn.ProjectName, destWIStore, destConn.ProjectName, eventSink);
+            checker = new WorkItemsStageConfigurationChecker(sourceWIStore, sourceConn.ProjectName, destWIStore, destConn.ProjectName, eventSink);
             checker.AgnosticCheck(mapping);
             if (!checker.Passed)
                 // abort
@@ -79,8 +73,10 @@ namespace WitSync
             return 0;
         }
 
-        public override int Execute(bool testOnly)
+        public override int Execute(StageConfiguration configuration)
         {
+            mapping = (WorkItemsStageConfiguration)configuration;
+
             var sourceRunner = new QueryRunner(sourceWIStore, sourceConn.ProjectName);
             eventSink.ExecutingSourceQuery(mapping.SourceQuery, sourceConn);
             var sourceResult = sourceRunner.RunQuery(mapping.SourceQuery);
@@ -113,9 +109,9 @@ namespace WitSync
 
             var workItemMapper = new WorkItemMapper(context);
             // configure options
-            workItemMapper.UseEditableProperty = options.HasFlag(EngineOptions.UseEditableProperty);
-            workItemMapper.OpenTargetWorkItem = options.HasFlag(EngineOptions.OpenTargetWorkItem);
-            workItemMapper.PartialOpenTargetWorkItem = options.HasFlag(EngineOptions.PartialOpenTargetWorkItem);
+            workItemMapper.UseEditableProperty = mapping.Mode.HasFlag(WorkItemsStageConfiguration.Modes.UseEditableProperty);
+            workItemMapper.OpenTargetWorkItem = mapping.Mode.HasFlag(WorkItemsStageConfiguration.Modes.OpenTargetWorkItem);
+            workItemMapper.PartialOpenTargetWorkItem = mapping.Mode.HasFlag(WorkItemsStageConfiguration.Modes.PartialOpenTargetWorkItem);
 
             List<WorkItem> newWorkItems;
             List<WorkItem> updatedWorkItems;
@@ -125,11 +121,11 @@ namespace WitSync
             // "It happens when you add a link when you are creating a new work item. If you add the link after the new work item is saved then it works OK."
             eventSink.SavingWorkItems(newWorkItems, updatedWorkItems);
             var validWorkItems = new List<WorkItem>();
-            if (options.HasFlag(EngineOptions.CreateThenUpdate))
+            if (mapping.Mode.HasFlag(WorkItemsStageConfiguration.Modes.CreateThenUpdate))
             {
                 // uncommon path
                 eventSink.UsingThreePassSavingAlgorithm();
-                SaveWorkItems3Passes(mapping, index, testOnly, destWIStore, newWorkItems, updatedWorkItems, validWorkItems);
+                SaveWorkItems3Passes(mapping, index, configuration.TestOnly, destWIStore, newWorkItems, updatedWorkItems, validWorkItems);
                 // multi-pass records the same WI object multiple times
                 validWorkItems = validWorkItems.DistinctBy(x => x.Id, null).ToList();
             }
@@ -137,7 +133,7 @@ namespace WitSync
             {
                 // normal path
                 var changedWorkItems = newWorkItems.Concat(updatedWorkItems).ToList();
-                var savedWorkItems = SaveWorkItems(mapping, index, destWIStore, changedWorkItems, testOnly);
+                var savedWorkItems = SaveWorkItems(mapping, index, destWIStore, changedWorkItems, configuration.TestOnly);
                 validWorkItems.AddRange(savedWorkItems);
             }//if
 
@@ -147,12 +143,12 @@ namespace WitSync
             var changedLinks = linkMapper.MapLinks(sourceResult.WorkItems.Values, validWorkItems);
 
             eventSink.SavingLinks(changedLinks, validWorkItems);
-            SaveLinks(mapping, index, destWIStore, validWorkItems, testOnly);
+            SaveLinks(mapping, index, destWIStore, validWorkItems, configuration.TestOnly);
 
             return saveErrors;
         }
 
-        private void SaveWorkItems3Passes(ProjectMapping mapping, WitMappingIndex index, bool testOnly, WorkItemStore destWIStore, List<WorkItem> newWorkItems, List<WorkItem> updatedWorkItems, List<WorkItem> validWorkItems)
+        private void SaveWorkItems3Passes(WorkItemsStageConfiguration mapping, WitMappingIndex index, bool testOnly, WorkItemStore destWIStore, List<WorkItem> newWorkItems, List<WorkItem> updatedWorkItems, List<WorkItem> validWorkItems)
         {
             eventSink.SaveFirstPassSavingNewWorkItems(newWorkItems);
             //HACK: force all new workitems to the Initial state
@@ -191,7 +187,7 @@ namespace WitSync
             return state;
         }
 
-        private List<WorkItem> SaveWorkItems(ProjectMapping mapping, WitMappingIndex index, WorkItemStore destWIStore, List<WorkItem> changedWorkItems, bool testOnly)
+        private List<WorkItem> SaveWorkItems(WorkItemsStageConfiguration mapping, WitMappingIndex index, WorkItemStore destWIStore, List<WorkItem> changedWorkItems, bool testOnly)
         {
             var failedWorkItems = new List<WorkItem>();
             if (testOnly)
@@ -201,11 +197,11 @@ namespace WitSync
             else
             {
                 var errors = destWIStore.BatchSave(changedWorkItems.ToArray(), SaveFlags.MergeAll);
-                failedWorkItems = ExamineSaveErrors(errors);
+                failedWorkItems = ExamineSaveErrors(errors, index);
             }//if
 
             var validWorkItems = changedWorkItems.Except(failedWorkItems);
-            // some succeded: their Ids could be changed, so refresh index
+            // some succeeded: their Ids could be changed, so refresh index
             if (!testOnly)
             {
                 UpdateIndex(index, validWorkItems, mapping);
@@ -213,8 +209,8 @@ namespace WitSync
                 {
                     this.ChangeLog.AddEntry(
                         new WorkItemChangeEntry(
-                            item.Id,
                             index.GetSourceIdFromTargetId(item.Id),
+                            item.Id,
                             item.IsNew ? WorkItemChangeEntry.Change.New : WorkItemChangeEntry.Change.Update));
                 }//for
             }//if
@@ -222,7 +218,7 @@ namespace WitSync
             return validWorkItems.ToList();
         }
 
-        private void SaveLinks(ProjectMapping mapping, WitMappingIndex index, WorkItemStore destWIStore, IEnumerable<WorkItem> changedWorkItems, bool testOnly)
+        private void SaveLinks(WorkItemsStageConfiguration mapping, WitMappingIndex index, WorkItemStore destWIStore, IEnumerable<WorkItem> changedWorkItems, bool testOnly)
         {
             if (testOnly)
             {
@@ -231,12 +227,11 @@ namespace WitSync
             else
             {
                 var errors = destWIStore.BatchSave(changedWorkItems.ToArray(), SaveFlags.MergeAll);
-                ExamineSaveErrors(errors);
-                // TODO any chance we must add anything to the ChangeLog ???
+                ExamineSaveErrors(errors, index);
             }//if
         }
 
-        private List<WorkItem> ExamineSaveErrors(BatchSaveError[] errors)
+        private List<WorkItem> ExamineSaveErrors(BatchSaveError[] errors, WitMappingIndex index)
         {
             // log what failed
             var failedWorkItems = new List<WorkItem>();
@@ -252,11 +247,20 @@ namespace WitSync
                     }
                 }//for
                 saveErrors++;
+
+                // ChangeLog also
+                int targetId = err.WorkItem.IsNew ? err.WorkItem.TemporaryId : err.WorkItem.Id;
+                this.ChangeLog.AddEntry(
+                    new WorkItemFailureEntry(
+                        index.GetSourceIdFromTargetId(targetId),
+                        targetId,
+                        err.Exception.Message));
+                
             }//for
             return failedWorkItems;
         }
 
-        private WitMappingIndex BuildIndex(WorkItemStore destWIStore, IEnumerable<WorkItem> existingTargetWorkItems, ProjectMapping mapping)
+        private WitMappingIndex BuildIndex(WorkItemStore destWIStore, IEnumerable<WorkItem> existingTargetWorkItems, WorkItemsStageConfiguration mapping)
         {
             var index = new WitMappingIndex();
             if (mapping.HasIndex)
@@ -287,7 +291,7 @@ namespace WitSync
             return index;
         }
 
-        private void UpdateIndex(WitMappingIndex index, IEnumerable<WorkItem> updatedWorkItems, ProjectMapping mapping)
+        private void UpdateIndex(WitMappingIndex index, IEnumerable<WorkItem> updatedWorkItems, WorkItemsStageConfiguration mapping)
         {
             if (mapping.HasIndex)
             {

@@ -1,0 +1,35 @@
+version: 0.6.{build}
+
+branches:
+  # whitelist
+  only:
+    - master
+    - develop
+
+# Do not build on tags (GitHub only)
+skip_tags: true
+
+# enable patching of AssemblyInfo.* files
+assembly_info:
+  patch: false
+
+# Automatically register private account and/or project AppVeyor NuGet feeds.
+nuget:
+  account_feed: true
+  project_feed: true
+
+platform: Any CPU
+configuration: Debug
+
+build:
+  project: WitSync.sln
+  publish_nuget: true             # package projects with .nuspec files and push to artifacts
+  publish_nuget_symbols: true     # generate and publish NuGet symbol packages
+  # MSBuild verbosity level
+  verbosity: minimal
+
+# scripts to run before build
+before_build:
+  - nuget restore
+
+test: off

@@ -14,11 +14,11 @@ namespace WitSync
         private string sourceProjectName;
         private WorkItemStore destWIStore;
         private string destProjectName;
-        private ProjectMapping mapping;
+        private WorkItemsStageConfiguration mapping;
         private WitMappingIndex index;
         private IEngineEvents eventSink;
 
-        internal SyncContext(TfsConnection sourceConnection, WorkItemStore sourceWIStore, string sourceProjectName, WorkItemStore destWIStore, string destProjectName, ProjectMapping mapping, WitMappingIndex index, IEngineEvents eventSink)
+        internal SyncContext(TfsConnection sourceConnection, WorkItemStore sourceWIStore, string sourceProjectName, WorkItemStore destWIStore, string destProjectName, WorkItemsStageConfiguration mapping, WitMappingIndex index, IEngineEvents eventSink)
         {
             this.sourceConnection = sourceConnection;
             this.sourceWIStore = sourceWIStore;
@@ -47,7 +47,7 @@ namespace WitSync
         public string SourceProjectName { get { return this.sourceProjectName; } }
         public WorkItemStore DestinationStore { get { return this.destWIStore; } }
         public string DestinationProjectName { get { return this.destProjectName; } }
-        public ProjectMapping Mapping { get { return this.mapping; } }
+        public WorkItemsStageConfiguration Mapping { get { return this.mapping; } }
         public WitMappingIndex Index { get { return this.index; } }
         public IEngineEvents EventSink { get { return this.eventSink; } }
     }

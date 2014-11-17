@@ -9,33 +9,33 @@ using System.Xml;
 namespace WitSync
 {
 
-    internal class GlobalListChangeEntry : ChangeEntry
+    internal class GlobalListChangeEntry : SuccessEntry
     {
         internal GlobalListChangeEntry(string name)
             : base("GlobalList", name, name, "AddOrUpdate")
         { }
     }
 
-    public class GlobalListsSyncEngine : EngineBase
+    public class GlobalListsStage : PipelineStage
     {
-        public GlobalListsSyncEngine(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
+        public GlobalListsStage(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
             : base(source, dest, eventHandler)
         {
             //no-op
         }
 
-        public Func<GlobalListMapping> MapGetter { get; set; }
+        protected GlobalListsStageConfiguration mapping;
 
-        protected GlobalListMapping mapping;
-
-        public override int Prepare(bool testOnly)
+        public override int Prepare(StageConfiguration configuration)
         {
-            mapping = MapGetter();
+            mapping = (GlobalListsStageConfiguration)configuration;
             return 0;
         }
 
-        public override int Execute(bool testOnly)
+        public override int Execute(StageConfiguration configuration)
         {
+            mapping = (GlobalListsStageConfiguration)configuration;
+
             var sourceWIStore = sourceConn.Collection.GetService<WorkItemStore>();
             var destWIStore = destConn.Collection.GetService<WorkItemStore>();
 
@@ -77,7 +77,7 @@ namespace WitSync
 
             eventSink.UpdatingGlobalListsOnDestination();
 
-            if (!testOnly)
+            if (!configuration.TestOnly)
             {
                 destWIStore.ImportGlobalLists(updateDoc.InnerXml);
                 foreach (var glSourceElement in updateList)

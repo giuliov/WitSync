@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace WitSync
 {
-    internal class ProjectMappingChecker
+    internal class WorkItemsStageConfigurationChecker
     {
         protected IEngineEvents eventSink;
         private WorkItemStore sourceWIStore;
@@ -15,7 +15,7 @@ namespace WitSync
         private string sourceProjectName;
         private string destProjectName;
 
-        internal ProjectMappingChecker(WorkItemStore sourceWIStore, string sourceProjectName, WorkItemStore destWIStore, string destProjectName, IEngineEvents eventSink)
+        internal WorkItemsStageConfigurationChecker(WorkItemStore sourceWIStore, string sourceProjectName, WorkItemStore destWIStore, string destProjectName, IEngineEvents eventSink)
         {
             this.sourceWIStore = sourceWIStore;
             this.sourceProjectName = sourceProjectName;
@@ -35,7 +35,7 @@ namespace WitSync
             eventSink.MappingGenericValidationError(message, args);
         }
 
-        internal void Check(QueryResult sourceResult, ProjectMapping mapping, QueryResult destResult)
+        internal void Check(QueryResult sourceResult, WorkItemsStageConfiguration mapping, QueryResult destResult)
         {
             var workItemMappings = mapping.WorkItemMappings.ToList();
 
@@ -54,7 +54,7 @@ namespace WitSync
                 t => Log("Missing mapping for destination type {0}", t));
         }
 
-        internal void AgnosticCheck(ProjectMapping mapping)
+        internal void AgnosticCheck(WorkItemsStageConfiguration mapping)
         {
             if (mapping.HasIndex && System.IO.File.Exists(mapping.IndexFile))
             {

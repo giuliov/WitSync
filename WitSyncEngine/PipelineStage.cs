@@ -7,8 +7,8 @@ using OptionsBase = System.Int32;
 
 namespace WitSync
 {
-    // represent a phase in the pipeline
-    abstract public class EngineBase
+    // represents a phase in the pipeline
+    abstract public class PipelineStage
     {
         protected TfsConnection sourceConn;
         protected TfsConnection destConn;
@@ -16,18 +16,17 @@ namespace WitSync
         protected int saveErrors = 0;
         private ChangeLog changeLog = new ChangeLog();
 
-        public EngineBase(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
+        public PipelineStage(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
         {
             sourceConn = source;
             destConn = dest;
             eventSink = eventHandler;
         }
 
-        abstract public int Prepare(bool testOnly);
-        abstract public int Execute(bool testOnly);
-
         public ChangeLog ChangeLog { get { return changeLog; } }
+        public virtual string Name { get { return this.GetType().Name.Replace("Stage", ""); } }
 
-        public virtual string Name { get { return this.GetType().Name.Replace("SyncEngine",""); } }
+        abstract public int Prepare(StageConfiguration configuration);
+        abstract public int Execute(StageConfiguration configuration);
     }
 }

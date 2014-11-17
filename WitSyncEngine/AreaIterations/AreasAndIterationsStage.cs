@@ -7,7 +7,7 @@ using System.Text;
 
 namespace WitSync
 {
-    internal class NodeChangeEntry : ChangeEntry
+    internal class NodeChangeEntry : SuccessEntry
     {
         internal enum Change { Add }
 
@@ -30,14 +30,27 @@ namespace WitSync
         { }
     }
 
-    public class AreasAndIterationsSyncEngine : EngineBase
+    public class AreasStage : AreasAndIterationsStage
+    {
+        public AreasStage(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
+            : base(source, dest, eventHandler, StageOptions.Areas)
+        { }
+    }
+
+    public class IterationsStage : AreasAndIterationsStage
+    {
+        public IterationsStage(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
+            : base(source, dest, eventHandler, StageOptions.Iterations)
+        { }
+    }
+
+    public class AreasAndIterationsStage : PipelineStage
     {
         [Flags]
-        public enum EngineOptions
+        public enum StageOptions
         {
-            TestOnly = 0x1,
-            Areas = 0x2,
-            Iterations = 0x4,
+            Areas,
+            Iterations,
         }
 
         NodeInfo rootAreaNode = null;
@@ -45,28 +58,28 @@ namespace WitSync
         ICommonStructureService4 sourceCSS = null;
         ICommonStructureService4 destCSS = null;
 
-        public AreasAndIterationsSyncEngine(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler)
+        public AreasAndIterationsStage(TfsConnection source, TfsConnection dest, IEngineEvents eventHandler, StageOptions options)
             : base(source, dest, eventHandler)
         {
-            //no-op
+            this.options = options;
         }
 
-        public EngineOptions Options { set { this.options =value;}}
+        protected StageOptions options;
 
-        protected EngineOptions options;
-
-        public override int Prepare(bool testOnly)
+        public override int Prepare(StageConfiguration configuration)
         {
             return 0;
         }
 
         bool testMode = false;
 
-        public override int Execute(bool testOnly)
+        public override int Execute(StageConfiguration configuration)
         {
-            bool areas = options.HasFlag(EngineOptions.Areas);
-            bool iterations = options.HasFlag(EngineOptions.Iterations);
-            this.testMode = testOnly;
+            var config = ((AreasAndIterationsStageConfiguration)configuration);
+
+            bool areas = options.HasFlag(StageOptions.Areas);
+            bool iterations = options.HasFlag(StageOptions.Iterations);
+            this.testMode = configuration.TestOnly;
 
 
             var sourceWIStore = sourceConn.Collection.GetService<WorkItemStore>();

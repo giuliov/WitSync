@@ -9,20 +9,8 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace WitSync
 {
-    public class GlobalListMapping : MappingBase
+    public class GlobalListsStageConfiguration : StageConfiguration
     {
-        public static GlobalListMapping LoadFrom(string path)
-        {
-            var input = new StreamReader(path);
-
-            var deserializer = new Deserializer(namingConvention: new CamelCaseNamingConvention());
-
-            var mapping = deserializer.Deserialize<GlobalListMapping>(input);
-            if (mapping.exclude == null && mapping.include == null)
-                throw new IndexOutOfRangeException("At least one of exclude/include must be present.");
-            return mapping;
-        }
-
         public List<string> include { get; set; }
         public List<string> exclude { get; set; }
 
@@ -43,6 +31,15 @@ namespace WitSync
                 return include.Contains(name) && !exclude.Contains(name);
             }
             throw new IndexOutOfRangeException("At least one of exclude/include must be present.");
+        }
+
+        public static GlobalListsStageConfiguration Generate()
+        {
+            return new GlobalListsStageConfiguration()
+            {
+                include = new List<string>() { "incl1", "incl2" },
+                exclude = new List<string>() { "excl3", "excl4" }
+            };
         }
     }
 }

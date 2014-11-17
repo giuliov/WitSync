@@ -60,7 +60,7 @@ namespace WitSync
         public void SyncStarted()
         {
             syncStart = DateTimeOffset.UtcNow;
-            this.Info("Syncronization started.");
+            this.Info("Synchronization started.");
         }
 
         public void SyncFinished(int errors)
@@ -68,11 +68,11 @@ namespace WitSync
             var elapsed = DateTimeOffset.UtcNow - syncStart;
             if (errors != 0)
             {
-                base.RawOut(ErrorColor, OutputFlags.All, "Syncronization completed in {0:d'.'hh':'mm':'ss} with {1} error(s).", elapsed, errors);
+                base.RawOut(ErrorColor, OutputFlags.All, "Synchronization completed in {0:d'.'hh':'mm':'ss} with {1} error(s).", elapsed, errors);
             }
             else
             {
-                base.RawOut(SuccessColor, OutputFlags.All, "Syncronization completed in {0:d'.'hh':'mm':'ss} with no errors.", elapsed);
+                base.RawOut(SuccessColor, OutputFlags.All, "Synchronization completed in {0:d'.'hh':'mm':'ss} with no errors.", elapsed);
             }
         }
 
@@ -126,22 +126,22 @@ namespace WitSync
             this.UniqueWarning("    State '{0}'\'{1}' not found in '{2}'.", map.SourceType, state, map.DestinationType);
         }
 
-        public void NoWildcardAreaRule(ProjectMapping mapping, object sourceValue)
+        public void NoWildcardAreaRule(WorkItemsStageConfiguration mapping, object sourceValue)
         {
             this.UniqueWarning("    No wildcard Area rule.");
         }
 
-        public void AreaPathNotFoundUsingWildcardRule(ProjectMapping mapping, object sourceValue)
+        public void AreaPathNotFoundUsingWildcardRule(WorkItemsStageConfiguration mapping, object sourceValue)
         {
             this.UniqueVerbose("    Area path '{0}' not found: using wildcard rule.", sourceValue);
         }
 
-        public void NoWildcardIterationRule(ProjectMapping mapping, object sourceValue)
+        public void NoWildcardIterationRule(WorkItemsStageConfiguration mapping, object sourceValue)
         {
             this.UniqueWarning("    No wildcard Iteration rule.");
         }
 
-        public void IterationPathNotFoundUsingWildcardRule(ProjectMapping mapping, object sourceValue)
+        public void IterationPathNotFoundUsingWildcardRule(WorkItemsStageConfiguration mapping, object sourceValue)
         {
             this.UniqueVerbose("    Iteration path '{0}' not found: using wildcard rule.", sourceValue);
         }
@@ -297,7 +297,7 @@ namespace WitSync
                 , sourceLink.SourceId, sourceLink.TargetId, sourceLink.LinkTypeEnd.Name);
         }
 
-        public void DumpOptions(WitSyncEngine.EngineOptions options)
+        public void DumpOptions(WorkItemsStageConfiguration.Modes options)
         {
             this.Verbose("Active options: {0}", options);
         }
@@ -354,13 +354,13 @@ namespace WitSync
 
         protected DateTimeOffset stageStart;
 
-        public void ExecutingStage(EngineBase stage)
+        public void ExecutingStage(PipelineStage stage)
         {
             stageStart = DateTimeOffset.UtcNow;
             this.Info("Stage {0} started.", stage.Name);
         }
 
-        public void StageCompleted(EngineBase stage, int stageErrors)
+        public void StageCompleted(PipelineStage stage, int stageErrors)
         {
             var elapsed = DateTimeOffset.UtcNow - stageStart;
             if (stageErrors > 0)
@@ -373,19 +373,19 @@ namespace WitSync
             }
         }
 
-        public void StageError(EngineBase stage, Exception ex)
+        public void StageError(PipelineStage stage, Exception ex)
         {
             var elapsed = DateTimeOffset.UtcNow - stageStart;
             this.Warning("Stage {0} failed at {1:d'.'hh':'mm':'ss}, continuing with next stages; error was {1}", stage.Name, ex.Message);
             this.Verbose(ex.StackTrace);
         }
 
-        public void PreparingStage(EngineBase stage)
+        public void PreparingStage(PipelineStage stage)
         {
             this.Verbose("Preparing stage {0}.", stage.Name);
         }
 
-        public void StagePrepared(EngineBase stage, int stageErrors)
+        public void StagePrepared(PipelineStage stage, int stageErrors)
         {
             if (stageErrors > 0)
             {
@@ -397,13 +397,13 @@ namespace WitSync
             }
         }
 
-        public void StagePreparationError(EngineBase stage, Exception ex)
+        public void StagePreparationError(PipelineStage stage, Exception ex)
         {
             this.Warning("Stage {0} not ready, continuing with next stages; error was {1}", stage.Name, ex.Message);
             this.Verbose(ex.StackTrace);
         }
 
-        public void DumpMapping(ProjectMapping mapping)
+        public void DumpMapping(WorkItemsStageConfiguration mapping)
         {
             var output = new System.IO.StringWriter();
             output.WriteLine();
@@ -426,12 +426,12 @@ namespace WitSync
         {
             this.Info("{0} record(s) saved.", numRecords);
         }
-
+        /* TODO
         internal void DumpOptions(WitSyncCommandLineOptions options)
         {
             this.Verbose(options.ToString());
         }
-
+        */
         internal void FirstMessage(string logHeader)
         {
             // empty line
