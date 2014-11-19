@@ -1,5 +1,9 @@
-[![Build status: Develop branch](<https://ci.appveyor.com/api/projects/status/github/giuliov/WitSync?branch=develop&svg=true>)](https://ci.appveyor.com/project/giuliov/witsync)
-[![Build status: Master branch](https://ci.appveyor.com/api/projects/status/github/giuliov/WitSync?branch=master&svg=true>)](https://ci.appveyor.com/project/giuliov/witsync)
+| Branch  | Status |
+|---------|--------|
+| Develop | [![Build status: Develop branch](<https://ci.appveyor.com/api/projects/status/github/giuliov/WitSync?branch=develop&svg=true>)](https://ci.appveyor.com/project/giuliov/witsync) |
+| Main | [![Build status: Master branch](https://ci.appveyor.com/api/projects/status/github/giuliov/WitSync?branch=master&svg=true>)](https://ci.appveyor.com/project/giuliov/witsync) |
+
+Latest artifacts: <https://ci.appveyor.com/project/giuliov/witsync/build/artifacts>
 
 # WitSync
 
