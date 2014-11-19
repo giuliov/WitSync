@@ -59,7 +59,7 @@ Syntax is
 ```Batchfile
 WitSync.exe -m=<path_to_mapping_file> [options]
 ```
-More details can be found in [Command line options](docs/CommandLineOptions.md).
+More details can be found in [Command line options](CommandLineOptions.md).
 
 
 ## Return values
@@ -75,7 +75,7 @@ To save the list of changed objects in a file, use the `changeLog` option. This 
 
 The mapping file use the [YAML](http://www.yaml.org/) format to configure the WitSync pipeline. You can configure just a small subset of information, as WitSync assumes you want an hi-fidelity copy of the source.
 
-More details can be found in [Mapping file](docs/Mapping.md).
+More details can be found in [Mapping file](Mapping.md).
 
 
 ## Build and Redistribute

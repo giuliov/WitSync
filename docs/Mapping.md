@@ -156,7 +156,7 @@ Should not be used. WitSync will copy only the GlobalLists listed in `include` c
 
 ### Index file
 
-WitSync uses the work item [ID field](#id-field) (`System.Id`) to uniquely identify work items to syncronize. There are two ways to relate work items on the destination  project with the source:
+WitSync uses the work item [ID field](#id-field-optional) (`System.Id`) to uniquely identify work items to syncronize. There are two ways to relate work items on the destination  project with the source:
     - using a field to holds the source ID, useful when the ID is meaningful to users (like a bug number)
     - using an external file to track mapping, useful when replicating a project on a different TFS collection or instance
 
@@ -495,7 +495,7 @@ workItemsStage:
 | BypassWorkItemValidation            |  Disable Rule validation
 | CreateThenUpdate                    |  WorkItems missing from the target are first added in the initial state, then updated to reflect the state of the source.
 | DoNotOpenTargetWorkItem             |  Use [WorkItem.Open](http://msdn.microsoft.com/en-us/library/microsoft.teamfoundation.workitemtracking.client.workitem.open.aspx) Method to make the WorkItem updatable.
-| PartialOpenTargetWorkItem           |  Use [WorkItem.PartialOpen] Method to make the WorkItem updatable.
+| PartialOpenTargetWorkItem           |  Use [WorkItem.PartialOpen](http://msdn.microsoft.com/en-us/library/microsoft.teamfoundation.workitemtracking.client.workitem.partialopen.aspx) Method to make the WorkItem updatable.
 | UseHeuristicForFieldUpdatability    |  Algorithm used to determine when a field is updatable. By default the tool checks the [Field.IsEditable](http://msdn.microsoft.com/en-us/library/microsoft.teamfoundation.workitemtracking.client.field.iseditable.aspx) Property.
 
 
