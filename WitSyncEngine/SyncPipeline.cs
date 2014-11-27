@@ -171,6 +171,7 @@ namespace WitSync
                 {
                     eventSink.ExecutingStage(stage);
                     StageConfiguration config = GetStageConfiguration(stage);
+                    config.TestOnly = configuration.TestOnly;
                     stageErrors = stage.Execute(config);
                     eventSink.StageCompleted(stage, stageErrors);
 
