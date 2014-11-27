@@ -1,4 +1,5 @@
-version: 0.6.{build}
+# manually align with Version.properties
+version: 0.7.{build}-beta
 
 branches:
   # whitelist
@@ -9,7 +10,7 @@ branches:
 # Do not build on tags (GitHub only)
 skip_tags: true
 
-# enable patching of AssemblyInfo.* files
+# disable patching of AssemblyInfo.* files
 assembly_info:
   patch: false
 
@@ -19,7 +20,7 @@ nuget:
   project_feed: true
 
 platform: Any CPU
-configuration: Debug
+configuration: Debug    # beta mode
 
 build:
   project: WitSync.sln
@@ -32,4 +33,5 @@ build:
 before_build:
   - nuget restore
 
+# cannot run integration tests in AppVeyor
 test: off
