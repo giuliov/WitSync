@@ -70,7 +70,6 @@
     <None Include="Sample Mappings\test00.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="WitSync.nuspec" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WitSyncEngine\WitSyncEngine.csproj">

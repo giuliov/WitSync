@@ -29,7 +29,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{3B935B27
 		build\NuGet.exe = build\NuGet.exe
 		build\SetVersion.targets = build\SetVersion.targets
 		build\Version.properties = build\Version.properties
-		WitSync\WitSync.nuspec = WitSync\WitSync.nuspec
+		build\WitSync.nuspec = build\WitSync.nuspec
 	EndProjectSection
 EndProject
 Global

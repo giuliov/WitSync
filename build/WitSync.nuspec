@@ -19,7 +19,7 @@
   <files>
     <file src="..\README.md" target="" />
     <file src="..\docs\**\*.*" target="docs" />
-    <file src="bin\Debug\*.exe" target="lib" />
-    <file src="bin\Debug\*.dll" target="lib" />
+    <file src="..\WitSync\bin\Debug\*.exe" target="lib" />
+    <file src="..\WitSync\bin\Debug\*.dll" target="lib" />
   </files>
 </package>
