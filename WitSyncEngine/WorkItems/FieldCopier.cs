@@ -69,10 +69,10 @@ namespace WitSync
                 }
                 else if (!string.IsNullOrWhiteSpace(rule.SetIfNull))
                 {
-                    engineEvents.TraceRule("Set {0} to value '{1}' when source is null", targetFieldName, rule.SetIfNull);
+                    engineEvents.TraceRule("Set {0} to value '{1}' when source is null or empty", targetFieldName, rule.SetIfNull);
                     copyAction = (src, dst) =>
                     {
-                        if (src.Value == null)
+                        if (src.Value == null || string.IsNullOrEmpty(src.Value.ToString()))
                         {
                             SetFieldWithConstant(dst, rule.SetIfNull);
                         }
