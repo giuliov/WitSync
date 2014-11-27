@@ -369,6 +369,7 @@ workItemsStage:
       destination: System.Description
       setIfNull: Description missing
 ```
+Null and empty string are considered both null.
 
 ##### Unmapped fields
 The field is not mapped, useful for computed fields like "Area ID" whose value is derived from "Area Path".
