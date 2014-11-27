@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Import Project="$(MSBuildThisFileDirectory)Version.properties" />
+
   <!--
   ideas from http://mcasamento.blogspot.it/2012/09/auto-increment-build-number-msbuild-4.html
   and https://github.com/mikefourie/MSBuildExtensionPack
   -->
   <UsingTask
-    TaskName="SetVersion"
+    TaskName="SetAssemblyInfoVersion"
     TaskFactory="CodeTaskFactory"
     AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" >
     <ParameterGroup>
       <FileName ParameterType="System.String" Required="true" />
       <MajorVersion ParameterType="System.Int32" Required="true" />
       <MinorVersion ParameterType="System.Int32" Required="true" />
+      <InformationalVersion ParameterType="System.String" Required="true" />
     </ParameterGroup>
     <Task>
-      <!--<Reference Include=""/>-->
       <Using Namespace="System"/>
       <Using Namespace="System.IO"/>
       <Using Namespace="System.Text.RegularExpressions"/>
@@ -22,6 +25,9 @@
         <![CDATA[
             string SearchPattern = @"AssemblyFileVersion.*\(.*"".*"".*\)";
             string ReplaceFormat = @"AssemblyFileVersion(""{0}"")";
+
+            string SearchPattern2 = @"AssemblyInformationalVersion.*\(.*"".*"".*\)";
+            string ReplaceFormat2 = @"AssemblyInformationalVersion(""{0}"")";
 
             DateTime referenceDate = new DateTime(2000, 12, 31);// millennium start
             DateTime now = DateTime.Now;
@@ -32,9 +38,45 @@
                 now.Hour, now.Minute, (int)(now.Second / 10));
 
             string entireFile = File.ReadAllText(FileName);
+            
             Regex regexExpression = new Regex(SearchPattern, RegexOptions.Compiled);
             string replacement = string.Format(ReplaceFormat, version);
             string result = regexExpression.Replace(entireFile, replacement);
+            
+            Regex regexExpression2 = new Regex(SearchPattern2, RegexOptions.Compiled);
+            string replacement2 = string.Format(ReplaceFormat2, InformationalVersion);
+            result = regexExpression2.Replace(result, replacement2);
+            
+            File.WriteAllText(FileName, result);
+            
+            return true;
+  ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <UsingTask
+    TaskName="SetNuGetVersion"
+    TaskFactory="CodeTaskFactory"
+    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" >
+    <ParameterGroup>
+      <FileName ParameterType="System.String" Required="true" />
+        <SemanticVersion ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System"/>
+      <Using Namespace="System.IO"/>
+      <Using Namespace="System.Text.RegularExpressions"/>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+            string SearchPattern = @"<version>.*</version>";
+            string ReplaceFormat = @"<version>{0}</version>";
+
+            string entireFile = File.ReadAllText(FileName);
+            
+            Regex regexExpression = new Regex(SearchPattern, RegexOptions.Compiled);
+            string replacement = string.Format(ReplaceFormat, SemanticVersion);
+            string result = regexExpression.Replace(entireFile, replacement);
+            
             File.WriteAllText(FileName, result);
             
             return true;
@@ -43,7 +85,14 @@
   </UsingTask>
 
   <Target Name="SetFileVersion" BeforeTargets="BeforeBuild">
-    <SetVersion FileName="Properties\AssemblyInfo.cs" MajorVersion="0" MinorVersion="6" />
+
+    <SetAssemblyInfoVersion FileName="Properties\AssemblyInfo.cs"
+                MajorVersion="$(MajorVersion)" MinorVersion="$(MinorVersion)"
+                InformationalVersion="$(SemanticVersion)"/>
+    <!-- only in main project -->
+    <SetNuGetVersion Condition="Exists('$(NuSpecFile)')"
+                FileName="$(NuSpecFile)"
+                SemanticVersion="$(SemanticVersion)"/>
   </Target>
 
 </Project>

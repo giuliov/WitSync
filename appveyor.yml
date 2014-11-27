@@ -1,4 +1,5 @@
-version: 0.6.{build}
+# manually align with Version.properties
+version: 0.7.{build}-beta
 
 branches:
   # whitelist
@@ -9,7 +10,7 @@ branches:
 # Do not build on tags (GitHub only)
 skip_tags: true
 
-# enable patching of AssemblyInfo.* files
+# disable patching of AssemblyInfo.* files
 assembly_info:
   patch: false
 
@@ -19,12 +20,12 @@ nuget:
   project_feed: true
 
 platform: Any CPU
-configuration: Debug
+configuration: Debug    # beta mode
 
 build:
   project: WitSync.sln
-  publish_nuget: true             # package projects with .nuspec files and push to artifacts
-  publish_nuget_symbols: true     # generate and publish NuGet symbol packages
+  publish_nuget: false            # package projects with .nuspec files and push to artifacts
+  publish_nuget_symbols: false    # generate and publish NuGet symbol packages
   # MSBuild verbosity level
   verbosity: minimal
 
@@ -32,4 +33,10 @@ build:
 before_build:
   - nuget restore
 
+# scripts to run after build
+after_build:
+  - nuget pack build\WitSync.nuspec -Prop Configuration=%CONFIGURATION% -NoPackageAnalysis
+  - ps: Get-Item witsync.*.nupkg | foreach { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
+
+# cannot run integration tests in AppVeyor
 test: off

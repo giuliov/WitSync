@@ -13,11 +13,13 @@
     <releaseNotes>Reworked the command line and pipeline to be easily maintenable.</releaseNotes>
     <copyright>Copyright 2014</copyright>
     <tags>TFS</tags>
+    <!-- this is a Chocolatey package using explicit file list, no need for dependencies -->
+    <dependencies />
   </metadata>
   <files>
     <file src="..\README.md" target="" />
     <file src="..\docs\**\*.*" target="docs" />
-    <file src="bin\Debug\*.exe" target="lib" />
-    <file src="bin\Debug\*.dll" target="lib" />
+    <file src="..\WitSync\bin\Debug\*.exe" target="lib" />
+    <file src="..\WitSync\bin\Debug\*.dll" target="lib" />
   </files>
 </package>
