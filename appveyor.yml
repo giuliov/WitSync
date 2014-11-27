@@ -36,7 +36,7 @@ before_build:
 # scripts to run after build
 after_build:
   - nuget pack build\WitSync.nuspec -Prop Configuration=%CONFIGURATION% -NoPackageAnalysis
-  - appveyor PushArtifact witsync.*.nupkg
+  - ps: Get-Item witsync.*.nupkg | foreach { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 
 # cannot run integration tests in AppVeyor
 test: off
