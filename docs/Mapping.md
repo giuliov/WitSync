@@ -6,6 +6,7 @@ This page describe the configuration in sections:
  * [Areas & Iterations](#areas-and-iterations)
  * [Global lists](#global-lists)
  * [Work Items](#work-items)
+ * [Test Plans](#test-plans)
 
 At the end, there are some sample configurations.
 
@@ -500,6 +501,14 @@ workItemsStage:
 | UseHeuristicForFieldUpdatability    |  Algorithm used to determine when a field is updatable. By default the tool checks the [Field.IsEditable](http://msdn.microsoft.com/en-us/library/microsoft.teamfoundation.workitemtracking.client.field.iseditable.aspx) Property.
 
 
+
+## Test Plans
+
+```YAML
+testPlansStage:
+```
+
+**TBD**
 
 ## Sample configurations
 

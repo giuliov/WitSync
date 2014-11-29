@@ -6,6 +6,10 @@ WitSync is a simple command line tool that can copy TFS Work Item data from a so
  - Areas
  - Iterations
  - Work Items
+ - Test Plans
+ - Test Suites
+ - Test Cases
+ - Test Results
 
 in the order listed.
 

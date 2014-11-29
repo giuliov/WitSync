@@ -35,6 +35,7 @@ namespace WitSync
             new StageInfo() { Order = 21, Type = typeof(AreasStage), ConfigurationProperty = "AreasAndIterationsStageConfiguration" },
             new StageInfo() { Order = 22, Type = typeof(IterationsStage), ConfigurationProperty = "AreasAndIterationsStageConfiguration" },
             new StageInfo() { Order = 30, Type = typeof(WorkItemsStage) },
+            new StageInfo() { Order = 40, Type = typeof(TestPlansStage) },
         };
 
         private string DeAlias(string name)

@@ -38,6 +38,14 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Common\References.12\Microsoft.TeamFoundation.Common.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.TeamFoundation.TestManagement.Client, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\PrivateAssemblies\Microsoft.TeamFoundation.TestManagement.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.TeamFoundation.TestManagement.Common, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\PrivateAssemblies\Microsoft.TeamFoundation.TestManagement.Common.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.TeamFoundation.WorkItemTracking.Client, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Common\References.12\Microsoft.TeamFoundation.WorkItemTracking.Client.dll</HintPath>
@@ -63,6 +71,8 @@
     <Compile Include="ConfigurationBase.cs" />
     <Compile Include="PipelineStage.cs" />
     <Compile Include="StageConfiguration.cs" />
+    <Compile Include="TestPlans\TestPlansStage.cs" />
+    <Compile Include="TestPlans\TestPlansStageConfiguration.cs" />
     <Compile Include="WorkItems\FieldCopier.cs" />
     <Compile Include="PipelineConfiguration.cs" />
     <Compile Include="GlobalLists\GlobalListsStageConfiguration.cs" />

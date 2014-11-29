@@ -38,6 +38,7 @@ namespace WitSync
         public AreasAndIterationsStageConfiguration AreasAndIterationsStage { get; set; }
         public GlobalListsStageConfiguration GlobalListsStage { get; set; }
         public WorkItemsStageConfiguration WorkItemsStage { get; set; }
+        public TestPlansStageConfiguration TestPlansStage { get; set; }
 
         public void FixNulls()
         {
@@ -47,6 +48,7 @@ namespace WitSync
             AreasAndIterationsStage = AreasAndIterationsStage ?? new AreasAndIterationsStageConfiguration();
             GlobalListsStage = GlobalListsStage ?? new GlobalListsStageConfiguration();
             WorkItemsStage = WorkItemsStage ?? new WorkItemsStageConfiguration();
+            TestPlansStage = TestPlansStage ?? new TestPlansStageConfiguration();
         }
 
         public bool Validate()
