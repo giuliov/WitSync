@@ -9,8 +9,8 @@ namespace WitSync
 {
     class EngineEventHandler : EventHandlerBase, IEngineEvents
     {
-        public EngineEventHandler(bool verbose, string logFile)
-            : base(verbose, logFile)
+        public EngineEventHandler(TraceLevel level, TraceDevice device, string logFile)
+            : base(level, device, logFile)
         {
         }
 
@@ -68,11 +68,11 @@ namespace WitSync
             var elapsed = DateTimeOffset.UtcNow - syncStart;
             if (errors != 0)
             {
-                base.RawOut(ErrorColor, OutputFlags.All, "Synchronization completed in {0:d'.'hh':'mm':'ss} with {1} error(s).", elapsed, errors);
+                base.RawOut(ErrorColor, TraceLevel.Normal, "Synchronization completed in {0:d'.'hh':'mm':'ss} with {1} error(s).", elapsed, errors);
             }
             else
             {
-                base.RawOut(SuccessColor, OutputFlags.All, "Synchronization completed in {0:d'.'hh':'mm':'ss} with no errors.", elapsed);
+                base.RawOut(SuccessColor, TraceLevel.Normal, "Synchronization completed in {0:d'.'hh':'mm':'ss} with no errors.", elapsed);
             }
         }
 
@@ -365,11 +365,11 @@ namespace WitSync
             var elapsed = DateTimeOffset.UtcNow - stageStart;
             if (stageErrors > 0)
             {
-                base.RawOut(WarningColor, OutputFlags.All, "Stage {0} completed in {1:d'.'hh':'mm':'ss} with {2} error(s).", stage.Name, elapsed, stageErrors);
+                base.RawOut(WarningColor, TraceLevel.Normal, "Stage {0} completed in {1:d'.'hh':'mm':'ss} with {2} error(s).", stage.Name, elapsed, stageErrors);
             }
             else
             {
-                base.RawOut(SuccessColor, OutputFlags.All, "Stage {0} successfully completed in {1:d'.'hh':'mm':'ss}.", stage.Name, elapsed);
+                base.RawOut(SuccessColor, TraceLevel.Normal, "Stage {0} successfully completed in {1:d'.'hh':'mm':'ss}.", stage.Name, elapsed);
             }
         }
 
@@ -414,7 +414,7 @@ namespace WitSync
             output.Flush();
 
             this.Verbose("Dumping Mapping");
-            base.RawOut(VerboseColor, OutputFlags.All,output.ToString());
+            base.RawOut(VerboseColor, TraceLevel.Verbose, output.ToString());
         }
 
         internal void SavingChangeLogToFile(string filename)
@@ -435,8 +435,8 @@ namespace WitSync
         internal void FirstMessage(string logHeader)
         {
             // empty line
-            base.RawOut(InfoColor, OutputFlags.Debug, string.Empty);
-            base.RawOut(InfoColor, OutputFlags.Debug, logHeader);
+            base.RawOut(InfoColor, TraceLevel.Normal, string.Empty);
+            base.RawOut(InfoColor, TraceLevel.Normal, logHeader);
         }
 
         internal void LastMessage(int rc)
@@ -446,7 +446,7 @@ namespace WitSync
 
         public void TraceRule(string msg, params object[] args)
         {
-            base.Out(VerboseColor, OutputFlags.All, "RULE: ", msg, args);
+            base.Out(VerboseColor, TraceLevel.Diagnostic, "RULE: ", msg, args);
         }
 
         public void ExceptionWhileRemovingAttachment(Exception ex, Attachment a, WorkItem target)

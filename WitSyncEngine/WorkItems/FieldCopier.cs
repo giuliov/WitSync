@@ -65,7 +65,9 @@ namespace WitSync
                 else if (!string.IsNullOrWhiteSpace(rule.Set))
                 {
                     engineEvents.TraceRule("Set {0} to value '{1}'", targetFieldName, rule.Set);
-                    copyAction = (src, dst) => { SetFieldWithConstant(dst, rule.Set); };
+                    copyAction = (src, dst) => {
+                        engineEvents.Trace("  *** converting '{0}' to {1}", rule.Set, dst.FieldDefinition.FieldType);
+                        SetFieldWithConstant(dst, rule.Set); };
                 }
                 else if (!string.IsNullOrWhiteSpace(rule.SetIfNull))
                 {
@@ -176,6 +178,7 @@ namespace WitSync
             {
                 try
                 {
+                    engineEvents.Trace("Assigning field {0}", task.TargetFieldName);
                     task.CopyAction(null, target.Fields[task.TargetFieldName]);
                 }
                 catch (Exception ex)

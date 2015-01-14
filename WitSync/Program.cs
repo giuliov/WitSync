@@ -50,7 +50,7 @@ namespace WitSync
 
 
             // with user's need in hand, build the pipeline
-            var eventHandler = new EngineEventHandler(configuration.Logging != LoggingLevel.Normal, configuration.LogFile);
+            var eventHandler = new EngineEventHandler(Convert(configuration.Logging), EventHandlerBase.TraceDevice.All, configuration.LogFile);
             eventHandler.FirstMessage(logHeader);
             //TODO eventHandler.DumpOptions(configuration);
 
@@ -85,6 +85,21 @@ namespace WitSync
 
             eventHandler.LastMessage(rc);
             return rc;
+        }
+
+        private static EventHandlerBase.TraceLevel Convert(LoggingLevel loggingLevel)
+        {
+            switch (loggingLevel)
+            {
+                case LoggingLevel.Normal:
+                    return EventHandlerBase.TraceLevel.Normal;
+                case LoggingLevel.Verbose:
+                    return EventHandlerBase.TraceLevel.Verbose;
+                case LoggingLevel.Diagnostic:
+                    return EventHandlerBase.TraceLevel.Diagnostic;
+                default:
+                    throw new ArgumentOutOfRangeException("LoggingLevel");
+            }//switch
         }
     }
 }

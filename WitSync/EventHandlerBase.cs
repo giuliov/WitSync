@@ -7,11 +7,18 @@ namespace WitSync
 {
     class EventHandlerBase : IEngineTracing
     {
-        [Flags]
-        protected enum OutputFlags
+        public enum TraceLevel
         {
-            Debug = 1,
-            Console = 2,
+            Normal = 10,
+            Verbose = 20,
+            Diagnostic = 30,
+        }
+
+        [Flags]
+        public enum TraceDevice
+        {
+            Debug = 0x40,
+            Console = 0x80,
             All = 0xff
         }
 
@@ -22,94 +29,95 @@ namespace WitSync
         protected const ConsoleColor WarningColor = ConsoleColor.Yellow;
         protected const ConsoleColor ErrorColor = ConsoleColor.Red;
 
-        private bool verbose;
+        private TraceLevel minLevel;
+        private TraceDevice device;
         private string logFile;
 
-        public EventHandlerBase(bool verbose, string logFile)
+        public EventHandlerBase(TraceLevel level, TraceDevice device, string logFile)
         {
-            this.verbose = verbose;
+            this.minLevel = level;
+            this.device = device;
             this.logFile = logFile;
         }
 
         protected void Verbose(string format, params object[] args)
         {
-            OutputFlags outFlags = this.verbose ? OutputFlags.All : OutputFlags.Debug;
-            Out(VerboseColor, outFlags, "VERBOSE: ", format, args);
+            Out(VerboseColor, TraceLevel.Verbose, "VERBOSE: ", format, args);
         }
 
         protected void UniqueVerbose(string format, params object[] args)
         {
-            OutputFlags outFlags = this.verbose ? OutputFlags.All : OutputFlags.Debug;
-            UniqueOut(VerboseColor, outFlags, "VERBOSE: ", format, args);
+            UniqueOut(VerboseColor, TraceLevel.Verbose, "VERBOSE: ", format, args);
         }
 
         protected void Success(string format, params object[] args)
         {
-            Out(SuccessColor, OutputFlags.All, string.Empty, format, args);
+            Out(SuccessColor, TraceLevel.Normal, string.Empty, format, args);
         }
 
         protected void Info(string format, params object[] args)
         {
-            Out(InfoColor, OutputFlags.All, string.Empty, format, args);
+            Out(InfoColor, TraceLevel.Normal, string.Empty, format, args);
         }
 
         protected void Warning(string format, params object[] args)
         {
-            Out(WarningColor, OutputFlags.All, "WARNING: ", format, args);
+            Out(WarningColor, TraceLevel.Normal, "WARNING: ", format, args);
         }
 
         protected void Error(string format, params object[] args)
         {
-            Out(ErrorColor, OutputFlags.All, "ERROR: ", format, args);
+            Out(ErrorColor, TraceLevel.Normal, "ERROR: ", format, args);
         }
 
         protected void UniqueWarning(string format, params object[] args)
         {
-            UniqueOut(WarningColor, OutputFlags.All, "WARNING: ", format, args);
+            UniqueOut(WarningColor, TraceLevel.Normal, "WARNING: ", format, args);
         }
 
         protected void UniqueError(string format, params object[] args)
         {
-            UniqueOut(ErrorColor, OutputFlags.All, "ERROR: ", format, args);
+            UniqueOut(ErrorColor, TraceLevel.Normal, "ERROR: ", format, args);
         }
 
         private HashSet<int> outputted = new HashSet<int>();
 
-        protected void UniqueOut(ConsoleColor color, OutputFlags outFlags, string prefix, string format, object[] args)
+        protected void UniqueOut(ConsoleColor color, TraceLevel level, string prefix, string format, object[] args)
         {
             string message = string.Format(format, args: args);
             int key = message.GetHashCode();
 
             if (!outputted.Contains(key))
             {
-                OutCore(color, outFlags, prefix, message);
+                OutCore(color, level, prefix, message);
                 outputted.Add(key);
             }//if
         }
 
-        protected void RawOut(ConsoleColor color, OutputFlags outFlags, string format, params object[] args)
+        protected void RawOut(ConsoleColor color, TraceLevel level, string format, params object[] args)
         {
             string message = args != null ? string.Format(format, args: args) : format;
-
-            OutCore(color, outFlags, string.Empty, message);
+            OutCore(color, level, string.Empty, message);
         }
 
-        protected void Out(ConsoleColor color, OutputFlags outFlags, string prefix, string format, object[] args)
+        protected void Out(ConsoleColor color, TraceLevel level, string prefix, string format, object[] args)
         {
             string message = args != null ? string.Format(format, args: args) : format;
-
-            OutCore(color, outFlags, prefix, message);
+            OutCore(color, level, prefix, message);
         }
 
-        protected void OutCore(ConsoleColor color, OutputFlags outFlags, string prefix, string message)
+        protected void OutCore(ConsoleColor color, TraceLevel level, string prefix, string message)
         {
-            if ((outFlags & OutputFlags.Debug) == OutputFlags.Debug)
+            if (level > this.minLevel)
+                return;
+
+            if ((device & TraceDevice.Debug) == TraceDevice.Debug)
             {
                 System.Diagnostics.Debug.Write(prefix);
                 System.Diagnostics.Debug.WriteLine(message);
             }
 
-            if ((outFlags & OutputFlags.Console) == OutputFlags.Console)
+            if ((device & TraceDevice.Console) == TraceDevice.Console)
             {
                 var save = Console.ForegroundColor;
                 Console.ForegroundColor = color;
@@ -130,7 +138,7 @@ namespace WitSync
 
         public void Trace(string format, params object[] args)
         {
-            Out(DebugColor, OutputFlags.All, "DEBUG: ", format, args);
+            Out(DebugColor, TraceLevel.Diagnostic, "DEBUG: ", format, args);
         }
     }
 }
