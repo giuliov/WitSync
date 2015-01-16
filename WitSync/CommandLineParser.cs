@@ -86,7 +86,7 @@ namespace WitSync
                 Console.WriteLine(e.Message);
                 return null;
             }//try
-            
+
             return configuration;
         }
 
@@ -94,43 +94,43 @@ namespace WitSync
         {
             var p = new OptionSet()
             {
-            { "h|help",  "Shows this message and exit", 
+            { "h|help",  "Shows this message and exit",
               value => options.ShowHelp = value != null },
-            { "m|configuration:",  "Configuration & Mapping file", 
+            { "m|configuration:",  "Configuration & Mapping file",
               value => { options.MappingFile = value; options.ShowHelp = false; } },
-            { "g|generate:",  "Generate sample configuration file", 
+            { "g|generate:",  "Generate sample configuration file",
               value => { options.SampleFile = value; options.ShowHelp = false; } },
             // pipeline behavior
-            { "e|stopOnError",  "Stops if pipeline stage fails", 
+            { "e|stopOnError",  "Stops if pipeline stage fails",
               value => configuration.StopPipelineOnFirstError = value != null },
-            { "t|test",  "Test and does not save changes to target", 
+            { "t|test",  "Test and does not save changes to target",
               value => configuration.TestOnly = value != null },
             //logging
-            { "l|log:",  "Write complete log to file", 
+            { "l|log:",  "Write complete log to file",
               value => configuration.LogFile = value },
-            { "v|verbosity:",  string.Format("Verbosity level: {0}", string.Join(",", Enum.GetNames(typeof(LoggingLevel)))), 
+            { "v|verbosity:",  string.Format("Verbosity level: {0}", string.Join(",", Enum.GetNames(typeof(LoggingLevel)))),
               value => configuration.Logging = (LoggingLevel)Enum.Parse(typeof(LoggingLevel),value) },
             // data files
-            { "i|index:",  "Index file, e.g. MyIndex.xml", 
+            { "i|index:",  "Index file, e.g. MyIndex.xml",
               value => configuration.WorkItemsStage.IndexFile = value },
-            { "c|changeLog:",  "ChangeLog file, e.g. ChangeLog.csv", 
+            { "c|changeLog:",  "ChangeLog file, e.g. ChangeLog.csv",
               value => configuration.ChangeLogFile = value },
             // connection group
-            { "sc|sourceCollection:",  "Source Collection Url, e.g. http://localhost:8080/tfs/DefaultCollection", 
+            { "sc|sourceCollection:",  "Source Collection Url, e.g. http://localhost:8080/tfs/DefaultCollection",
               value => configuration.SourceConnection.CollectionUrl = value },
-            { "dc|destinationCollection:",  "Destination Collection Url, e.g. http://localhost:8080/tfs/DefaultCollection", 
+            { "dc|destinationCollection:",  "Destination Collection Url, e.g. http://localhost:8080/tfs/DefaultCollection",
               value => configuration.DestinationConnection.CollectionUrl = value },
-            { "sp|sourceProject:",  "Source Project Name", 
+            { "sp|sourceProject:",  "Source Project Name",
               value => configuration.SourceConnection.ProjectName = value },
-            { "dp|destinationProject:",  "Destination Project Name", 
+            { "dp|destinationProject:",  "Destination Project Name",
               value => configuration.DestinationConnection.ProjectName = value },
-            { "su|sourceUser:",  "Username connecting to Source", 
+            { "su|sourceUser:",  "Username connecting to Source",
               value => configuration.SourceConnection.User = value },
-            { "du|destinationUser:",  "Username connecting to Destination", 
+            { "du|destinationUser:",  "Username connecting to Destination",
               value => configuration.DestinationConnection.User = value },
-            { "sw|sourcePassword:",  "Password for Source user", 
+            { "sw|sourcePassword:",  "Password for Source user",
               value => configuration.SourceConnection.Password = value },
-            { "dw|destinationPassword:",  "Password for Destination user", 
+            { "dw|destinationPassword:",  "Password for Destination user",
               value => configuration.DestinationConnection.Password = value },
             };
             return p;

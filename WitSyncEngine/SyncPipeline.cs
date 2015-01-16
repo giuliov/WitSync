@@ -89,7 +89,7 @@ namespace WitSync
             }
             catch (Exception ex)
             {
-                eventSink.InternalError(ex);                
+                eventSink.InternalError(ex);
                 return -99;
             }//try
         }
