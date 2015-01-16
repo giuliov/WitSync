@@ -35,34 +35,70 @@ namespace WitSync
             {
                 if (link.BaseType == BaseLinkType.ExternalLink)
                 {
-                    // TODO these are meaningful only in the same Collection
-#if false
                     var eLink = link as ExternalLink;
-                    // something interesting?
-                    RegisteredLinkType registeredType = sourceWI.Store.RegisteredLinkTypes[eLink.ArtifactLinkType];
-                    var cloneLink = new ExternalLink(registeredType, eLink.LinkedArtifactUri);
-                    cloneLink.Comment = eLink.Comment;
-                    cloneWI.Links.Add(cloneLink);
-#endif
+                    try
+                    {
+                        MapSingleExternalLink(sourceWI, cloneWI, eLink);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.EventSink.ExceptionWhileMappingLink(ex, eLink);
+                    }
                 }
                 else if (link.BaseType == BaseLinkType.RelatedLink)
                 {
-                    // TODO how they can be meaningful in different Collections?
-#if false
                     var rLink = link as RelatedLink;
-                    var cloneLink = new RelatedLink(rLink.LinkTypeEnd, rLink.RelatedWorkItemId);
-                    cloneLink.Comment = rLink.Comment;
-                    cloneWI.Links.Add(cloneLink);
-#endif
+                    try
+                    {
+                        MapSingleRelatedLink(cloneWI, rLink);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.EventSink.ExceptionWhileMappingLink(ex, rLink);
+                    }
                 }
                 else if (link.BaseType == BaseLinkType.Hyperlink)
                 {
                     var hLink = link as Hyperlink;
-                    var cloneLink = new Hyperlink(hLink.Location);
-                    cloneLink.Comment = hLink.Comment;
-                    cloneWI.Links.Add(cloneLink);
+                    try
+                    {
+                        MapSingleHyperlink(cloneWI, hLink);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.EventSink.ExceptionWhileMappingLink(ex, hLink);
+                    }
                 }//if
             }//for
+        }
+
+        private static void MapSingleExternalLink(WorkItem sourceWI, WorkItem cloneWI, ExternalLink eLink)
+        {
+            // TODO these are meaningful only in the same Collection
+#if false
+            // something interesting?
+            RegisteredLinkType registeredType = sourceWI.Store.RegisteredLinkTypes[eLink.ArtifactLinkType];
+            var cloneLink = new ExternalLink(registeredType, eLink.LinkedArtifactUri);
+            cloneLink.Comment = eLink.Comment;
+            cloneWI.Links.Add(cloneLink);
+#endif
+        }
+
+        private static void MapSingleRelatedLink(WorkItem cloneWI, RelatedLink rLink)
+        {
+            // TODO how they can be meaningful in different Collections?
+#if false
+            var cloneLink = new RelatedLink(rLink.LinkTypeEnd, rLink.RelatedWorkItemId);
+            cloneLink.Comment = rLink.Comment;
+            cloneWI.Links.Add(cloneLink);
+#endif
+        }
+
+        private static void MapSingleHyperlink(WorkItem cloneWI, Hyperlink hLink)
+        {
+            var cloneLink = new Hyperlink(hLink.Location);
+            cloneLink.Comment = hLink.Comment;
+            cloneWI.Links.Add(cloneLink);
         }
 
         private void MapWorkItemLinks(List<WorkItem> validWorkItems, List<WorkItemLink> changedLinks, WorkItem sourceWI)

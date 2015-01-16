@@ -137,7 +137,9 @@ namespace WitSync
 
         public int GetIdFromSourceId(int originatingId)
         {
-            return ForwardIndex[originatingId];
+            int retval = 0;
+            ForwardIndex.TryGetValue(originatingId, out retval);
+            return retval;
         }
 
         public WorkItem GetWorkItemFromSourceId(int originatingId)
