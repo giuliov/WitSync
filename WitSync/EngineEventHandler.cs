@@ -228,7 +228,7 @@ namespace WitSync
 
         public void SaveSecondPassUpdatingNewWorkItemsState(List<WorkItem> newWorkItems)
         {
-            this.Verbose("Second pass, saving new work items using correct state");
+            this.Verbose("Second pass, updating new work items with correct state");
         }
 
         public void SaveThirdPassSavingUpdatedWorkItems(List<WorkItem> updatedWorkItems)
