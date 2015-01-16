@@ -211,6 +211,11 @@ namespace WitSync
             this.Warning("    Value '{1}' is not valid for field {0} (Status {2}).", item.ReferenceName, item.Value, item.Status);
         }
 
+        public void RollbackOnValidationError(Field item)
+        {
+            this.Warning("    Value '{1}' is not valid for field {0} (Status {2}), rolling back to '{3}'.", item.ReferenceName, item.Value, item.Status, item.OriginalValue);
+        }
+
         public void BypassingRulesOnDestinationWorkItemStore(TfsConnection destConn)
         {
             this.Info("Bypassing validation rules on destination project {0}.", destConn.ProjectName);
@@ -292,9 +297,30 @@ namespace WitSync
 
         public void ExceptionWhileMappingLink(Exception ex, WorkItemLink sourceLink)
         {
-            this.Error("While link {2}->{3} (type {4}): {0}\r\n{1}"
+            this.Error("While work item link {2}->{3} (type {4}): {0}\r\n{1}"
                 , ex.Message, ex.StackTrace
                 , sourceLink.SourceId, sourceLink.TargetId, sourceLink.LinkTypeEnd.Name);
+        }
+
+        public void ExceptionWhileMappingLink(Exception ex, ExternalLink link)
+        {
+            this.Error("While external link {2} (type {3}): {0}\r\n{1}"
+                , ex.Message, ex.StackTrace
+                , link.ArtifactLinkType.Name, link.LinkedArtifactUri);
+        }
+
+        public void ExceptionWhileMappingLink(Exception ex, RelatedLink link)
+        {
+            this.Error("While related link ->{2} (type {3}): {0}\r\n{1}"
+                , ex.Message, ex.StackTrace
+                , link.RelatedWorkItemId, link.LinkTypeEnd.Name);
+        }
+
+        public void ExceptionWhileMappingLink(Exception ex, Hyperlink link)
+        {
+            this.Error("While hyperlink {2}: {0}\r\n{1}"
+                , ex.Message, ex.StackTrace
+                , link.Location);
         }
 
         public void DumpOptions(WorkItemsStageConfiguration.Modes options)
@@ -458,7 +484,7 @@ namespace WitSync
         {
             this.Error("While adding Attachment '{2}' from #{3}: {0}\r\n{1}", ex.Message, ex.StackTrace, a.Name, source.Id);
         }
-        
+
         public void ExceptionWhileCopyingField(Exception ex, Field fromField)
         {
             this.Error("While copying Field {1}: {0}", ex.Message, fromField.ReferenceName);

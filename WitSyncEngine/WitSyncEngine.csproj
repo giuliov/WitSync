@@ -63,6 +63,7 @@
     <Compile Include="ConfigurationBase.cs" />
     <Compile Include="PipelineStage.cs" />
     <Compile Include="StageConfiguration.cs" />
+    <Compile Include="WorkItems\Attachments.cs" />
     <Compile Include="WorkItems\FieldCopier.cs" />
     <Compile Include="PipelineConfiguration.cs" />
     <Compile Include="GlobalLists\GlobalListsStageConfiguration.cs" />

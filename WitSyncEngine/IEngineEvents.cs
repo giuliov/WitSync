@@ -45,6 +45,7 @@ namespace WitSync
         void NoRuleFor(WorkItemType sourceType, string field);
         void SavingSkipped();
         void ValidationError(Field item);
+        void RollbackOnValidationError(Field item);
         void BypassingRulesOnDestinationWorkItemStore(TfsConnection destConn);
         void UsingThreePassSavingAlgorithm();
         void SaveFirstPassSavingNewWorkItems(List<WorkItem> newWorkItems);
@@ -57,7 +58,11 @@ namespace WitSync
         void TargetMissingForLink(WorkItemLink sourceLink, int parentId, int childId);
         void SkippingLink(WorkItemLink sourceLink);
         void MappingFileNotFoundAssumeDefaults(string path);
+        // 4 overloads
         void ExceptionWhileMappingLink(Exception ex, WorkItemLink sourceLink);
+        void ExceptionWhileMappingLink(Exception ex, ExternalLink link);
+        void ExceptionWhileMappingLink(Exception ex, RelatedLink link);
+        void ExceptionWhileMappingLink(Exception ex, Hyperlink link);
         void ExceptionWhileMappingWorkItem(Exception ex, WorkItem sourceWorkItem);
         void DumpOptions(WorkItemsStageConfiguration.Modes options);
         void ReadingGlobalListsFromSource();

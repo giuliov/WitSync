@@ -87,8 +87,9 @@ namespace WitSync
     {
         public WorkItemMap()
         {
-            // default
+            // defaults
             this.Attachments = AttachmentMode.Sync;
+            this.RollbackValidationErrors = true;
             this.DefaultRules = true;
         }
 
@@ -117,6 +118,8 @@ namespace WitSync
         public AttachmentMode Attachments { get; set; }
         [XmlAttribute("DefaultRules")]
         public bool DefaultRules { get; set; }
+        [XmlAttribute("RollbackValidationErrors")]
+        public bool RollbackValidationErrors { get; set; }
 
         [XmlIgnore]
         [YamlIgnore]
@@ -302,6 +305,7 @@ namespace WitSync
                     new WorkItemMap() {
                         SourceType = "srctype", DestinationType="desttype",
                         Attachments = WorkItemMap.AttachmentMode.Sync,
+                        RollbackValidationErrors = true,
                         IDField = new FieldMap() { Source="srcID", Destination="dstID" },
                         StateList = new StateList() {
                         States = new StateMap[] {
@@ -359,6 +363,7 @@ namespace WitSync
                             SourceType = wit.Name,
                             DestinationType = wit.Name,
                             Attachments = WorkItemMap.AttachmentMode.Sync,
+                            RollbackValidationErrors = true,
                             Fields = defaultFieldRules
                         };
                 }));

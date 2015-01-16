@@ -306,13 +306,18 @@ workItemsStage:
       # list of Field mapping rules
     attachments: Sync
     defaultRules: true
+    rollbackValidationErrors: true
 ```
 
 Note that you can map different work item types, e.g. _Bugs_ to _Issues_, or _Product Backlog Items_ to _User Stories_.
 
 To avoid syncing attachments, set Attachments to `DoNotSync`.
 
-If you do not specify any Work Item mapping, Work Items maps to the same type on the destination, assuming the same set of States and Fields. This is done via the rules included by default. If you want to exclude the default rules, set `defaultRules` to `true`.
+If you do not specify any Work Item mapping, Work Items maps to the same type on the destination, assuming the same set of States and Fields. This is done via the rules included by default.
+If you want to exclude the default rules, set `defaultRules` to `false`.
+By default, validation errors are cured by rolling back the culprit value to the original.
+If you do not want this, set `rollbackValidationErrors` to `false`.
+
 
 #### ID Field (_optional_)
 WitSync uses the work item ID field (`System.Id`) to uniquely identify them. There are two ways to relate work items on the destination  project:
