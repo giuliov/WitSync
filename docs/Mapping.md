@@ -399,6 +399,16 @@ workItemsStage:
       set: '3 - Medium'
 ```
 
+can use if null also
+
+```YAML
+workItemsStage:
+  workItemMappings:
+    fields:
+    - destination: Microsoft.VSTS.Common.Severity
+      setIfNull: '3 - Medium'
+```
+
 ##### Wildcard rule
 Fields that exists on destination are copied. Must appear only once and last in the list.
 ```YAML

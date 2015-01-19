@@ -115,8 +115,12 @@ namespace WitSync
 
                 foreach (var fieldRule in wiMapping.Fields)
                 {
-                    // check combo, valid combos are: S+D S+D+T D+S
-                    if (!string.IsNullOrWhiteSpace(fieldRule.Set)) {
+                    bool isSetRule = !string.IsNullOrWhiteSpace(fieldRule.Set);
+                    bool isSetIfNullRule = !string.IsNullOrWhiteSpace(fieldRule.SetIfNull);
+
+                    // check combo, valid combos are: S+D S+D+T D+S D+Sif
+                    if (isSetRule || isSetIfNullRule)
+                    {
                         // Set rule
                         if (!string.IsNullOrWhiteSpace(fieldRule.Source))
                             Log("Invalid Set rule for destination field '{1}/{0}'."
@@ -152,30 +156,32 @@ namespace WitSync
                             Log("Translator {0} does not exists.", fieldRule.Translate);
                     }//if
 
-                    // check on Set
-                    if (!string.IsNullOrWhiteSpace(fieldRule.Set))
+                    // check on Set & SetIfNull
+                    if (isSetRule || isSetIfNullRule)
                     {
                         // TODO can fail!
                         var destFieldType = this.destWIStore.FieldDefinitions[fieldRule.Destination].FieldType;
+
+                        string setValue = isSetRule ? fieldRule.Set : fieldRule.SetIfNull;
 
                         bool parseOk = false;
                         switch (destFieldType)
                         {
                             case FieldType.Boolean:
                                 bool _bool;
-                                parseOk = bool.TryParse(fieldRule.Set, out _bool);
+                                parseOk = bool.TryParse(setValue, out _bool);
                                 break;
                             case FieldType.DateTime:
                                 DateTime _DateTime;
-                                parseOk = DateTime.TryParse(fieldRule.Set, out _DateTime);
+                                parseOk = DateTime.TryParse(setValue, out _DateTime);
                                 break;
                             case FieldType.Double:
                                 double _double;
-                                parseOk = double.TryParse(fieldRule.Set, out _double);
+                                parseOk = double.TryParse(setValue, out _double);
                                 break;
                             case FieldType.Guid:
                                 Guid _Guid;
-                                parseOk = Guid.TryParse(fieldRule.Set, out _Guid);
+                                parseOk = Guid.TryParse(setValue, out _Guid);
                                 break;
                             case FieldType.History:
                                 Log("Destination field '{1}/{0}' has {2} type and cannot be set."
@@ -188,7 +194,7 @@ namespace WitSync
                                 break;
                             case FieldType.Integer:
                                 int _int;
-                                parseOk = int.TryParse(fieldRule.Set, out _int);
+                                parseOk = int.TryParse(setValue, out _int);
                                 break;
                             case FieldType.Internal:
                                 Log("Destination field '{1}/{0}' has {2} type and cannot be set."
@@ -207,7 +213,7 @@ namespace WitSync
                                 parseOk = true;
                                 break;
                             default:
-                                Log("Destination field '{1}/{0}' has unknow type {2}."
+                                Log("Destination field '{1}/{0}' has unknown type {2}."
                                     , fieldRule.Destination, wiMapping.DestinationType, destFieldType);
                                 parseOk = false;
                                 break;
@@ -215,7 +221,7 @@ namespace WitSync
                         if (!parseOk)
                         {
                             Log("Cannot set destination field '{1}/{0}' to '{2}': invalid value."
-                                , fieldRule.Destination, wiMapping.DestinationType, fieldRule.Set);
+                                , fieldRule.Destination, wiMapping.DestinationType, setValue);
                         }//if
                     }//if
                 }//for

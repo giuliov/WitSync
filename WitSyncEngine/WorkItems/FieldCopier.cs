@@ -127,13 +127,34 @@ namespace WitSync
             {
                 if (string.IsNullOrWhiteSpace(rule.Source))
                 {
-                    engineEvents.TraceRule("Set {0} to value '{1}'", rule.Destination, rule.Set);
-                    unboundTasks.Add(new CopyTask()
+                    if (!string.IsNullOrWhiteSpace(rule.Set))
                     {
-                        SourceFieldName = string.Empty,
-                        CopyAction = (src, dst) => { SetFieldWithConstant(dst, rule.Set); },
-                        TargetFieldName = rule.Destination
-                    });
+                        engineEvents.TraceRule("Set {0} to value '{1}'", rule.Destination, rule.Set);
+                        unboundTasks.Add(new CopyTask()
+                        {
+                            SourceFieldName = string.Empty,
+                            CopyAction = (src, dst) => { SetFieldWithConstant(dst, rule.Set); },
+                            TargetFieldName = rule.Destination
+                        });
+                    }
+                    else if (!string.IsNullOrWhiteSpace(rule.SetIfNull))
+                    {
+                        engineEvents.TraceRule("Set {0} to value '{1}' when destination is null or empty", rule.Destination, rule.SetIfNull);
+                        unboundTasks.Add(new CopyTask()
+                        {
+                            SourceFieldName = string.Empty,
+                            CopyAction = (src, dst) =>
+                            {
+
+                                if (dst.Value == null || string.IsNullOrEmpty(dst.Value.ToString()))
+                                {
+                                    SetFieldWithConstant(dst, rule.SetIfNull);
+                                }
+
+                            },
+                            TargetFieldName = rule.Destination
+                        });
+                    }
                 }//if
             }//for
         }

@@ -143,7 +143,7 @@ namespace WitSync
                 if (sourceIdOnDest > 0 && targetIdOnDest > 0)
                 {
                     var sourceWIOnDest = validWorkItems.Where(w => w.Id == sourceIdOnDest).FirstOrDefault();
-                    Debug.Assert(sourceWIOnDest != null);
+                    //Debug.Assert(sourceWIOnDest != null);
 
                     WorkItemLinkTypeEnd destLinkType = null;
                     if (rule.IsWildcard)
