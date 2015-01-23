@@ -32,6 +32,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{3B935B27
 		build\WitSync.nuspec = build\WitSync.nuspec
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WitSyncGUI", "WitSyncGUI\WitSyncGUI.csproj", "{1246D28D-7064-4F58-BCE9-38FEDB9E2B8C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,6 +60,12 @@ Global
 		{2AB9044B-5CB3-41DE-BCDA-B384F6B44292}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2AB9044B-5CB3-41DE-BCDA-B384F6B44292}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2AB9044B-5CB3-41DE-BCDA-B384F6B44292}.Release|x86.ActiveCfg = Release|Any CPU
+		{1246D28D-7064-4F58-BCE9-38FEDB9E2B8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1246D28D-7064-4F58-BCE9-38FEDB9E2B8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1246D28D-7064-4F58-BCE9-38FEDB9E2B8C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1246D28D-7064-4F58-BCE9-38FEDB9E2B8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1246D28D-7064-4F58-BCE9-38FEDB9E2B8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1246D28D-7064-4F58-BCE9-38FEDB9E2B8C}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>witsync</id>
-    <version>0.7-beta</version>
+    <version>0.8-beta</version>
     <title>WitSync</title>
     <authors>Giulio Vian</authors>
     <owners>Giulio Vian</owners>
@@ -11,7 +11,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Team Foundation Server Work Item Synchronization tool</description>
     <releaseNotes>Reworked the command line and pipeline to be easily maintenable.</releaseNotes>
-    <copyright>Copyright 2014</copyright>
+    <copyright>Copyright 2014-5</copyright>
     <tags>TFS</tags>
     <!-- this is a Chocolatey package using explicit file list, no need for dependencies -->
     <dependencies />
