@@ -10,46 +10,6 @@ namespace WitSync
 {
     public class SyncPipeline
     {
-        public class StageInfo
-        {
-            public int Order { get; set; }
-            public Type Type { get; set; }
-            public string Name
-            {
-                get
-                {
-                    return this.Type.Name.Replace("Stage", "");
-                }
-            }
-            public string ConfigurationProperty { get; set; }
-            public StageConfiguration GetConfiguration(PipelineConfiguration parent)
-            {
-                string propName = this.ConfigurationProperty ?? this.Type.Name;
-                return parent.GetType().GetProperty(propName).GetValue(parent) as StageConfiguration;
-            }
-        }//class
-
-        static private StageInfo[] possibleStages = new StageInfo[] {
-            new StageInfo() { Order = 10, Type = typeof(GlobalListsStage) },
-            new StageInfo() { Order = 20, Type = typeof(AreasAndIterationsStage) },
-            new StageInfo() { Order = 21, Type = typeof(AreasStage), ConfigurationProperty = "AreasAndIterationsStageConfiguration" },
-            new StageInfo() { Order = 22, Type = typeof(IterationsStage), ConfigurationProperty = "AreasAndIterationsStageConfiguration" },
-            new StageInfo() { Order = 30, Type = typeof(WorkItemsStage) },
-        };
-
-        private string DeAlias(string name)
-        {
-            switch (name)
-            {
-                case "Areas":
-                    return "AreasAndIterations";
-                case "Iterations":
-                    return "AreasAndIterations";
-                default:
-                    return name;
-            }
-        }
-
         PipelineConfiguration configuration;
 
         List<PipelineStage> requestedStages = new List<PipelineStage>();
@@ -96,17 +56,12 @@ namespace WitSync
 
         private void BuildPipeline()
         {
-            foreach (var info in possibleStages.OrderBy(x => x.Order))
+            StageInfo.Build(configuration, info =>
             {
-                if (configuration.PipelineStages.Contains(info.Name, StringComparer.InvariantCultureIgnoreCase))
-                {
-                    //build
-                    var ctor = info.Type.GetConstructor(new Type[] { typeof(TfsConnection), typeof(TfsConnection), typeof(IEngineEvents) });
-                    var stage = ctor.Invoke(new object[] { sourceConn, destConn, eventSink }) as PipelineStage;
-                    requestedStages.Add(stage);
-                }//if
-            }//for
-
+                var ctor = info.Type.GetConstructor(new Type[] { typeof(TfsConnection), typeof(TfsConnection), typeof(IEngineEvents) });
+                var stage = ctor.Invoke(new object[] { sourceConn, destConn, eventSink }) as PipelineStage;
+                requestedStages.Add(stage);
+            });
         }
 
         private void PrepareStages()
@@ -194,7 +149,7 @@ namespace WitSync
 
         internal StageConfiguration GetStageConfiguration(PipelineStage stage)
         {
-            var info = possibleStages.Where(x => x.Name == DeAlias(stage.Name)).FirstOrDefault();
+            var info = StageInfo.Get(stage.Name);
             if (info != null)
                 return info.GetConfiguration(configuration);
             // catch design errors

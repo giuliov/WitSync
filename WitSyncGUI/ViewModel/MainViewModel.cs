@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using WitSyncGUI.Helpers;
 using System.Collections.ObjectModel;
 using WitSyncGUI.Model;
+using WitSync;
 
 namespace WitSyncGUI.ViewModel
 {
@@ -43,8 +44,16 @@ namespace WitSyncGUI.ViewModel
             get { return Repository.Filename; }
         }
 
-        private string[] stageNames = new string[] { "globallists", "areas", "iterations", "workitems" };
-        private Type[] stage = new Type[] { typeof(GlobalListsViewModel), typeof(AreasViewModel), typeof(IterationsViewModel), typeof(WorkItemsViewModel) };
+        private Type[] stage = new Type[] {  };
+
+        private Dictionary<Type, Type> stageMapping = new Dictionary<Type, Type>()
+        {
+            { typeof(GlobalListsStage), typeof(GlobalListsViewModel) },
+            { typeof(AreasStage),       typeof(AreasViewModel) },
+            { typeof(IterationsStage),  typeof(IterationsViewModel) },
+            { typeof(WorkItemsStage),   typeof(WorkItemsViewModel) }
+        };
+
         ObservableCollection<object> _PipelineStages;
         /// <summary>
         /// Returns the collection of available workspaces to display.
@@ -56,18 +65,16 @@ namespace WitSyncGUI.ViewModel
             {
                 if (_PipelineStages == null && Repository.MappingFile != null)
                 {
+                    // maps each stage configuration section to a ViewModel
                     _PipelineStages = new ObservableCollection<object>();
-                    // always present
+                    // this is not a stage, but general configuration (e.g. logging) and must always be present
                     _PipelineStages.Add(new GeneralViewModel());
-                    //fill from model
-                    for (int i=0; i < stageNames.Length; i++)
+
+                    WitSync.StageInfo.Build(Repository.MappingFile, info =>
                     {
-                        if (Repository.MappingFile.PipelineStages.Contains(stageNames[i]))
-                        {
-                            object obj = Activator.CreateInstance(stage[i]);
-                            _PipelineStages.Add(obj);
-                        }//if
-                    }//for
+                        object obj = Activator.CreateInstance(stageMapping[info.Type]);
+                        _PipelineStages.Add(obj);
+                    });
                 }//if
                 return _PipelineStages;
             }
