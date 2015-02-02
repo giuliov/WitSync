@@ -1,8 +1,110 @@
 ﻿<Window x:Class="WitSyncGUI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Wit Sync" Height="350" Width="525">
-    <Grid>
-        
-    </Grid>
+        xmlns:vm="clr-namespace:WitSyncGUI.ViewModel"
+        xmlns:vw="clr-namespace:WitSyncGUI.View"
+        Title="{Binding Path=Title}"
+        Width="960"
+        Height="600"
+        Icon="/WitSyncGUI;component/images/Witsync01_32.ico"
+        WindowStartupLocation="CenterScreen">
+    <Window.DataContext>
+        <vm:MainViewModel x:Name="viewModel" />
+    </Window.DataContext>
+    <Window.Resources>
+        <!--
+            This template explains how to render tab items
+        -->
+        <DataTemplate x:Key="TabItemTemplate">
+            <DockPanel Width="120">
+                <ContentPresenter VerticalAlignment="Center" Content="{Binding Path=StageName}" />
+            </DockPanel>
+        </DataTemplate>
+        <!--
+            This template explains how to render the 'Workspace' content area in the main window.
+        -->
+        <DataTemplate x:Key="PipelineStageTemplate">
+            <TabControl Margin="4"
+                        IsSynchronizedWithCurrentItem="True"
+                        ItemTemplate="{StaticResource TabItemTemplate}"
+                        ItemsSource="{Binding}" />
+        </DataTemplate>
+        <!--
+        This templates apply a <Section>View to an instance
+        of the <Section>ViewModel class shown in the main window.
+        -->
+        <DataTemplate DataType="{x:Type vm:GeneralViewModel}">
+            <vw:GeneralView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:GlobalListsViewModel}">
+            <vw:GlobalListsView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:AreasViewModel}">
+            <vw:AreasView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:IterationsViewModel}">
+            <vw:IterationsView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:WorkItemsViewModel}">
+            <vw:WorkItemsView />
+        </DataTemplate>
+    </Window.Resources>
+    <StackPanel>
+        <Menu>
+            <MenuItem Header="_File">
+                <MenuItem Width="145"
+                          HorizontalAlignment="Left"
+                          Header="_New" />
+                <MenuItem Width="145"
+                          Click="OpenCommand"
+                          Header="_Open" />
+                <MenuItem Width="145"
+                          HorizontalAlignment="Left"
+                          Header="_Save" />
+                <MenuItem Width="145"
+                          HorizontalAlignment="Left"
+                          Header="Save _As" />
+                <MenuItem Width="145"
+                          HorizontalAlignment="Left"
+                          Header="_Close" />
+                <MenuItem Width="145"
+                          HorizontalAlignment="Left"
+                          Header="E_xit" />
+            </MenuItem>
+        </Menu>
+        <!--<StackPanel Margin="5 10" Orientation="Horizontal">
+            <Label Content="Configuration file" />
+            <TextBox x:Name="ConfigurationFileTextBox"
+                     Height="22"
+                     MinWidth="200"
+                     Margin="5 0 5 0"
+                     IsReadOnly="True"
+                     Text="{Binding Path=Filename,
+                                    Mode=OneWay}"
+                     TextWrapping="NoWrap" />
+        </StackPanel>-->
+        <HeaderedContentControl Content="{Binding Path=PipelineStages}"
+                                ContentTemplate="{StaticResource PipelineStageTemplate}"
+                                Header="{Binding Path=Filename,
+                                                 Mode=OneWay}" />
+        <!--
+        <TabControl TabStripPlacement="Top" Visibility="Hidden">
+            <TabItem Header="General" Visibility="Hidden">
+                <vw:GeneralView />
+            </TabItem>
+            <TabItem Header="Global Lists" Visibility="Hidden">
+                <vw:GlobalListsView />
+            </TabItem>
+            <TabItem Header="Areas" Visibility="Hidden">
+                <vw:AreasView />
+            </TabItem>
+            <TabItem Header="Iterations" Visibility="Hidden">
+                <vw:IterationsView />
+            </TabItem>
+            <TabItem Header="Work Items" Visibility="Hidden">
+                <vw:WorkItemsView />
+            </TabItem>
+        </TabControl>
+        -->
+    </StackPanel>
 </Window>
