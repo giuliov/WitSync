@@ -44,16 +44,6 @@ namespace WitSyncGUI.ViewModel
             get { return Repository.Filename; }
         }
 
-        private Type[] stage = new Type[] {  };
-
-        private Dictionary<Type, Type> stageMapping = new Dictionary<Type, Type>()
-        {
-            { typeof(GlobalListsStage), typeof(GlobalListsViewModel) },
-            { typeof(AreasStage),       typeof(AreasViewModel) },
-            { typeof(IterationsStage),  typeof(IterationsViewModel) },
-            { typeof(WorkItemsStage),   typeof(WorkItemsViewModel) }
-        };
-
         ObservableCollection<object> _PipelineStages;
         /// <summary>
         /// Returns the collection of available workspaces to display.
@@ -72,8 +62,11 @@ namespace WitSyncGUI.ViewModel
 
                     WitSync.StageInfo.Build(Repository.MappingFile, info =>
                     {
-                        object obj = Activator.CreateInstance(stageMapping[info.Type]);
-                        _PipelineStages.Add(obj);
+                        // convention based!
+                        string viewModelTypeName = "WitSyncGUI.ViewModel." + info.Type.Name.Replace("Stage", "ViewModel");
+                        Type viewModelType = Type.GetType(viewModelTypeName);
+                        object viewModel = Activator.CreateInstance(viewModelType);
+                        _PipelineStages.Add(viewModel);
                     });
                 }//if
                 return _PipelineStages;
