@@ -4,12 +4,21 @@
              xmlns:View="clr-namespace:WitSyncGUI.View"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:vm="clr-namespace:WitSyncGUI.ViewModel"
+             xmlns:wit="clr-namespace:WitSync;assembly=WitSyncEngine"
              d:DesignHeight="500"
              d:DesignWidth="950"
              mc:Ignorable="d">
     <UserControl.Resources>
         <vm:GeneralViewModel x:Key="viewModel" />
+        <ObjectDataProvider x:Key="LoggingLevel"
+                            MethodName="GetValues"
+                            ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="wit:LoggingLevel" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
         <Style x:Key="groupTitle" TargetType="Label">
             <Setter Property="FontWeight" Value="Bold" />
         </Style>
@@ -24,41 +33,63 @@
     <Grid DataContext="{Binding Source={StaticResource viewModel}}">
         <StackPanel>
             <Label Content="Run type" Style="{StaticResource ResourceKey=groupTitle}" />
-            <Border Margin="2 0 4 2" Style="{StaticResource ResourceKey=groupBorder}">
-                <StackPanel Orientation="Vertical">
-                    <RadioButton Content="Test run" IsChecked="{Binding Path=IsTestRun, Converter={StaticResource RadioButtonCheckedConverter}, ConverterParameter={StaticResource True}}" />
-                    <RadioButton Content="Production" IsChecked="{Binding Path=IsTestRun, Converter={StaticResource RadioButtonCheckedConverter}, ConverterParameter={StaticResource False}}" />
+            <Border Margin="2 0 4 2"
+                    HorizontalAlignment="Left"
+                    Style="{StaticResource ResourceKey=groupBorder}">
+                <StackPanel HorizontalAlignment="Left" Orientation="Vertical">
+                    <RadioButton HorizontalAlignment="Left"
+                                 Content="Test run"
+                                 IsChecked="{Binding Path=IsTestRun,
+                                                     Converter={StaticResource RadioButtonCheckedConverter},
+                                                     ConverterParameter={StaticResource True}}" />
+                    <RadioButton HorizontalAlignment="Left"
+                                 Content="Production"
+                                 IsChecked="{Binding Path=IsTestRun,
+                                                     Converter={StaticResource RadioButtonCheckedConverter},
+                                                     ConverterParameter={StaticResource False}}" />
                 </StackPanel>
             </Border>
             <StackPanel Orientation="Horizontal">
                 <Border Margin="2 4"
-                        Padding="2"
+                        Padding="2 2 2 6"
                         Style="{StaticResource ResourceKey=groupBorder}">
                     <StackPanel>
                         <Label Content="Source" Style="{StaticResource ResourceKey=groupTitle}" />
-                        <View:TfsProjectControl
-                            MinWidth="450"
-                            DataContext="{Binding Path=SourceConnection}"
-                            CollectionUrl="{Binding Path=CollectionUrl}"
-                            ProjectName="{Binding Path=ProjectName}"
-                            UserName="{Binding Path=User}"
-                            Password="{Binding Path=Password}"/>
+                        <View:TfsProjectControl MinWidth="450"
+                                                CollectionUrl="{Binding Path=CollectionUrl}"
+                                                DataContext="{Binding Path=SourceConnection}"
+                                                Password="{Binding Path=Password}"
+                                                ProjectName="{Binding Path=ProjectName}"
+                                                UserName="{Binding Path=User}" />
                     </StackPanel>
                 </Border>
                 <Border Margin="2 4"
-                        Padding="2"
+                        Padding="2 2 2 6"
                         Style="{StaticResource ResourceKey=groupBorder}">
                     <StackPanel>
                         <Label Content="Destination" Style="{StaticResource ResourceKey=groupTitle}" />
-                        <View:TfsProjectControl
-                            MinWidth="450"
-                            DataContext="{Binding Path=DestinationConnection}"
-                            CollectionUrl="{Binding Path=CollectionUrl}"
-                            ProjectName="{Binding Path=ProjectName}"
-                            UserName="{Binding Path=User}"
-                            Password="{Binding Path=Password}"/>
+                        <View:TfsProjectControl MinWidth="450"
+                                                CollectionUrl="{Binding Path=CollectionUrl}"
+                                                DataContext="{Binding Path=DestinationConnection}"
+                                                Password="{Binding Path=Password}"
+                                                ProjectName="{Binding Path=ProjectName}"
+                                                UserName="{Binding Path=User}" />
                     </StackPanel>
                 </Border>
+            </StackPanel>
+            <StackPanel Margin="0 10 0 0" Orientation="Horizontal">
+                <Label Content="Logging level" />
+                <ComboBox Width="100"
+                          ItemsSource="{Binding Source={StaticResource LoggingLevel}}"
+                          SelectedValue="{Binding Path=Logging}" />
+                <Label Margin="10 0 0 0" Content="Logging file" />
+                <TextBox MinWidth="180" Text="{Binding Path=LogFile}" />
+                <Label Margin="10 0 0 0" Content="ChangeLog file" />
+                <TextBox MinWidth="180" Text="{Binding Path=ChangeLogFile}" />
+                <CheckBox Margin="14,0,0,0"
+                          VerticalAlignment="Center"
+                          Content="Stop Pipeline on first Error"
+                          IsChecked="{Binding Path=StopPipelineOnFirstError}" />
             </StackPanel>
         </StackPanel>
     </Grid>
