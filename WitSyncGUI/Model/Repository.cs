@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WitSync;
 
 namespace WitSyncGUI.Model
 {
@@ -11,20 +12,18 @@ namespace WitSyncGUI.Model
     {
         public static string Filename { get; private set; }
 
-        private static MappingFile instance = null;
+        private static MappingFile configuration = null;
         public static MappingFile MappingFile
         {
             get
             {
-                if (instance != null)
-                    return instance;
-                return instance;
+                return configuration;
             }
         }
 
         internal static void New(string pathToConfigurationFile)
         {
-            instance = MappingFile.Generate();
+            configuration = MappingFile.Generate();
 
             Filename = pathToConfigurationFile;
         }
@@ -36,10 +35,36 @@ namespace WitSyncGUI.Model
                 throw new InvalidOperationException("Configuration filename not found");
             }
 
-            instance = MappingFile.LoadFrom(pathToConfigurationFile);
-            instance.FixNulls();
+            configuration = MappingFile.LoadFrom(pathToConfigurationFile);
+            configuration.FixNulls();
 
             Filename = pathToConfigurationFile;
+        }
+
+        private static TfsExplorer sourceExplorer = null;
+        public static TfsExplorer SourceExplorer
+        {
+            get
+            {
+                if (sourceExplorer != null)
+                    return sourceExplorer;
+                sourceExplorer = new TfsExplorer();
+                sourceExplorer.Connect(MappingFile.SourceConnection);
+                return sourceExplorer;
+            }
+        }
+
+        private static TfsExplorer destinationExplorer = null;
+        public static TfsExplorer DestinationExplorer
+        {
+            get
+            {
+                if (destinationExplorer != null)
+                    return destinationExplorer;
+                destinationExplorer = new TfsExplorer();
+                destinationExplorer.Connect(MappingFile.DestinationConnection);
+                return destinationExplorer;
+            }
         }
     }
 }

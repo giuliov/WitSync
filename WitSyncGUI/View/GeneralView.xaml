@@ -56,10 +56,10 @@
                     <StackPanel>
                         <Label Content="Source" Style="{StaticResource ResourceKey=groupTitle}" />
                         <View:TfsProjectControl MinWidth="450"
-                                                CollectionUrl="{Binding Path=CollectionUrl}"
                                                 DataContext="{Binding Path=SourceConnection}"
-                                                Password="{Binding Path=Password}"
+                                                CollectionUrl="{Binding Path=CollectionUrl}"
                                                 ProjectName="{Binding Path=ProjectName}"
+                                                Password="{Binding Path=Password}"
                                                 UserName="{Binding Path=User}" />
                     </StackPanel>
                 </Border>
@@ -69,10 +69,10 @@
                     <StackPanel>
                         <Label Content="Destination" Style="{StaticResource ResourceKey=groupTitle}" />
                         <View:TfsProjectControl MinWidth="450"
-                                                CollectionUrl="{Binding Path=CollectionUrl}"
                                                 DataContext="{Binding Path=DestinationConnection}"
-                                                Password="{Binding Path=Password}"
+                                                CollectionUrl="{Binding Path=CollectionUrl}"
                                                 ProjectName="{Binding Path=ProjectName}"
+                                                Password="{Binding Path=Password}"
                                                 UserName="{Binding Path=User}" />
                     </StackPanel>
                 </Border>

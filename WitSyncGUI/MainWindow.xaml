@@ -52,22 +52,22 @@
     <StackPanel>
         <Menu>
             <MenuItem Header="_File">
-                <MenuItem Width="145"
+                <MenuItem Width="145" IsEnabled="False"
                           HorizontalAlignment="Left"
                           Header="_New" />
                 <MenuItem Width="145"
                           Click="OpenCommand"
                           Header="_Open" />
-                <MenuItem Width="145"
+                <MenuItem Width="145" IsEnabled="False"
                           HorizontalAlignment="Left"
                           Header="_Save" />
-                <MenuItem Width="145"
+                <MenuItem Width="145" IsEnabled="False"
                           HorizontalAlignment="Left"
                           Header="Save _As" />
-                <MenuItem Width="145"
+                <MenuItem Width="145" IsEnabled="False"
                           HorizontalAlignment="Left"
                           Header="_Close" />
-                <MenuItem Width="145"
+                <MenuItem Width="145" Click="ExitCommand"
                           HorizontalAlignment="Left"
                           Header="E_xit" />
             </MenuItem>

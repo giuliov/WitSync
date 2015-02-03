@@ -41,6 +41,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\GlobalIT-Tools\TFS\Common\References.12\Microsoft.TeamFoundation.Client.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.TeamFoundation.Common, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.TeamFoundation.WorkItemTracking.Client, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.TeamFoundation.WorkItemTracking.Common, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Windows.Forms" />
@@ -69,6 +72,8 @@
       <DependentUpon>TfsProjectControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\RadioButtonCheckedConverter.cs" />
+    <Compile Include="Helpers\SelectionList.cs" />
+    <Compile Include="Model\TfsExplorer.cs" />
     <Compile Include="Model\MappingFile.cs" />
     <Compile Include="Helpers\ViewModelBase.cs" />
     <Compile Include="Model\Repository.cs" />

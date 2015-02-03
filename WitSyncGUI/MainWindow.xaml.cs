@@ -55,5 +55,10 @@ namespace WitSyncGUI
                 this.DataContext = _ViewModel;
             }
         }
+
+        private void ExitCommand(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
     }
 }
