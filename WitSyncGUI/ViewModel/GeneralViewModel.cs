@@ -12,7 +12,7 @@ namespace WitSyncGUI.ViewModel
 {
     public class GeneralViewModel : StageViewModelBase
     {
-        public GeneralViewModel() { StageName = "General"; }
+        public GeneralViewModel() { DisplayName = "General"; IsOptional = false; }
 
         public bool IsTestRun
         {

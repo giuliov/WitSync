@@ -9,7 +9,7 @@ namespace WitSyncGUI.ViewModel
 {
     public class WorkItemsViewModel : StageViewModelBase
     {
-        public WorkItemsViewModel() { StageName = "Work Items"; }
+        public WorkItemsViewModel() { DisplayName = "Work Items"; }
 
     }
 }

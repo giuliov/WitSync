@@ -44,6 +44,32 @@ namespace WitSyncGUI.ViewModel
             get { return Repository.Filename; }
         }
 
+        bool _IsSaveEnabled = false;
+        public bool IsSaveEnabled
+        {
+            get { return _IsSaveEnabled; }
+            set { _IsSaveEnabled = value; RaisePropertyChanged("IsSaveEnabled"); }
+        }
+
+        bool _IsSaveAsEnabled = false;
+        public bool IsSaveAsEnabled
+        {
+            get { return _IsSaveAsEnabled; }
+            set { _IsSaveAsEnabled = value; RaisePropertyChanged("IsSaveAsEnabled"); }
+        }
+
+        bool _IsCloseEnabled = false;
+        public bool IsCloseEnabled
+        {
+            get { return _IsCloseEnabled; }
+            set { _IsCloseEnabled = value; RaisePropertyChanged("IsCloseEnabled"); }
+        }
+
+        public bool HasPipelineStages
+        {
+            get { return _PipelineStages != null; }
+        }
+
         ObservableCollection<object> _PipelineStages;
         /// <summary>
         /// Returns the collection of available workspaces to display.
@@ -59,23 +85,49 @@ namespace WitSyncGUI.ViewModel
                     _PipelineStages = new ObservableCollection<object>();
                     // this is not a stage, but general configuration (e.g. logging) and must always be present
                     _PipelineStages.Add(new GeneralViewModel());
+                    _PipelineStages.Add(new GlobalListsViewModel());
+                    _PipelineStages.Add(new AreasViewModel());
+                    _PipelineStages.Add(new IterationsViewModel());
+                    _PipelineStages.Add(new WorkItemsViewModel());
 
                     WitSync.StageInfo.Build(Repository.MappingFile, info =>
                     {
                         // convention based!
                         string viewModelTypeName = "WitSyncGUI.ViewModel." + info.Type.Name.Replace("Stage", "ViewModel");
                         Type viewModelType = Type.GetType(viewModelTypeName);
-                        object viewModel = Activator.CreateInstance(viewModelType);
-                        _PipelineStages.Add(viewModel);
+                        ((StageViewModelBase)_PipelineStages.Where(s => s.GetType() == viewModelType).Single()).Enabled = true;
                     });
                 }//if
                 return _PipelineStages;
             }
         }
 
+        internal void New()
+        {
+            Repository.New("default.yml");
+            IsSaveEnabled = IsSaveAsEnabled = IsCloseEnabled = true;
+        }
+
         internal void Open(string pathToConfigurationFile)
         {
             Repository.Open(pathToConfigurationFile);
+            IsSaveEnabled = IsSaveAsEnabled = IsCloseEnabled = true;
+        }
+
+        internal void SaveAs(string p)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void Save()
+        {
+            SaveAs(Filename);
+        }
+
+        internal void Close(string pathToConfigurationFile)
+        {
+            //Repository.Open(pathToConfigurationFile);
+            IsSaveEnabled = IsSaveAsEnabled = IsCloseEnabled = false;
         }
     }
 }

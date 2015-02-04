@@ -9,6 +9,6 @@ namespace WitSyncGUI.ViewModel
 {
     public class AreasViewModel : StageViewModelBase
     {
-        public AreasViewModel() { this.StageName = "Areas"; }
+        public AreasViewModel() { this.DisplayName = "Areas"; }
     }
 }

@@ -9,7 +9,7 @@ namespace WitSyncGUI.Helpers
 {
     public class StageViewModelBase : ViewModelBase
     {
-        private bool _Enabled = true;
+        private bool _Enabled = false;
         public bool Enabled
         {
             get { return _Enabled; }
@@ -23,16 +23,30 @@ namespace WitSyncGUI.Helpers
             }
         }
 
-        private string _StageName = "** UNKNOWN **";
-        public string StageName
+        private bool _IsOptional = true;
+        public bool IsOptional
         {
-            get { return _StageName; }
+            get { return _IsOptional; }
             set
             {
-                if (_StageName != value)
+                if (_IsOptional != value)
                 {
-                    _StageName = value;
-                    RaisePropertyChanged("StageName");
+                    _IsOptional = value;
+                    RaisePropertyChanged("IsOptional");
+                }
+            }
+        }
+
+        private string _DisplayName = "** UNKNOWN **";
+        public string DisplayName
+        {
+            get { return _DisplayName; }
+            set
+            {
+                if (_DisplayName != value)
+                {
+                    _DisplayName = value;
+                    RaisePropertyChanged("DisplayName");
                 }
             }
         }

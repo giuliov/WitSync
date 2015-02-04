@@ -9,6 +9,7 @@ namespace WitSyncGUI.Model
 {
     class TfsExplorer
     {
+        bool connected = false;
         TfsConnection connection;
 
         internal void Connect(WitSync.PipelineConfiguration.ConnectionInfo info)
@@ -19,22 +20,33 @@ namespace WitSyncGUI.Model
                 ProjectName = info.ProjectName,
                 Credential = new NetworkCredential(info.User, info.Password)
             };
-            // connect
-            connection.Connect();
+            try
+            {
+                // connect
+                connection.Connect();
+                connected = true;
+            }
+            catch (Exception)
+            {
+                // log somehow
+            }
         }
 
         internal List<string> GetAllGlobalLists()
         {
             var result = new List<string>();
 
-            var sourceWIStore = connection.Collection.GetService<WorkItemStore>();
-            var sourceGL = sourceWIStore.ExportGlobalLists();
-            // read the XML and get only the GLOBALLIST element. 
-            foreach (XmlElement glElement in sourceGL.GetElementsByTagName("GLOBALLIST"))
+            if (connected)
             {
-                string glName = glElement.Attributes["name"].Value.ToString();
-                result.Add(glName);
-            }//for list
+                var sourceWIStore = connection.Collection.GetService<WorkItemStore>();
+                var sourceGL = sourceWIStore.ExportGlobalLists();
+                // read the XML and get only the GLOBALLIST element. 
+                foreach (XmlElement glElement in sourceGL.GetElementsByTagName("GLOBALLIST"))
+                {
+                    string glName = glElement.Attributes["name"].Value.ToString();
+                    result.Add(glName);
+                }//for list
+            }
             return result;
         }
     }

@@ -12,7 +12,7 @@ namespace WitSyncGUI.ViewModel
     {
         public GlobalListsViewModel()
         {
-            StageName = "Global Lists";
+            DisplayName = "Global Lists";
 
             List<string> all = Repository.SourceExplorer.GetAllGlobalLists();
             _Included = new SelectionList<string>();

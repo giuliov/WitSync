@@ -9,6 +9,6 @@ namespace WitSyncGUI.ViewModel
 {
     public class IterationsViewModel : StageViewModelBase
     {
-        public IterationsViewModel() { this.StageName = "Iterations"; }
+        public IterationsViewModel() { this.DisplayName = "Iterations"; }
     }
 }

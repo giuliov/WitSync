@@ -71,6 +71,7 @@
     <Compile Include="Controls\TfsProjectControl.xaml.cs">
       <DependentUpon>TfsProjectControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\RadioButtonCheckedConverter.cs" />
     <Compile Include="Helpers\SelectionList.cs" />
     <Compile Include="Model\TfsExplorer.cs" />
@@ -86,6 +87,9 @@
     <Compile Include="ViewModel\GeneralViewModel.cs" />
     <Compile Include="View\WorkItemsView.xaml.cs">
       <DependentUpon>WorkItemsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\AboutWindow.xaml.cs">
+      <DependentUpon>AboutWindow.xaml</DependentUpon>
     </Compile>
     <Page Include="View\AreasView.xaml">
       <SubType>Designer</SubType>
@@ -132,6 +136,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\WorkItemsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\AboutWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

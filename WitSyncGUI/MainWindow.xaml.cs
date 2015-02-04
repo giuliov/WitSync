@@ -30,11 +30,18 @@ namespace WitSyncGUI
             // Initialize the Model Object
         }
 
+        private void NewCommand(object sender, RoutedEventArgs e)
+        {
+            _ViewModel = new MainViewModel();
+            _ViewModel.New();
+            this.DataContext = _ViewModel;
+        }
+
         private void OpenCommand(object sender, RoutedEventArgs e)
         {
             // Configure open file dialog box
             var dlg = new Microsoft.Win32.OpenFileDialog();
-            //dlg.FileName = "witsync";
+            //dlg.FileName = ;
             dlg.DefaultExt = ".yml";
             dlg.Filter = "Configuration files (.yml)|*.yml|All Files|*.*";
             dlg.AddExtension = true;
@@ -56,9 +63,54 @@ namespace WitSyncGUI
             }
         }
 
+        private void SaveCommand(object sender, RoutedEventArgs e)
+        {
+            _ViewModel.Save();
+        }
+
+        private void SaveAsCommand(object sender, RoutedEventArgs e)
+        {
+            // Configure open file dialog box
+            var dlg = new Microsoft.Win32.SaveFileDialog();
+            dlg.DefaultExt = ".yml";
+            dlg.Filter = "Configuration files (.yml)|*.yml|All Files|*.*";
+            dlg.AddExtension = true;
+            dlg.CheckPathExists = true;
+            dlg.ValidateNames = true;
+            dlg.Title = "Save Configuration file As";
+
+            // Show open file dialog box
+            var result = dlg.ShowDialog(this);
+
+            // Process open file dialog box results
+            if (result == true)
+            {
+                _ViewModel.SaveAs(dlg.FileName);
+            }
+        }
+
+        private void CloseCommand(object sender, RoutedEventArgs e)
+        {
+            _ViewModel = new MainViewModel();
+            this.DataContext = _ViewModel;
+        }
+
         private void ExitCommand(object sender, RoutedEventArgs e)
         {
+            //TODO check dirty flag and ask to save before exit
             this.Close();
+        }
+
+        private void AboutCommand(object sender, RoutedEventArgs e)
+        {
+            // Instantiate the dialog box
+            var dlg = new WitSyncGUI.Windows.AboutWindow();
+
+            // Configure the dialog box
+            dlg.Owner = this;
+
+            // Open the dialog box modally 
+            dlg.ShowDialog();
         }
     }
 }
