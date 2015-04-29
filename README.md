@@ -7,6 +7,8 @@ Latest artifacts: <https://ci.appveyor.com/project/giuliov/witsync/build/artifac
 
 # WitSync
 
+[![Join the chat at https://gitter.im/giuliov/WitSync](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/giuliov/WitSync?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 WitSync is a command line tool that can copy TFS Work Item data (Global Lists, Areas, Iterations, Work Items) from a source to a target project.
 It is designed to be idempotent, that is, you may run it multiple times and get the same results.
 
